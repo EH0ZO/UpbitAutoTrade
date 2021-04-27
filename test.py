@@ -17,7 +17,11 @@ balance = 0
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
+<<<<<<< HEAD
+myToken = "xoxb-2017388466625-1990724761607-7S14uuKZiVP9tabehIgCdmwK" 
+=======
 myToken = "xoxb-2017388466625-2011605622788-vpIL427bOSR7lmboyyeYoN4X" 
+>>>>>>> b7f7a6859905cec448ffaccff737a25bff0b0082
 myChannel = "#c-pjt"
 
 # Functions
@@ -89,14 +93,16 @@ def get_top20():
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
 # 시작 메세지 슬랙 전송
-post_message(myToken, myChannel, "autotrade start")
 fRun = 1
 fSendTop20 = 0
 get_top20()
 totalBalance = get_balance("KRW")
 balance = totalBalance / 20
-post_message(myToken, myChannel, "totalBalance : "+str(totalBalance))
-post_message(myToken, myChannel, "balance : "+str(balance))
+now = datetime.datetime.now()
+post_message(myToken, myChannel, "=======================================")
+post_message(myToken, myChannel, "autotrade start : "+str(now))
+post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
+post_message(myToken, myChannel, "Each Balance : "+str(balance))
 post_message(myToken, myChannel, "TOP20 Tickers")
 for i in range(0, 20):
     post_message(myToken, myChannel, str(i+1)+" : "+ticker_top20[i])
@@ -110,6 +116,7 @@ while True:
 
         # 09:00 ~ 08:50     목표가 도달 시 매수
         if start_time < now < end_time - datetime.timedelta(minutes=10):
+            post_message(myToken, myChannel, "매수 감시")
             #if fRun == 1:
             if fSendTop20 == 1:
                 fSendTop20 = 0
@@ -140,6 +147,7 @@ while True:
             
         # 08:50 ~ 09:00     전량 매도 후 종목 선정
         else:
+            post_message(myToken, myChannel, "전량 매도 & 종목 선정")
             #fRun = 1
             for i in range(0, 20):
                 coin = get_balance(ticker_top20[i][4:])
