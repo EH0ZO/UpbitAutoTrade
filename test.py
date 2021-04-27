@@ -17,7 +17,7 @@ balance = 0
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
-myToken = "xoxb-2017388466625-1990724761607-7S14uuKZiVP9tabehIgCdmwK" 
+myToken = "xoxb-2017388466625-1990724761607-rSc5RlVSfuYxeQSaA4ByGRen" 
 myChannel = "#c-pjt"
 
 # Functions
@@ -95,13 +95,13 @@ get_top20()
 totalBalance = get_balance("KRW")
 balance = totalBalance / 20
 now = datetime.datetime.now()
-post_message(myToken, myChannel, "=======================================")
+post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start : "+str(now))
 post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
 post_message(myToken, myChannel, "Each Balance : "+str(balance))
-post_message(myToken, myChannel, "TOP20 Tickers")
+post_message(myToken, myChannel, "=== TOP20 Tickers ===")
 for i in range(0, 20):
-    post_message(myToken, myChannel, str(i+1)+" : "+ticker_top20[i])
+    post_message(myToken, myChannel, str(i+1)+" : "+ticker_top20[i]+"  C:"+str(round(close_price[i],2))+"/T:"+str(round(target_price[i], 2)))
     time.sleep(0.1)
 
 while True:
@@ -125,7 +125,7 @@ while True:
                             buy_result = upbit.buy_market_order(ticker_top20[i], balance*0.999)
                             fBough[i] = 1
                             post_message(myToken, myChannel, ticker_top20[i] + " buy : " +str(buy_result))
-                        time.sleep(0.1)
+                        time.sleep(1)
                 else:
                     current_price = get_current_price(ticker_top20[i])
                     if close_price[i] > current_price:
@@ -134,10 +134,9 @@ while True:
                             curBalance = get_current_price(ticker_top20[i]) * coin
                             if curBalance > 5000:
                                 sell_result = upbit.sell_market_order(ticker_top20[i], coin*0.999)
-                                fBough[i] = 0
+                                # fBough[i] = 0     중간에 매도하면 그 날은 매수 안 하도록 flag true 상태로 둠
                                 post_message(myToken, myChannel, ticker_top20[i] + " sell : " +str(sell_result))
-                        time.sleep(0.1)
-                time.sleep(1)
+                        time.sleep(1)
             time.sleep(1)
 
             
