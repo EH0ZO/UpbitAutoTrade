@@ -116,9 +116,9 @@ while True:
 
         # 09:00 ~ 08:50     목표가 도달 시 매수
         if start_time < now < end_time - datetime.timedelta(minutes=10):
-            post_message(myToken, myChannel, "매수 감시")
             #if fRun == 1:
             if fSendTop20 == 1:
+            	post_message(myToken, myChannel, "매수 감시")
                 fSendTop20 = 0
 
             for i in range(0, 20):
@@ -147,7 +147,6 @@ while True:
             
         # 08:50 ~ 09:00     전량 매도 후 종목 선정
         else:
-            post_message(myToken, myChannel, "전량 매도 & 종목 선정")
             #fRun = 1
             for i in range(0, 20):
                 coin = get_balance(ticker_top20[i][4:])
@@ -161,6 +160,7 @@ while True:
             time.sleep(1)
 
             if fSendTop20 == 0:
+            	post_message(myToken, myChannel, "전량 매도 & 종목 선정")
                 get_top20()
                 time.sleep(1)
                 post_message(myToken, myChannel, "totalBalance : "+str(totalBalance))
