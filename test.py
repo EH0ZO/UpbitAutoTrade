@@ -114,7 +114,7 @@ while True:
         if start_time < now < end_time - datetime.timedelta(minutes=10):
             #if fRun == 1:
             if fSendTop20 == 1:
-            	post_message(myToken, myChannel, "매수 감시")
+                post_message(myToken, myChannel, "매수 감시")
                 fSendTop20 = 0
 
             for i in range(0, 20):
@@ -156,7 +156,7 @@ while True:
             time.sleep(1)
 
             if fSendTop20 == 0:
-            	post_message(myToken, myChannel, "전량 매도 & 종목 선정")
+                post_message(myToken, myChannel, "전량 매도 & 종목 선정")
                 get_top20()
                 time.sleep(1)
                 post_message(myToken, myChannel, "totalBalance : "+str(totalBalance))
