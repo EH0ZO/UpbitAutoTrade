@@ -17,7 +17,7 @@ balance = 0
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
-myToken = "xoxb-2017388466625-2004983293058-jZRufVU2XcXUBrgXstMBa4qH" 
+myToken = "xoxb-2017388466625-2011605622788-vpIL427bOSR7lmboyyeYoN4X" 
 myChannel = "#c-pjt"
 
 # Functions
