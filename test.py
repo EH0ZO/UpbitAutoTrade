@@ -17,7 +17,7 @@ balance = 0
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
-myToken = "xoxb-2017388466625-1990724761607-KVUZAZwnLCUpx6vd2vZiNQT8" 
+myToken = "xoxb-2017388466625-1990724761607-s02Lq7zTCLDLi1u3MBfWGsfe" 
 myChannel = "#c-pjt"
 
 # Functions
@@ -135,9 +135,10 @@ while True:
                     if target_price[i] < current_price:
                         if balance > 5000:
                             buy_result = upbit.buy_market_order(ticker_top20[i], balance*0.999)
-                            fBough[i] = 1
-                            remain -= 1
-                            post_message(myToken, myChannel, ticker_top20[i] + " buy : " +str(buy_result))
+                            if buy_result != None:
+                                fBough[i] = 1
+                                remain -= 1
+                                post_message(myToken, myChannel, ticker_top20[i] + " buy : " +str(buy_result))
                         time.sleep(1)
                 else:
                     current_price = get_current_price(ticker_top20[i])
@@ -147,8 +148,9 @@ while True:
                             curBalance = get_current_price(ticker_top20[i]) * coin
                             if curBalance > 5000:
                                 sell_result = upbit.sell_market_order(ticker_top20[i], coin*0.999)
-                                # fBough[i] = 0     중간에 매도하면 그 날은 매수 안 하도록 flag true 상태로 둠
-                                post_message(myToken, myChannel, ticker_top20[i] + " sell : " +str(sell_result))
+                                if sell_result != None:
+                                    fBough[i] = 0
+                                    post_message(myToken, myChannel, ticker_top20[i] + " sell : " +str(sell_result))
                         time.sleep(1)
             time.sleep(1)
 
@@ -162,15 +164,16 @@ while True:
                     curBalance = get_current_price(ticker_top20[i]) * coin
                     if curBalance > 5000:
                         sell_result = upbit.sell_market_order(ticker_top20[i], coin*0.999)
-                        fBough[i] = 0
-                        post_message(myToken, myChannel, ticker_top20[i] + " sell : " +str(sell_result))
+                        if sell_result != None:
+                            fBough[i] = 0
+                            post_message(myToken, myChannel, ticker_top20[i] + " sell : " +str(sell_result))
                 time.sleep(0.1)
             time.sleep(1)
 
             remain = 20
             totalBalance = get_balance("KRW")
             balance = totalBalance / remain
-            
+
             if fSendTop20 == 0:
                 post_message(myToken, myChannel, "전량 매도 & 종목 선정")
                 get_top20()
