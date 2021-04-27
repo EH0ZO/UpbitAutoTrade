@@ -17,7 +17,7 @@ balance = 0
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
-myToken = "xoxb-2017388466625-1990724761607-rSc5RlVSfuYxeQSaA4ByGRen" 
+myToken = "xoxb-2017388466625-1990724761607-KVUZAZwnLCUpx6vd2vZiNQT8" 
 myChannel = "#c-pjt"
 
 # Functions
@@ -91,9 +91,10 @@ print("autotrade start")
 # 시작 메세지 슬랙 전송
 fRun = 1
 fSendTop20 = 0
+remain = 20
 get_top20()
 totalBalance = get_balance("KRW")
-balance = totalBalance / 20
+balance = totalBalance / remain
 now = datetime.datetime.now()
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start : "+str(now))
@@ -110,6 +111,17 @@ while True:
         start_time = get_start_time("KRW-BTC")
         end_time = start_time + datetime.timedelta(days=1)
 
+        totalBalanceBackup = totalBalance
+        totalBalance = get_balance("KRW")
+        balance = totalBalance / remain
+        if totalBalance != totalBalanceBackup:
+            post_message(myToken, myChannel, "=== Balance Changed ===")
+            post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
+            post_message(myToken, myChannel, "Each Balance : "+str(balance))
+
+        time.sleep(1)
+
+
         # 09:00 ~ 08:50     목표가 도달 시 매수
         if start_time < now < end_time - datetime.timedelta(minutes=10):
             #if fRun == 1:
@@ -124,6 +136,7 @@ while True:
                         if balance > 5000:
                             buy_result = upbit.buy_market_order(ticker_top20[i], balance*0.999)
                             fBough[i] = 1
+                            remain -= 1
                             post_message(myToken, myChannel, ticker_top20[i] + " buy : " +str(buy_result))
                         time.sleep(1)
                 else:
@@ -154,6 +167,10 @@ while True:
                 time.sleep(0.1)
             time.sleep(1)
 
+            remain = 20
+            totalBalance = get_balance("KRW")
+            balance = totalBalance / remain
+            
             if fSendTop20 == 0:
                 post_message(myToken, myChannel, "전량 매도 & 종목 선정")
                 get_top20()
@@ -166,8 +183,6 @@ while True:
                     time.sleep(0.1)
                 fSendTop20 = 1
 
-            totalBalance = get_balance("KRW")
-            balance = totalBalance / 20
         time.sleep(1)
 
     except Exception as e:
