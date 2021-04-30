@@ -140,7 +140,21 @@ while True:
         # 09:00 ~ 08:55     매수 진행
         if start_time < now < end_time - datetime.timedelta(minutes=5):
             if fSendTop20 == 1:
-                post_message(myToken, myChannel, "매수 감시")
+                post_message(myChannel, "종목 선정 : "+str(datetime.datetime.now()))
+                tkr_num = select_tkrs(2)
+                remain = tkr_num
+                totalBalance = get_balance("KRW")
+                balance = totalBalance / remain
+                num_buy = 0
+                num_sell = 0
+                time.sleep(0.5)
+                
+                post_message(myToken, myChannel, "=== Selected Tickers ===")
+                for i in range(0, tkr_num):
+                    post_message(myToken, myChannel, str(i+1)+" : "+tkr_buy[i])
+                    time.sleep(0.1)
+
+                post_message(myChannel, "매매 시작 : "+str(datetime.datetime.now()))
                 fSendTop20 = 0
 
             for i in range(0, tkr_num):
@@ -176,6 +190,9 @@ while True:
             
         # 08:55 ~ 09:00     전량 매도 후 종목 선정
         else:
+            if fSendTop20 == 0:
+                post_message(myToken, myChannel, "매매 종료. 전량 매도 : "+str(datetime.datetime.now()))
+                fSendTop20 = 1
             for i in range(0, tkr_num):
                 coin = get_balance(tkr_buy[i][4:])
                 if coin != None:
@@ -188,25 +205,6 @@ while True:
                             post_message(myToken, myChannel, tkr_buy[i] + " sell : " +str(sell_result))
                 time.sleep(0.5)
             time.sleep(0.5)
-
-            if fSendTop20 == 0:
-                post_message(myToken, myChannel, "전량 매도 & 종목 선정")
-                tkr_num = select_tkrs(1)
-                remain = tkr_num
-                totalBalance = get_balance("KRW")
-                balance = totalBalance / remain
-                num_buy = 0
-                num_sell = 0
-                time.sleep(0.5)
-                post_message(myToken, myChannel, "=== Balance Changed ===")
-                post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
-                post_message(myToken, myChannel, "Each Balance : "+str(balance))
-                post_message(myToken, myChannel, "=== Selected Tickers ===")
-                for i in range(0, tkr_num):
-                    post_message(myToken, myChannel, str(i+1)+" : "+tkr_buy[i])
-                    time.sleep(0.1)
-                fSendTop20 = 1
-
         time.sleep(1)
 
     except Exception as e:
