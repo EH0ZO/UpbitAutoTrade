@@ -10,6 +10,7 @@ tkr_buy = ["KRW-"]*20           # 매수할 종목 Ticker
 tkr_num = 0                     # 선정된 종목 수
 y_low_price = [0]*20            # 전일 저가 저장
 tkr_ma5 = [0]*20                # 5일 이동평균선
+min_avg_15_60 = [0, 0]          # 15분, 60분 평균
 fBuy = [0]*20                   # 금일 매수 여부
 fSell = [0]*20                  # 금일 매도 여부
 totalBalance = 0                # 현재 보유 원화
@@ -42,6 +43,14 @@ def get_ma5(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="day", count=5)
     ma5 = df['close'].rolling(5).mean().iloc[-1]
     return ma5
+
+def get_min_avg(ticker):
+    # 15분, 60분 이동 평균선 조회
+    min_avg = [0, 0]
+    df = pyupbit.get_ohlcv(ticker, interval="minute", count=60)
+    min_avg[0] = df['close'].rolling(15).mean().iloc[-1]
+    min_avg[1] = df['close'].rolling(60).mean().iloc[-1]
+    return min_avg
 
 def get_balance(coin):
     # 잔고 조회
