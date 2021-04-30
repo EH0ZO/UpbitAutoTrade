@@ -92,6 +92,8 @@ upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
 # 시작 메세지 슬랙 전송
 fSendTop20 = 1
+num_buy = 0
+num_sell = 0
 tkr_num = select_tkrs(2)
 remain = tkr_num
 totalBalance = get_balance("KRW")
@@ -144,7 +146,7 @@ while True:
                     current_price = get_current_price(tkr_buy[i])
                     if get_ma5(tkr_buy[i]) <= current_price and y_low_price[i] <= current_price:
                         if balance > 5000:
-                            buy_result = 0#upbit.buy_market_order(tkr_buy[i], balance*0.999)
+                            buy_result = upbit.buy_market_order(tkr_buy[i], balance*0.999)
                             if buy_result != None:
                                 fBuy[i] = 1
                                 remain -= 1
