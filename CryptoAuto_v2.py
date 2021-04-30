@@ -118,9 +118,10 @@ while True:
         if now.hour != tBack:
             tBack = now.hour
             post_message(myToken, myChannel, "=== Running ===")
-            post_message(myToken, myChannel, "buy : "+str(num_buy))
-            post_message(myToken, myChannel, "sell : "+str(num_sell))
-            post_message(myToken, myChannel, "remain : "+str(remain))
+            post_message(myToken, myChannel, str(now))
+            post_message(myToken, myChannel, "매수 : "+str(num_buy ‐ num_sell))
+            post_message(myToken, myChannel, "매도 : "+str(num_sell))
+            post_message(myToken, myChannel, "대기 : "+str(remain))
 
 
         totalBalanceBackup = totalBalance
@@ -143,8 +144,6 @@ while True:
                 post_message(myChannel, "종목 선정 : "+str(datetime.datetime.now()))
                 tkr_num = select_tkrs(2)
                 remain = tkr_num
-                totalBalance = get_balance("KRW")
-                balance = totalBalance / remain
                 num_buy = 0
                 num_sell = 0
                 time.sleep(0.5)
@@ -172,7 +171,7 @@ while True:
                     time.sleep(0.5)
                 # 매도 감시 : 현재가가 전일 저점 미만이면 매도
                 else:
-                    if fBuy[i] == 1:
+                    if fBuy[i] == 1 and fSell[i] == 0:
                         current_price = get_current_price(tkr_buy[i])
                         if y_low_price[i] > current_price:
                             coin = get_balance(tkr_buy[i][4:])
@@ -188,10 +187,10 @@ while True:
                 time.sleep(0.5)
 
             
-        # 08:55 ~ 09:00     전량 매도 후 종목 선정
+        # 08:55 ~ 09:00     전량 매도
         else:
             if fSendTop20 == 0:
-                post_message(myToken, myChannel, "매매 종료. 전량 매도 : "+str(datetime.datetime.now()))
+                post_message(myToken, myChannel, "매매 종료 : "+str(datetime.datetime.now()))
                 fSendTop20 = 1
             for i in range(0, tkr_num):
                 coin = get_balance(tkr_buy[i][4:])
