@@ -202,7 +202,7 @@ while True:
                 post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
                 post_message(myToken, myChannel, "Each Balance : "+str(balance))
                 post_message(myToken, myChannel, "=== Selected Tickers ===")
-                for i in range(0, 20):
+                for i in range(0, tkr_num):
                     post_message(myToken, myChannel, str(i+1)+" : "+tkr_buy[i])
                     time.sleep(0.1)
                 fSendTop20 = 1
