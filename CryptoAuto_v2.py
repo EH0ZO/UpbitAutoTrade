@@ -9,6 +9,7 @@ tkr_top20 = ["KRW-"]*20         # 거래량 상위 20종목 Ticker
 tkr_buy = ["KRW-"]*20           # 매수할 종목 Ticker
 tkr_num = 0                     # 선정된 종목 수
 y_low_price = [0]*20            # 전일 저가 저장
+sell_price = [0]*20            # 매도가 저장
 tkr_ma5 = [0]*20                # 5일 이동평균선
 min_avg_15_60 = [0, 0]          # 15분, 60분 평균
 fBuy = [0]*20                   # 금일 매수 여부
@@ -127,8 +128,8 @@ while True:
         if now.hour != tBack:
             tBack = now.hour
             post_message(myToken, myChannel, "=== Running ===")
-            post_message(myToken, myChannel, str(now))
-            post_message(myToken, myChannel, "매수 : "+str(num_buy ‐ num_sell))
+            #post_message(myToken, myChannel, str(now))
+            post_message(myToken, myChannel, "매수 : "+str(num_buy-num_sell))
             post_message(myToken, myChannel, "매도 : "+str(num_sell))
             post_message(myToken, myChannel, "대기 : "+str(remain))
 
@@ -150,7 +151,7 @@ while True:
         # 09:00 ~ 08:55     매수 진행
         if start_time < now < end_time - datetime.timedelta(minutes=5):
             if fSendTop20 == 1:
-                post_message(myChannel, "종목 선정 : "+str(datetime.datetime.now()))
+                post_message(myToken, myChannel, "종목 선정 : "+str(datetime.datetime.now()))
                 tkr_num = select_tkrs(2)
                 remain = tkr_num
                 num_buy = 0
@@ -162,7 +163,7 @@ while True:
                     post_message(myToken, myChannel, str(i+1)+" : "+tkr_buy[i])
                     time.sleep(0.1)
 
-                post_message(myChannel, "매매 시작 : "+str(datetime.datetime.now()))
+                post_message(myToken, myChannel, "매매 시작 : "+str(datetime.datetime.now()))
                 fSendTop20 = 0
 
             for i in range(0, tkr_num):
@@ -180,9 +181,17 @@ while True:
                     time.sleep(0.5)
                 # 매도 감시 : 현재가가 전일 저점 미만이면 매도
                 else:
+                    # 매도 조건 판단
                     if fBuy[i] == 1 and fSell[i] == 0:
                         current_price = get_current_price(tkr_buy[i])
-                        if y_low_price[i] > current_price:
+                        df = pyupbit.get_ohlcv(tkr_buy[i], interval="day", count=1)
+                        high_price = df.iloc[0]['high']
+                        open_price = df.iloc[0]['open']
+                        raise_rate = (high_price - open_price)/open_price
+                        min_avg_15_60 = get_min_avg(tkr_buy[i])
+                        # 1. 전일 저점보다 낮은 경우 매도
+                        # 2. 30% 이상 상승 후 15분 평균가가 60분 평균가보다 낮아지는 경우 매도
+                        if (y_low_price[i] > current_price) or (raise_rate > 0.3 and min_avg_15_60[0] < min_avg_15_60[1]):
                             coin = get_balance(tkr_buy[i][4:])
                             if coin != None:
                                 curBalance = get_current_price(tkr_buy[i]) * coin
@@ -190,8 +199,27 @@ while True:
                                     sell_result = upbit.sell_market_order(tkr_buy[i], coin)
                                     if sell_result != None:
                                         fSell[i] = 1
+                                        sell_price[i] = current_price
                                         num_sell += 1
                                         post_message(myToken, myChannel, tkr_buy[i] + " sell : " +str(sell_result))
+                    # 매도 후 재 매수 조건 판단
+                    elif fBuy[i] == 1 and fSell[i] == 1:
+                        current_price = get_current_price(tkr_buy[i])
+                        df = pyupbit.get_ohlcv(tkr_buy[i], interval="day", count=1)
+                        high_price = df.iloc[0]['high']
+                        low_price = df.iloc[0]['low']
+                        target_price = sell_price[i] + ((high_price + low_price) * 0.5)
+                        # 현재가가 매도가 + (고가 - 저가) * K 보다 높아진 경우
+                        if target_price <= current_price:
+                            if balance > 5000:
+                                buy_result = upbit.buy_market_order(tkr_buy[i], balance*0.999)
+                                if buy_result != None:
+                                    fBuy[i] = 1
+                                    fSell[i] = 0
+                                    post_message(myToken, myChannel, tkr_buy[i] + " buy : " +str(buy_result))            
+                        time.sleep(0.5)
+
+
                     time.sleep(0.5)
                 time.sleep(0.5)
 
