@@ -99,7 +99,7 @@ remain = tkr_num
 totalBalance = get_balance("KRW")
 balance = totalBalance / tkr_num
 now = datetime.datetime.now()
-nowBackup = now
+tBack = now.hour
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start : "+str(now))
 post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
@@ -115,9 +115,13 @@ while True:
         start_time = get_start_time("KRW-BTC")
         end_time = start_time + datetime.timedelta(days=1)
 
-        if(now - datetime.timedelta(minutes=60) > nowBackup):
-            nowBackup = now
+        if now.hour != tBack:
+            tBack = now.hour
             post_message(myToken, myChannel, "=== Running ===")
+            post_message(myToken, myChannel, "buy : "+str(num_buy))
+            post_message(myToken, myChannel, "sell : "+str(num_sell))
+            post_message(myToken, myChannel, "remain : "+str(remain))
+
 
         totalBalanceBackup = totalBalance
         totalBalance = get_balance("KRW")
@@ -130,7 +134,6 @@ while True:
             post_message(myToken, myChannel, "=== Balance Changed ===")
             post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
             post_message(myToken, myChannel, "Each Balance : "+str(balance))
-
         time.sleep(1)
 
 
@@ -150,6 +153,7 @@ while True:
                             if buy_result != None:
                                 fBuy[i] = 1
                                 remain -= 1
+                                num_buy += 1
                                 post_message(myToken, myChannel, tkr_buy[i] + " buy : " +str(buy_result))            
                     time.sleep(0.5)
                 # 매도 감시 : 현재가가 전일 저점 미만이면 매도
@@ -164,6 +168,7 @@ while True:
                                     sell_result = upbit.sell_market_order(tkr_buy[i], coin)
                                     if sell_result != None:
                                         fSell[i] = 1
+                                        num_sell += 1
                                         post_message(myToken, myChannel, tkr_buy[i] + " sell : " +str(sell_result))
                     time.sleep(0.5)
                 time.sleep(0.5)
