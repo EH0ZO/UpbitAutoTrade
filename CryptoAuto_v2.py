@@ -195,6 +195,8 @@ while True:
                 remain = tkr_num
                 totalBalance = get_balance("KRW")
                 balance = totalBalance / remain
+                num_buy = 0
+                num_sell = 0
                 time.sleep(0.5)
                 post_message(myToken, myChannel, "=== Balance Changed ===")
                 post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
