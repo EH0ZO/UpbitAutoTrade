@@ -5,62 +5,102 @@ import pyupbit
 from bs4 import BeautifulSoup
 
 # Global variables
-K = 0.5
-krw = "KRW-"
-ticker_top20 = ["KRW-"]*20
-target_price = [0]*20
-close_price = [0]*20
-fBough = [0]*20
-totalBalance = 0
-balance = 0
+tkr_top20 = ["KRW-"]*20         # 거래량 상위 20종목 Ticker
+tkr_buy = ["KRW-"]*20           # 매수할 종목 Ticker
+tkr_num = 0                     # 선정된 종목 수
+y_low_price = [0]*20            # 전일 저가 저장
+sell_price = [0]*20             # 매도가 저장
+buy_price = [0]*20              # 매수가 저장
+tkr_ma5 = [0]*20                # 5일 이동평균선
+min_avg_15_60 = [0, 0]          # 15분, 60분 평균
+fBuy = [0]*20                   # 금일 매수 여부
+fSell = [0]*20                  # 금일 매도 여부
+totalBalance = 0                # 현재 보유 원화
+balance = 0                     # 각 종목별 매수 금액 = totalBalance / tkr_num
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
-myToken = "xoxb-2017388466625-2030096085360-Uo6PGngeajiSSMzIpR5NAgmv" 
+myToken = " " 
 myChannel = "#c-pjt"
 
 # Functions
 def post_message(token, channel, text):
-    """슬랙 메시지 전송"""
+    # 슬랙 메시지 전송
     response = requests.post("https://slack.com/api/chat.postMessage",
         headers={"Authorization": "Bearer "+token},
         data={"channel": channel,"text": text}
     )
-
-def get_target_price(ticker, k):
-    """변동성 돌파 전략으로 매수 목표가 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
-    target_price = df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
-    return target_price
+    time.sleep(0.1)
+    return response
 
 def get_start_time(ticker):
-    """시작 시간 조회"""
+    # 시작 시간 조회
     df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
     start_time = df.index[0]
     return start_time
 
-def get_ma15(ticker):
-    """15일 이동 평균선 조회"""
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=15)
-    ma15 = df['close'].rolling(15).mean().iloc[-1]
-    return ma15
+def get_ma5(ticker):
+    # 5일 이동 평균선 조회
+    df = pyupbit.get_ohlcv(ticker, interval="day", count=5)
+    ma5 = df['close'].rolling(5).mean().iloc[-1]
+    return ma5
 
-def get_balance(coin):
-    """잔고 조회"""
+def get_min_avg(ticker):
+    # 15분, 60분 이동 평균선 조회
+    min_avg = [0, 0]
+    df = pyupbit.get_ohlcv(ticker, interval="minute", count=60)
+    min_avg[0] = df['close'].rolling(15).mean().iloc[-1]
+    min_avg[1] = df['close'].rolling(60).mean().iloc[-1]
+    return min_avg
+
+def get_krw():
+    # 잔고 조회
     balances = upbit.get_balances()
     for b in balances:
-        if b['currency'] == coin:
+        if b['currency'] == "KRW":
             if b['balance'] is not None:
                 return float(b['balance'])
             else:
                 return 0
 
+def get_balance(tkr, sel):
+    # 잔고 조회
+    coin = tkr[4:]
+    balances = upbit.get_balances()
+    for b in balances:
+        if b['currency'] == coin:
+            if b['balance'] is not None:
+                ret = float(b['balance'])
+            else:
+                ret = 0
+    if sel == "NUM":
+        return ret
+    else:
+        return ret * get_current_price("KRW-"+coin)
+
 def get_current_price(ticker):
-    """현재가 조회"""
+    # 현재가 조회
     return pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
-def get_top20():
+def buy(tkr, cur_price):
+    buy_result = upbit.buy_market_order(tkr, balance*0.999)
+    if buy_result != None:
+        buy_price[i] = cur_price
+        post_message(myToken, myChannel, tkr + " buy : " +str(buy_result))  
+        return True
+    else:
+        return False
+
+def sell(tkr, cur_price):
+    sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"NUM"))
+    if sell_result != None:
+        sell_price[i] = cur_price
+        post_message(myToken, myChannel, tkr + " sell : " +str(sell_result))
+    else:
+        return False
+
+def select_tkrs(c):       # c==1 : 당일 Data, c==2 : 전일 Data
 	# 데이터 스크래핑
     url = "https://www.coingecko.com/ko/거래소/upbit"
     resp = requests.get(url)
@@ -71,15 +111,20 @@ def get_top20():
 	# Ticker 추출
     ticker_in_krw = [x.text.strip() for x in columns if x.text.strip()[-3:] == "KRW"]
     time.sleep(1)
-	# Top20 및 목표가 추출
+	# 매수종목 선정
+    selected = 0
     for i in range(0,20):
         tmp = ticker_in_krw[i][:-4]
-        ticker_top20[i] = krw + tmp
-        df = pyupbit.get_ohlcv(ticker_top20[i], interval="day", count=1)
-        target_price[i] = df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * K
-        close_price[i] = df.iloc[0]['close']
-        fBough[i] = 0
-        time.sleep(0.1)
+        tkr_top20[i] = "KRW-" + tmp
+        if get_ma5(tkr_top20[i]) < get_current_price(tkr_top20[i]):         # 현재가가 5일 이평선보다 높은 경우 매수종목에 추가
+            df = pyupbit.get_ohlcv(tkr_top20[i], interval="day", count=c)
+            y_low_price[i] = df.iloc[0]['low']
+            tkr_buy[selected] = tkr_top20[i]
+            fBuy[i] = 0
+            fSell[i] = 0
+            selected += 1
+            time.sleep(0.1)
+    return selected
 
 
 
@@ -89,21 +134,12 @@ def get_top20():
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
 # 시작 메세지 슬랙 전송
-fRun = 1
-fSendTop20 = 0
-remain = 20
-get_top20()
-totalBalance = get_balance("KRW")
-balance = totalBalance / remain
+fSendTop20 = 1
+num_buy = num_sell = remain = 0
 now = datetime.datetime.now()
+tBack = now.hour
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start : "+str(now))
-post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
-post_message(myToken, myChannel, "Each Balance : "+str(balance))
-post_message(myToken, myChannel, "=== TOP20 Tickers ===")
-for i in range(0, 20):
-    post_message(myToken, myChannel, str(i+1)+" : "+ticker_top20[i]+"  C:"+str(round(close_price[i],2))+"/T:"+str(round(target_price[i], 2)))
-    time.sleep(0.1)
 
 while True:
     try:
@@ -111,80 +147,96 @@ while True:
         start_time = get_start_time("KRW-BTC")
         end_time = start_time + datetime.timedelta(days=1)
 
+        if now.hour != tBack:
+            tBack = now.hour
+            post_message(myToken, myChannel, "=== Running ===")
+            post_message(myToken, myChannel, "매수 : "+str(num_buy-num_sell)+" / 매도 : "+str(num_sell)+" / 대기 : "+str(remain))
+            post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
+            post_message(myToken, myChannel, "Each Balance : "+str(balance))
+
         totalBalanceBackup = totalBalance
-        totalBalance = get_balance("KRW")
-        balance = totalBalance / remain
+        totalBalance = get_krw()
+        if remain > 0:
+            balance = totalBalance / remain
+        else:
+            balance = 0
+
         if totalBalance != totalBalanceBackup:
             post_message(myToken, myChannel, "=== Balance Changed ===")
             post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
             post_message(myToken, myChannel, "Each Balance : "+str(balance))
-
         time.sleep(1)
 
 
-        # 09:00 ~ 08:50     목표가 도달 시 매수
-        if start_time < now < end_time - datetime.timedelta(minutes=10):
-            #if fRun == 1:
+        # 09:00 ~ 08:55     매수 진행
+        if start_time < now < end_time - datetime.timedelta(minutes=5):
             if fSendTop20 == 1:
-                post_message(myToken, myChannel, "매수 감시")
+                post_message(myToken, myChannel, "종목 선정 : "+str(datetime.datetime.now()))
+                remain = tkr_num = select_tkrs(2)
+                totalBalance = get_krw()
+                balance = totalBalance / remain
+                num_buy = num_sell = 0
+                buy_price[i] = sell_price[i] = 0
+                time.sleep(0.5)
+                
+                post_message(myToken, myChannel, "=== Selected Tickers ===")
+                for i in range(0, tkr_num):
+                    post_message(myToken, myChannel, str(i+1)+" : "+tkr_buy[i])
+                    time.sleep(0.1)
+
+                post_message(myToken, myChannel, "매매 시작 : "+str(datetime.datetime.now()))
                 fSendTop20 = 0
 
-            for i in range(0, 20):
-                if fBough[i] == 0:
-                    current_price = get_current_price(ticker_top20[i])
-                    if target_price[i] < current_price:
-                        if balance > 5000:
-                            buy_result = upbit.buy_market_order(ticker_top20[i], balance*0.999)
-                            if buy_result != None:
-                                fBough[i] = 1
-                                remain -= 1
-                                post_message(myToken, myChannel, ticker_top20[i] + " buy : " +str(buy_result))
-                        time.sleep(1)
+            for i in range(0, tkr_num):
+                # 매수 감시 : 현재가가 5일 이평선 이상 & 전일 저점 이상이면 매수
+                if get_balance(tkr_buy[i],"KRW") < 5000 and balance > 5000 and buy_price[i] == 0:
+                    current_price = get_current_price(tkr_buy[i])
+                    if get_ma5(tkr_buy[i]) <= current_price and y_low_price[i] <= current_price:
+                        if buy(tkr_buy[i], current_price):
+                            num_buy += 1
+                            remain -= 1
+                    time.sleep(0.1)
+                # 매도 감시 : 현재가가 전일 저점 미만이면 매도
                 else:
-                    current_price = get_current_price(ticker_top20[i])
-                    if close_price[i] > current_price:
-                        coin = get_balance(ticker_top20[i][4:])
-                        if coin != None:
-                            curBalance = get_current_price(ticker_top20[i]) * coin
-                            if curBalance > 5000:
-                                sell_result = upbit.sell_market_order(ticker_top20[i], coin*0.999)
-                                if sell_result != None:
-                                    fBough[i] = 0
-                                    post_message(myToken, myChannel, ticker_top20[i] + " sell : " +str(sell_result))
-                        time.sleep(1)
-            time.sleep(1)
+                    # 매도 조건 판단
+                    if get_balance(tkr_buy[i],"KRW") > 5000:   #fBuy[i] == 1 and fSell[i] == 0:
+                        current_price = get_current_price(tkr_buy[i])
+                        df = pyupbit.get_ohlcv(tkr_buy[i], interval="day", count=1)
+                        high_price = df.iloc[0]['high']
+                        open_price = df.iloc[0]['open']
+                        raise_rate = high_price / open_price
+                        fallen_rate = current_price / open_price
+                        min_avg_15_60 = get_min_avg(tkr_buy[i])
+                        # 1. 전일 저점보다 낮거나 5%이상 하락한 경우 매도
+                        # 2. 30% 이상 상승 후 15분 평균가가 60분 평균가보다 낮아지는 경우 매도
+                        if (y_low_price[i] > current_price or fallen_rate < 0.95) or (raise_rate > 1.3 and min_avg_15_60[0] < min_avg_15_60[1]):
+                            if sell(tkr_buy[i], current_price):
+                                num_sell += 1
+                    # 매도 후 재 매수 조건 판단
+                    elif sell_price[i] != 0:
+                        current_price = get_current_price(tkr_buy[i])
+                        df = pyupbit.get_ohlcv(tkr_buy[i], interval="day", count=1)
+                        high_price = df.iloc[0]['high']
+                        low_price = df.iloc[0]['low']
+                        target_price = sell_price[i] + ((high_price + low_price) * 0.5)
+                        # 현재가가 매도가 + (고가 - 저가) * K 보다 높아진 경우
+                        if target_price <= current_price and balance > 5000:
+                            if buy(tkr_buy[i], current_price):
+                                num_sell -= 1
+                        time.sleep(0.1)
+                    time.sleep(0.1)
+                time.sleep(0.5)
 
             
-        # 08:50 ~ 09:00     전량 매도 후 종목 선정
+        # 08:55 ~ 09:00     전량 매도
         else:
-            #fRun = 1
-            for i in range(0, 20):
-                coin = get_balance(ticker_top20[i][4:])
-                if coin != None:
-                    curBalance = get_current_price(ticker_top20[i]) * coin
-                    if curBalance > 5000:
-                        sell_result = upbit.sell_market_order(ticker_top20[i], coin*0.999)
-                        if sell_result != None:
-                            fBough[i] = 0
-                            post_message(myToken, myChannel, ticker_top20[i] + " sell : " +str(sell_result))
-                time.sleep(0.1)
-            time.sleep(1)
-
-            remain = 20
-            totalBalance = get_balance("KRW")
-            balance = totalBalance / remain
-
             if fSendTop20 == 0:
-                post_message(myToken, myChannel, "전량 매도 & 종목 선정")
-                get_top20()
-                time.sleep(1)
-                post_message(myToken, myChannel, "totalBalance : "+str(totalBalance))
-                post_message(myToken, myChannel, "balance : "+str(balance))
-                post_message(myToken, myChannel, "TOP20 Tickers")
-                for i in range(0, 20):
-                    post_message(myToken, myChannel, str(i+1)+" : "+ticker_top20[i])
-                    time.sleep(0.1)
+                post_message(myToken, myChannel, "매매 종료 : "+str(datetime.datetime.now()))
                 fSendTop20 = 1
+            for i in range(0, tkr_num):
+                if get_balance(tkr_buy[i],"KRW") > 5000:
+                    sell(tkr_buy[i], 0)
+                time.sleep(0.1)
 
         time.sleep(1)
 
