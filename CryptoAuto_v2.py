@@ -132,14 +132,14 @@ def select_tkrs(c):       # c==1 : 당일 Data, c==2 : 전일 Data
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
-print("autotrade start (ver.21050100)")
+print("autotrade start")
 # 시작 메세지 슬랙 전송
 fSendTop20 = 1
 num_buy = num_sell = remain = 0
 now = datetime.datetime.now()
 tBack = now.hour
 post_message(myToken, myChannel, "==================================")
-post_message(myToken, myChannel, "autotrade start : "+str(now))
+post_message(myToken, myChannel, "autotrade start (ver.21050100)")
 
 while True:
     try:
@@ -176,11 +176,11 @@ while True:
                 totalBalance = get_krw()
                 balance = totalBalance / remain
                 num_buy = num_sell = 0
-                buy_price[i] = sell_price[i] = 0
                 time.sleep(0.5)
                 
                 post_message(myToken, myChannel, "=== Selected Tickers ===")
                 for i in range(0, tkr_num):
+                    buy_price[i] = sell_price[i] = 0
                     post_message(myToken, myChannel, str(i+1)+" : "+tkr_buy[i])
                     time.sleep(0.1)
 
