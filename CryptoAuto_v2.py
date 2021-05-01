@@ -68,16 +68,20 @@ def get_balance(tkr, sel):
     # 잔고 조회
     coin = tkr[4:]
     balances = upbit.get_balances()
+    ret = 0
     for b in balances:
         if b['currency'] == coin:
             if b['balance'] is not None:
                 ret = float(b['balance'])
             else:
                 ret = 0
-    if sel == "NUM":
+    
+    if sel == "COIN":
         return ret
-    else:
+    elif sel == "KRW":
         return ret * get_current_price("KRW-"+coin)
+    else:
+        return 0
 
 def get_current_price(ticker):
     # 현재가 조회
@@ -93,7 +97,7 @@ def buy(tkr, cur_price):
         return False
 
 def sell(tkr, cur_price):
-    sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"NUM"))
+    sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
     if sell_result != None:
         sell_price[i] = cur_price
         post_message(myToken, myChannel, tkr + " sell : " +str(sell_result))
