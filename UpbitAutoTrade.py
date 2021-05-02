@@ -136,7 +136,6 @@ def select_tkrs(c):       # c==1 : 당일 Data, c==2 : 전일 Data
     
     return selected
 
-select_tkrs(1)
 # Main Logic
 
 # 로그인
@@ -208,7 +207,7 @@ while True:
                         if buy(tkr_buy[i], current_price):
                             num_buy += 1
                             remain -= 1
-                            print("매수 : 현재가 5일 이평선 이상 and 전일 저점 이상")
+                            post_message(myToken, myChannel, "매수 : 현재가 5일 이평선 이상 and 전일 저점 이상")
                     time.sleep(0.1)
                 # 매도 감시 : 현재가가 전일 저점 미만이면 매도
                 else:
@@ -227,9 +226,9 @@ while True:
                             if sell(tkr_buy[i], current_price):
                                 num_sell += 1
                                 if (y_low_price[i] > current_price or fallen_rate < 0.95):
-                                    print("매도 : 전일 저점 이하 or 5%이상 하락")
+                                    post_message(myToken, myChannel, "매도 : 전일 저점 이하 or 5%이상 하락")
                                 else:
-                                    print("30% 이상 상승 후 15분 평균가가 60분 평균가 미만")
+                                    post_message(myToken, myChannel, "30% 이상 상승 후 15분 평균가가 60분 평균가 미만")
                     # 매도 후 재 매수 조건 판단
                     elif sell_price[i] != 0:
                         current_price = get_current_price(tkr_buy[i])
@@ -241,7 +240,7 @@ while True:
                         if target_price <= current_price and balance > 5000:
                             if buy(tkr_buy[i], current_price):
                                 num_sell -= 1
-                                print("재매수 : 현재가가 (매도가+(고가-저가)*K) 이상 상승")
+                                post_message(myToken, myChannel, "재매수 : 현재가가 (매도가+(고가-저가)*K) 이상 상승")
                         time.sleep(0.1)
                     time.sleep(0.1)
                 time.sleep(0.5)
