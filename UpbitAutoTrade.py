@@ -125,12 +125,7 @@ def select_tkrs(c):       # c==1 : 당일 Data, c==2 : 전일 Data
             df = pyupbit.get_ohlcv(tkr_top20[i], interval="day", count=c)
             y_low_price[i] = df.iloc[0]['low']
             tkr_buy[selected] = tkr_top20[i]
-            if(get_balance(tkr_buy[i],"KRW") > 5000):
-                fBuy[i] = 1
-                num_buy += 1
-            else:
-                fBuy[i] = 0
-            fSell[i] = 0
+            fBuy[i] = fSell[i] = 0
             selected += 1
             time.sleep(0.1)
     
@@ -147,6 +142,9 @@ fStart = 0
 num_buy = num_sell = remain = 0
 now = datetime.datetime.now()
 tBack = now.hour
+post_message(myToken, myChannel, " ")
+post_message(myToken, myChannel, " ")
+post_message(myToken, myChannel, " ")
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
 
@@ -183,7 +181,6 @@ while True:
             if fSendTop20 == 1:
                 post_message(myToken, myChannel, "종목 선정 : "+str(datetime.datetime.now()))
                 remain = tkr_num = select_tkrs(2)
-                remain -= num_buy
                 totalBalance = get_krw()
                 balance = totalBalance / remain
                 num_buy = num_sell = 0
@@ -192,8 +189,12 @@ while True:
                 post_message(myToken, myChannel, "=== Selected Tickers ===")
                 for i in range(0, tkr_num):
                     buy_price[i] = sell_price[i] = 0
+                    if(get_balance(tkr_buy[i],"KRW") > 5000):
+                        fBuy[i] = 1
+                        num_buy += 1
                     post_message(myToken, myChannel, str(i+1)+" : "+tkr_buy[i])
                     time.sleep(0.1)
+                remain -= num_buy
 
                 post_message(myToken, myChannel, "매매 시작 : "+str(datetime.datetime.now()))
                 fSendTop20 = 0
