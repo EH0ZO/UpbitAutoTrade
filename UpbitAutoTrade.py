@@ -5,6 +5,7 @@ import pyupbit
 from bs4 import BeautifulSoup
 
 # Global variables
+VERSION = "2021.05.02.00"
 tkr_top20 = ["KRW-"]*20         # 거래량 상위 20종목 Ticker
 tkr_buy = ["KRW-"]*20           # 매수할 종목 Ticker
 tkr_num = 0                     # 선정된 종목 수
@@ -101,37 +102,41 @@ def sell(tkr, cur_price):
     if sell_result != None:
         sell_price[i] = cur_price
         post_message(myToken, myChannel, tkr + " sell : " +str(sell_result))
+        return True
     else:
         return False
 
 def select_tkrs(c):       # c==1 : 당일 Data, c==2 : 전일 Data
 	# 데이터 스크래핑
-    url = "https://www.coingecko.com/ko/거래소/upbit"
-    resp = requests.get(url)
-	# 데이터 선택
-    bs = BeautifulSoup(resp.text,'html.parser')
-    selector = "tbody > tr > td > a"
-    columns = bs.select(selector)
-	# Ticker 추출
-    ticker_in_krw = [x.text.strip() for x in columns if x.text.strip()[-3:] == "KRW"]
-    time.sleep(1)
+    tkrs = pyupbit.get_tickers(fiat="KRW")
+    vol =[0]*len(tkrs)
+    data = [("tkr",0)] * len(tkrs)
+    for i in range(0,len(tkrs)):
+        df = pyupbit.get_ohlcv(tkrs[i], 'day', c)
+        vol[i] = df.iloc[0]['volume'] * df.iloc[0]['close']
+        data[i] = (tkrs[i], vol[i])
+        time.sleep(0.1)
+    data = sorted(data, key = lambda data: data[1], reverse = True)
 	# 매수종목 선정
     selected = 0
     for i in range(0,20):
-        tmp = ticker_in_krw[i][:-4]
-        tkr_top20[i] = "KRW-" + tmp
+        tkr_top20[i] = data[i][0]
         if get_ma5(tkr_top20[i]) < get_current_price(tkr_top20[i]):         # 현재가가 5일 이평선보다 높은 경우 매수종목에 추가
             df = pyupbit.get_ohlcv(tkr_top20[i], interval="day", count=c)
             y_low_price[i] = df.iloc[0]['low']
             tkr_buy[selected] = tkr_top20[i]
-            fBuy[i] = 0
+            if(get_balance(tkr_buy[i],"KRW") > 5000):
+                fBuy[i] = 1
+                num_buy += 1
+            else:
+                fBuy[i] = 0
             fSell[i] = 0
             selected += 1
             time.sleep(0.1)
+    
     return selected
 
-
-
+select_tkrs(1)
 # Main Logic
 
 # 로그인
@@ -139,11 +144,12 @@ upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
 # 시작 메세지 슬랙 전송
 fSendTop20 = 1
+fStart = 0
 num_buy = num_sell = remain = 0
 now = datetime.datetime.now()
 tBack = now.hour
 post_message(myToken, myChannel, "==================================")
-post_message(myToken, myChannel, "autotrade start (ver.21050100)")
+post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
 
 while True:
     try:
@@ -151,25 +157,26 @@ while True:
         start_time = get_start_time("KRW-BTC")
         end_time = start_time + datetime.timedelta(days=1)
 
-        if now.hour != tBack:
-            tBack = now.hour
-            post_message(myToken, myChannel, "=== Running ===")
-            post_message(myToken, myChannel, "매수 : "+str(num_buy-num_sell)+" / 매도 : "+str(num_sell)+" / 대기 : "+str(remain))
-            post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
-            post_message(myToken, myChannel, "Each Balance : "+str(balance))
+        if fStart == 1:
+            if now.hour != tBack:
+                tBack = now.hour
+                post_message(myToken, myChannel, "=== Running ===")
+                post_message(myToken, myChannel, "매수 : "+str(num_buy-num_sell)+" / 매도 : "+str(num_sell)+" / 대기 : "+str(remain))
+                post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
+                post_message(myToken, myChannel, "Each Balance : "+str(balance))
 
-        totalBalanceBackup = totalBalance
-        totalBalance = get_krw()
-        if remain > 0:
-            balance = totalBalance / remain
-        else:
-            balance = 0
+            totalBalanceBackup = totalBalance
+            totalBalance = get_krw()
+            if remain > 0:
+                balance = totalBalance / remain
+            else:
+                balance = 0
 
-        if totalBalance != totalBalanceBackup:
-            post_message(myToken, myChannel, "=== Balance Changed ===")
-            post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
-            post_message(myToken, myChannel, "Each Balance : "+str(balance))
-        time.sleep(1)
+            if totalBalance != totalBalanceBackup:
+                post_message(myToken, myChannel, "=== Balance Changed ===")
+                post_message(myToken, myChannel, "Total Balance : "+str(totalBalance))
+                post_message(myToken, myChannel, "Each Balance : "+str(balance))
+            time.sleep(1)
 
 
         # 09:00 ~ 08:55     매수 진행
@@ -177,6 +184,7 @@ while True:
             if fSendTop20 == 1:
                 post_message(myToken, myChannel, "종목 선정 : "+str(datetime.datetime.now()))
                 remain = tkr_num = select_tkrs(2)
+                remain -= num_buy
                 totalBalance = get_krw()
                 balance = totalBalance / remain
                 num_buy = num_sell = 0
@@ -190,6 +198,7 @@ while True:
 
                 post_message(myToken, myChannel, "매매 시작 : "+str(datetime.datetime.now()))
                 fSendTop20 = 0
+                fStart = 1
 
             for i in range(0, tkr_num):
                 # 매수 감시 : 현재가가 5일 이평선 이상 & 전일 저점 이상이면 매수
@@ -199,6 +208,7 @@ while True:
                         if buy(tkr_buy[i], current_price):
                             num_buy += 1
                             remain -= 1
+                            print("매수 : 현재가 5일 이평선 이상 and 전일 저점 이상")
                     time.sleep(0.1)
                 # 매도 감시 : 현재가가 전일 저점 미만이면 매도
                 else:
@@ -216,6 +226,10 @@ while True:
                         if (y_low_price[i] > current_price or fallen_rate < 0.95) or (raise_rate > 1.3 and min_avg_15_60[0] < min_avg_15_60[1]):
                             if sell(tkr_buy[i], current_price):
                                 num_sell += 1
+                                if (y_low_price[i] > current_price or fallen_rate < 0.95):
+                                    print("매도 : 전일 저점 이하 or 5%이상 하락")
+                                else:
+                                    print("30% 이상 상승 후 15분 평균가가 60분 평균가 미만")
                     # 매도 후 재 매수 조건 판단
                     elif sell_price[i] != 0:
                         current_price = get_current_price(tkr_buy[i])
@@ -227,6 +241,7 @@ while True:
                         if target_price <= current_price and balance > 5000:
                             if buy(tkr_buy[i], current_price):
                                 num_sell -= 1
+                                print("재매수 : 현재가가 (매도가+(고가-저가)*K) 이상 상승")
                         time.sleep(0.1)
                     time.sleep(0.1)
                 time.sleep(0.5)
