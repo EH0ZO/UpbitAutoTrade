@@ -2,7 +2,7 @@ from vars_funcs import *
 # Main Logic
 
 # 로그인
-fStart = fSelect = fSend = 0
+fStart = fSelect = fSend = timeBackup = 0
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -12,6 +12,10 @@ while True:
         now = datetime.datetime.now()
         start_time = get_start_time("KRW-BTC")
         end_time = start_time + datetime.timedelta(days=1)
+
+        if(timeBackup != now.hour):
+            post_message(myToken, myChannel, "still running")
+            timeBackup = now.hour
 
     # 종목 선정
         # 최초 시작 시 종목 선정
@@ -61,7 +65,7 @@ while True:
         for i in range(0, 20):
             tkr = tkr_top20[i]
             K = 0.0005 # 0.05%
-            # 매수 감시 : (60분 평균가 > 180분 평균가*1.0005) && (현재가 > 60분 평균가*1.0005)
+            # 매수 감시 : (60분 평균가 > 180분 평균가*(1+K)) && (현재가 > 60분 평균가*(1+K))
             if (get_balance(tkr_top20[i],"KRW") < 5000) and balance > 5000:
                 min_avg_60 = get_min_avg(tkr, 60)
                 min_avg_180 = get_min_avg(tkr, 180)
@@ -70,7 +74,7 @@ while True:
                 if (min_avg_60 > min_avg_180*(1+K)) and (current > min_avg_60*(1+K)):
                     buy(tkr)
                     remain -= 1
-            # 매도 감시 : (60분 평균가 < 180분 평균가*0.9995) && (현재가 < 60분 평균가*0.9995)
+            # 매도 감시 : (60분 평균가 < 180분 평균가*(1-K)) && (현재가 < 60분 평균가*(1-K))
             elif get_balance(tkr_top20[i],"KRW") > 5000:
                 min_avg_60 = get_min_avg(tkr, 60)
                 min_avg_180 = get_min_avg(tkr, 180)
