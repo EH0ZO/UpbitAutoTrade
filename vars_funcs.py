@@ -85,7 +85,7 @@ def buy(tkr):
     global balance
     buy_result = upbit.buy_market_order(tkr, balance*0.999)
     if buy_result != None:
-        post_message(myToken, myChannel, tkr + " buy : "+tkr)  
+        post_message(myToken, myChannel, "매수 : "+tkr)  
         return True
     else:
         return False
@@ -93,7 +93,7 @@ def buy(tkr):
 def sell(tkr):
     sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
     if sell_result != None:
-        post_message(myToken, myChannel, tkr + " sell : "+tkr)
+        post_message(myToken, myChannel, "매도 : "+tkr)
         return True
     else:
         return False
