@@ -16,7 +16,7 @@ while True:
     # 종목 선정
         # 최초 시작 시 종목 선정
         if fStart == 0:
-            tkr_top20 = select_tkrs()
+            tkr_top20 = select_tkrs(6)
             for i in range(0,20):
                 if get_balance(tkr_top20[i],"KRW") > 5000:
                     remain -= 1
@@ -26,11 +26,11 @@ while True:
         # 6시간마다 종목 갱신
         elif now.hour % 6 == 0:
             if fSelect == 0:
-                tkr_top20_new = select_tkrs()
+                tkr_top20_new = select_tkrs(6)
                 for i in range(0,20):
                     if get_balance(tkr_top20[i],"KRW") > 5000 and tkr_top20[i] not in tkr_top20_new:
                         sell(tkr_top20[i])
-                        time.sleep(0.5)
+                        time.sleep(0.2)
                 tkr_top20 = tkr_top20_new
                 fSend = 0
                 fSelect = 1
@@ -71,14 +71,14 @@ while True:
                     buy(tkr)
                     remain -= 1
             # 매도 감시 : (60분 평균가 < 180분 평균가*0.9995) && (현재가 < 60분 평균가*0.9995)
-            if get_balance(tkr_top20[i],"KRW") > 5000:
+            elif get_balance(tkr_top20[i],"KRW") > 5000:
                 min_avg_60 = get_min_avg(tkr, 60)
                 min_avg_180 = get_min_avg(tkr, 180)
                 current = get_current_price(tkr)
                 if (min_avg_60 < min_avg_180*(1-K)) or (current < min_avg_60*(1-K)):
                     sell(tkr)
                     remain += 1
-            time.sleep(0.5)
+            time.sleep(0.2)
         time.sleep(1)
 
     except Exception as e:

@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.03.01"
+VERSION = "21.05.03.02"
 tkr_top20 = ["KRW-"]*20         # 거래량 상위 20종목 Ticker (기존)
 tkr_top20_new = ["KRW-"]*20     # 거래량 상위 20종목 Ticker (신규)
 totalBalance = 0                # 현재 보유 원화
@@ -98,18 +98,14 @@ def sell(tkr):
     else:
         return False
 
-def select_tkrs():       # c==1 : 당일 Data, c==2 : 전일 Data
-    now = datetime.datetime.now()
-    if now.hour < 12:
-        c = 2
-    else:
-        c = 1
+def select_tkrs(c):
 	# 데이터 스크래핑
     tkrs = get_tickers(fiat="KRW")
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'day', c)
+        df = get_ohlcvp(tkrs[i], 'minute60', c)
+        trade_price = df['price'].rolling(c).sum().iloc[-1]
         vol[i] = df.iloc[0]['price']
         data[i] = (tkrs[i], vol[i])
         time.sleep(0.1)
