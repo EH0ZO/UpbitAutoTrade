@@ -5,13 +5,15 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.03.02"
-tkr_top20 = ["KRW-"]*20         # 거래량 상위 20종목 Ticker (기존)
-tkr_top20_new = ["KRW-"]*20     # 거래량 상위 20종목 Ticker (신규)
-totalBalance = 0                # 현재 보유 원화
-totalBalanceBackup = 0          # 이전 보유 원화
-balance = 0                     # 각 종목별 매수 금액 = totalBalance / tkr_num
-remain = 20                     # 매수 대기 종목 수
+VERSION = "21.05.03.03"
+t = datetime.datetime.now() - datetime.timedelta(minutes=5)
+tkr_top20 = ["KRW-"]*20             # 거래량 상위 20종목 Ticker (기존)
+tkr_top20_new = ["KRW-"]*20         # 거래량 상위 20종목 Ticker (신규)
+last_trade_time = [t]*20   # 최근 거래 시간
+totalBalance = 0                    # 현재 보유 원화
+totalBalanceBackup = 0              # 이전 보유 원화
+balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
+remain = 20                         # 매수 대기 종목 수
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
@@ -81,8 +83,7 @@ def get_current_price(ticker):
     # 현재가 조회
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
-def buy(tkr):
-    global balance
+def buy(tkr, balance):
     buy_result = upbit.buy_market_order(tkr, balance*0.999)
     if buy_result != None:
         post_message(myToken, myChannel, "매수 : "+tkr)  

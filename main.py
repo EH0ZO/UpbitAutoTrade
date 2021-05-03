@@ -64,25 +64,30 @@ while True:
     # 매매 logic
         for i in range(0, 20):
             tkr = tkr_top20[i]
-            K = 0.0005 # 0.05%
-            # 매수 감시 : (60분 평균가 > 180분 평균가*(1+K)) && (현재가 > 60분 평균가*(1+K))
-            if (get_balance(tkr_top20[i],"KRW") < 5000) and balance > 5000:
-                min_avg_60 = get_min_avg(tkr, 60)
-                min_avg_180 = get_min_avg(tkr, 180)
-                current = get_current_price(tkr)
-                #print(tkr+"/"+str(min_avg_60)+"/"+str(min_avg_180))
-                if (min_avg_60 > min_avg_180*(1+K)) and (current > min_avg_60*(1+K)):
-                    buy(tkr)
-                    remain -= 1
-            # 매도 감시 : (60분 평균가 < 180분 평균가*(1-K)) && (현재가 < 60분 평균가*(1-K))
-            elif get_balance(tkr_top20[i],"KRW") > 5000:
-                min_avg_60 = get_min_avg(tkr, 60)
-                min_avg_180 = get_min_avg(tkr, 180)
-                current = get_current_price(tkr)
-                if (min_avg_60 < min_avg_180*(1-K)) or (current < min_avg_60*(1-K)):
-                    sell(tkr)
-                    remain += 1
-            time.sleep(0.2)
+            K = 0
+            now = datetime.datetime.now()
+            # 최근 거래 5분 경과 후
+            if now - datetime.timedelta(minutes=5) > last_trade_time[i]:
+                # 매수 감시 : (60분 평균가 > 180분 평균가*(1+K)) && (현재가 > 60분 평균가*(1+K))
+                if (get_balance(tkr_top20[i],"KRW") < 5000) and balance > 5000:
+                    current = get_current_price(tkr)
+                    min_avg_60 = get_min_avg(tkr, 60)
+                    min_avg_180 = get_min_avg(tkr, 180)
+                    #print(tkr+"/"+str(min_avg_60)+"/"+str(min_avg_180))
+                    if (min_avg_60 > min_avg_180*(1+K)) and (current > min_avg_60*(1+K)):
+                        buy(tkr, balance)
+                        last_trade_time[i] = now
+                        remain -= 1
+                # 매도 감시 : (60분 평균가 < 180분 평균가*(1-K)) && (현재가 < 60분 평균가*(1-K))
+                elif get_balance(tkr_top20[i],"KRW") > 5000:
+                    current = get_current_price(tkr)
+                    min_avg_60 = get_min_avg(tkr, 60)
+                    min_avg_180 = get_min_avg(tkr, 180)
+                    if (min_avg_60 < min_avg_180*(1-K)) or (current < min_avg_60*(1-K)):
+                        sell(tkr)
+                        last_trade_time[i] = now
+                        remain += 1
+                time.sleep(0.2)
         time.sleep(1)
 
     except Exception as e:
