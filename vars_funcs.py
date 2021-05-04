@@ -5,15 +5,17 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.03.03"
+VERSION = "21.05.04.04"
 t = datetime.datetime.now() - datetime.timedelta(minutes=5)
 tkr_top20 = ["KRW-"]*20             # 거래량 상위 20종목 Ticker (기존)
 tkr_top20_new = ["KRW-"]*20         # 거래량 상위 20종목 Ticker (신규)
-last_trade_time = [t]*20   # 최근 거래 시간
+last_trade_time = [t]*20            # 최근 거래 시간
 totalBalance = 0                    # 현재 보유 원화
 totalBalanceBackup = 0              # 이전 보유 원화
 balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
 remain = 20                         # 매수 대기 종목 수
+num_buy = 0                         # 매수 횟수
+num_sell = 0                        # 매도 횟수
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
@@ -84,18 +86,32 @@ def get_current_price(ticker):
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
 def buy(tkr, balance):
-    buy_result = upbit.buy_market_order(tkr, balance*0.999)
-    if buy_result != None:
-        post_message(myToken, myChannel, "매수 : "+tkr)  
-        return True
+    current = get_current_price(tkr)
+    min_avg_5 = get_min_avg(tkr, 5)
+    min_avg_10 = get_min_avg(tkr, 10)
+    min_avg_20 = get_min_avg(tkr, 20)
+    min_avg_60 = get_min_avg(tkr, 60)
+    if current > min_avg_5 > min_avg_10 > min_avg_20 > min_avg_60:
+        buy_result = upbit.buy_market_order(tkr, balance*0.999)
+        if buy_result != None:
+            return True
+        else:
+            return False
     else:
         return False
 
 def sell(tkr):
-    sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
-    if sell_result != None:
-        post_message(myToken, myChannel, "매도 : "+tkr)
-        return True
+    current = get_current_price(tkr)
+    min_avg_5 = get_min_avg(tkr, 5)
+    min_avg_10 = get_min_avg(tkr, 10)
+    min_avg_20 = get_min_avg(tkr, 20)
+    min_avg_60 = get_min_avg(tkr, 60)
+    if not (current > min_avg_5 > min_avg_10 > min_avg_20 > min_avg_60):
+        sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
+        if sell_result != None:
+            return True
+        else:
+            return False
     else:
         return False
 
