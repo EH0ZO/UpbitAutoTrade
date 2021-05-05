@@ -60,54 +60,24 @@ while True:
     # 매매 logic
         for i in range(0, 20):
             tkr = tkr_top20[i]
-            """
-            60분 이평선 상승 각도 (5분 간격)
-                ma60 = get_min_avg(tkr, 60, 1)
-                ma60_old = get_min_avg(tkr, 60, 5)
-                diff = (ma60-ma60_old) / ma60_old * 100 
-                theta = degrees(atan(diff/0.5))            
-                    10' : 0.088% 상승
-                    15' : 0.134% 상승
-                    30' : 0.289% 상승
-                    45' : 0.500% 상승
-                    60' : 0.866% 상승
-            """
-            ma60 = get_min_avg(tkr, 60, 1)
-            ma60_old = get_min_avg(tkr, 60, 5)
-            diff = (ma60-ma60_old) / ma60_old * 100 
+            current = get_current_price(tkr)
+            ma = get_min_avg(tkr, 20, 1)
+            ma_old = get_min_avg(tkr, 20, 3)
+            diff = (ma-ma_old) / ma_old * 100 
             # 매수
             if (get_balance(tkr_top20[i],"KRW") < 5000) and balance > 5000:
-                if diff > 0.1:
+                if diff > 0.1 and current > ma:
                     if buy(tkr, balance) == True:
                         num_buy += 1
                         remain -= 1
             # 매도
             elif get_balance(tkr_top20[i],"KRW") > 5000:
-                if diff < 0:
+                if diff < 0 or current < ma:
                     if sell(tkr) == True:
                         num_sell += 1
                         remain += 1
             time.sleep(0.2)
         time.sleep(1)
-        """
-            # 매수
-            if (get_balance(tkr_top20[i],"KRW") < 5000) and balance > 5000:
-                current = get_current_price(tkr)
-                if current > target_price[i]:
-                    if buy(tkr, balance) == True:
-                        target_price[i] = current
-                        num_buy += 1
-                        remain -= 1
-            # 매도
-            elif get_balance(tkr_top20[i],"KRW") > 5000:
-                current = get_current_price(tkr)
-                if current < (target_price[i] * (0.97)):
-                    if sell(tkr) == True:
-                        num_sell += 1
-                        remain += 1
-            time.sleep(0.2)
-        time.sleep(1)
-        """
 
     except Exception as e:
         print(e)
