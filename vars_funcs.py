@@ -5,11 +5,12 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.04.04"
+VERSION = "21.05.05.05"
 t = datetime.datetime.now() - datetime.timedelta(minutes=5)
 tkr_top20 = ["KRW-"]*20             # 거래량 상위 20종목 Ticker (기존)
 tkr_top20_new = ["KRW-"]*20         # 거래량 상위 20종목 Ticker (신규)
 last_trade_time = [t]*20            # 최근 거래 시간
+target_price = [0]*20               # 매수 목표가
 totalBalance = 0                    # 현재 보유 원화
 totalBalanceBackup = 0              # 이전 보유 원화
 balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
@@ -86,32 +87,16 @@ def get_current_price(ticker):
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
 def buy(tkr, balance):
-    current = get_current_price(tkr)
-    min_avg_5 = get_min_avg(tkr, 5)
-    min_avg_10 = get_min_avg(tkr, 10)
-    min_avg_20 = get_min_avg(tkr, 20)
-    min_avg_60 = get_min_avg(tkr, 60)
-    if current > min_avg_5 > min_avg_10 > min_avg_20 > min_avg_60:
-        buy_result = upbit.buy_market_order(tkr, balance*0.999)
-        if buy_result != None:
-            return True
-        else:
-            return False
+    buy_result = upbit.buy_market_order(tkr, balance*0.999)
+    if buy_result != None:
+        return True
     else:
         return False
 
 def sell(tkr):
-    current = get_current_price(tkr)
-    min_avg_5 = get_min_avg(tkr, 5)
-    min_avg_10 = get_min_avg(tkr, 10)
-    min_avg_20 = get_min_avg(tkr, 20)
-    min_avg_60 = get_min_avg(tkr, 60)
-    if not (current > min_avg_5 > min_avg_10 > min_avg_20 > min_avg_60):
-        sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
-        if sell_result != None:
-            return True
-        else:
-            return False
+    sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
+    if sell_result != None:
+        return True
     else:
         return False
 
@@ -121,11 +106,10 @@ def select_tkrs(c):
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'minute60', c)
-        trade_price = df['price'].rolling(c).sum().iloc[-1]
+        df = get_ohlcvp(tkrs[i], 'day', c)
         vol[i] = df.iloc[0]['price']
         data[i] = (tkrs[i], vol[i])
-        time.sleep(0.1)
+        time.sleep(0.2)
     data = sorted(data, key = lambda data: data[1], reverse = True)
 	# 매수종목 선정
     top20 = ["KRW-"]*20
