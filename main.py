@@ -61,18 +61,23 @@ while True:
         for i in range(0, 20):
             tkr = tkr_top20[i]
             current = get_current_price(tkr)
-            ma = get_min_avg(tkr, 20, 1)
-            ma_old = get_min_avg(tkr, 20, 3)
-            diff = (ma-ma_old) / ma_old * 100 
+            ma_s = get_min_avg(tkr, 5, 1)
+            ma_s_old = get_min_avg(tkr, 5, 3)
+            diff_s = (ma_s - ma_s_old) / ma_s_old * 100 
+            ma_l = get_min_avg(tkr, 15, 1)
+            ma_l_old = get_min_avg(tkr, 15, 3)
+            diff_l = (ma_l - ma_l_old) / ma_l_old * 100 
             # 매수
             if (get_balance(tkr_top20[i],"KRW") < 5000) and balance > 5000:
-                if diff > 0.1 and current > ma:
+                # 5분 이평선 3분 전 대비 0.1% 상승 && 현재가 15분 이평선 초과
+                if diff_s > 0.1 and current > ma_l:
                     if buy(tkr, balance) == True:
                         num_buy += 1
                         remain -= 1
             # 매도
             elif get_balance(tkr_top20[i],"KRW") > 5000:
-                if diff < 0 or current < ma:
+                # 5분 이평선 3분 전 대비 하락 && 현재가 15분 이평선 미만
+                if diff_s < 0 and current < ma_l:
                     if sell(tkr) == True:
                         num_sell += 1
                         remain += 1

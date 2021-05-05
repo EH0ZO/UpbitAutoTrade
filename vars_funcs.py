@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from math import *
 
 # Global variables
-VERSION = "21.05.05.07"
+VERSION = "21.05.05.08"
 t = datetime.datetime.now() - datetime.timedelta(minutes=5)
 tkr_top20 = ["KRW-"]*20             # 거래량 상위 20종목 Ticker (기존)
 tkr_top20_new = ["KRW-"]*20         # 거래량 상위 20종목 Ticker (신규)
