@@ -73,8 +73,8 @@ while True:
             elif get_balance(tkr_top20[i],"KRW") > 5000:
                 current = get_current_price(tkr)
                 high = get_hrs_high(tkr, 3)
-                # 3시간 고점 대비 0.75% 하락 시 매도
-                if current < (high * (0.9925)):
+                # 3시간 고점 대비 0.5% 하락 시 매도
+                if current < (high * (0.995)):
                     if sell(tkr) == True:
                         num_sell += 1
                         remain += 1

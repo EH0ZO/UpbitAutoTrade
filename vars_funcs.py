@@ -55,14 +55,16 @@ def get_min_avg(ticker, minute):
     
 def get_hrs_high(ticker, h):
     # h시간 고가 조회
-    df = get_ohlcvp(ticker, interval="minute60", count=h)
-    high = df['high'].rolling(h).max().iloc[-1]
+    m = h * 60
+    df = get_ohlcvp(ticker, interval="minute1", count=m)
+    high = df['high'].rolling(m).max().iloc[-1]
     return high
 
 def get_hrs_low(ticker, h):
     # h시간 저가 조회
-    df = get_ohlcvp(ticker, interval="minute60", count=h)
-    low = df['low'].rolling(h).min().iloc[-1]
+    m = h * 60
+    df = get_ohlcvp(ticker, interval="minute1", count=m)
+    low = df['low'].rolling(m).min().iloc[-1]
     return low
 
 def get_krw():
