@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.05.05"
+VERSION = "21.05.06.11"
 t = datetime.datetime.now() - datetime.timedelta(minutes=5)
 tkr_top20 = ["KRW-"]*20             # 거래량 상위 20종목 Ticker (기존)
 tkr_top20_new = ["KRW-"]*20         # 거래량 상위 20종목 Ticker (신규)
@@ -52,6 +52,18 @@ def get_min_avg(ticker, minute):
     df = get_ohlcvp(ticker, interval="minute1", count=minute)
     min_avg = df['close'].rolling(minute).mean().iloc[-1]
     return min_avg
+    
+def get_hrs_high(ticker, h):
+    # h시간 고가 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=h)
+    high = df['high'].rolling(h).max().iloc[-1]
+    return high
+
+def get_hrs_low(ticker, h):
+    # h시간 저가 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=h)
+    low = df['low'].rolling(h).min().iloc[-1]
+    return low
 
 def get_krw():
     # 잔고 조회
