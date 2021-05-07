@@ -5,16 +5,14 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.06.11"
-t = datetime.datetime.now() - datetime.timedelta(minutes=5)
-tkr_top20 = ["KRW-"]*20             # 거래량 상위 20종목 Ticker (기존)
-tkr_top20_new = ["KRW-"]*20         # 거래량 상위 20종목 Ticker (신규)
-last_trade_time = [t]*20            # 최근 거래 시간
-target_price = [0]*20               # 매수 목표가
+VERSION = "21.05.07.12"
+tkr_top10 = ["KRW-"]*10             # 거래량 상위 10종목 Ticker
+target_price = [0]*10               # 매수 목표가
+close_price = [0]*10                # 전 시간 종가
 totalBalance = 0                    # 현재 보유 원화
-totalBalanceBackup = 0              # 이전 보유 원화
+balanceBackup = 0                   # 이전 보유 원화
 balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
-remain = 20                         # 매수 대기 종목 수
+remain = 10                         # 매수 대기 종목 수
 num_buy = 0                         # 매수 횟수
 num_sell = 0                        # 매도 횟수
 
@@ -53,19 +51,28 @@ def get_min_avg(ticker, minute):
     min_avg = df['close'].rolling(minute).mean().iloc[-1]
     return min_avg
     
-def get_hrs_high(ticker, h):
-    # h시간 고가 조회
-    m = h * 60
-    df = get_ohlcvp(ticker, interval="minute1", count=m)
-    high = df['high'].rolling(m).max().iloc[-1]
+def get_last_hr_high(ticker):
+    # 이전 시간 고가 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=2)
+    high = df.iloc[0]['high']
     return high
 
-def get_hrs_low(ticker, h):
-    # h시간 저가 조회
-    m = h * 60
-    df = get_ohlcvp(ticker, interval="minute1", count=m)
-    low = df['low'].rolling(m).min().iloc[-1]
+def get_last_hr_low(ticker):
+    # 이전 시간 저가 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=2)
+    low = df.iloc[0]['low']
     return low
+
+def get_target_close_prce(ticker):
+    # 목표가 계산
+    df = get_ohlcvp(ticker, interval="minute60", count=2)
+    high = df.iloc[0]['high']
+    low = df.iloc[0]['low']
+    close = df.iloc[0]['close']
+    target = close + (high - low) * 0.3
+    ret = [target, close]
+    return ret
+
 
 def get_krw():
     # 잔고 조회
@@ -114,20 +121,20 @@ def sell(tkr):
     else:
         return False
 
-def select_tkrs(c):
+def select_tkrs():
 	# 데이터 스크래핑
     tkrs = get_tickers(fiat="KRW")
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'day', c)
+        df = get_ohlcvp(tkrs[i], 'minute60', 2)
         vol[i] = df.iloc[0]['price']
         data[i] = (tkrs[i], vol[i])
-        time.sleep(0.2)
+        time.sleep(0.1)
     data = sorted(data, key = lambda data: data[1], reverse = True)
 	# 매수종목 선정
-    top20 = ["KRW-"]*20
-    for i in range(0,20):
-        top20[i] = data[i][0]
+    top10 = ["KRW-"]*10
+    for i in range(0,10):
+        top10[i] = data[i][0]
     
-    return top20
+    return top10
