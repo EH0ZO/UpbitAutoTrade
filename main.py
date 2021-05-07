@@ -36,11 +36,11 @@ while True:
             balChngPercent = balChange / balanceBackup * 100
 
         # 1시간 매매 결과 송신
-            post_message(myToken, myChannel, "=== "+str(timeBackup)"시 ~ "+str(now.hour)"시 매매 결과 ===")
+            post_message(myToken, myChannel, "=== "+str(timeBackup)+"시 ~ "+str(now.hour)+"시 매매 결과 ===")
             post_message(myToken, myChannel, " - 시작 잔고 : "+str(round(balanceBackup))+"원")
             post_message(myToken, myChannel, " - 종료 잔고 : "+str(round(totalBalance))+"원")
-            post_message(myToken, myChannel, " - 수익 : "+str(round(balChange))+"원 ("+str(round(balChngPercent), 2)+"%)")
-
+            post_message(myToken, myChannel, " - 수익 : "+str(round(balChange))+"원 ("+str(round(balChngPercent, 2))+"%)")
+            
         # 신규 종목 선정 및 목표가 계산
             post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
             tkr_top10 = select_tkrs()
