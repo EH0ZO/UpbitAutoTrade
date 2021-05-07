@@ -40,7 +40,7 @@ while True:
             post_message(myToken, myChannel, " - 시작 잔고 : "+str(round(balanceBackup))+"원")
             post_message(myToken, myChannel, " - 종료 잔고 : "+str(round(totalBalance))+"원")
             post_message(myToken, myChannel, " - 수익 : "+str(round(balChange))+"원 ("+str(round(balChngPercent, 2))+"%)")
-            
+
         # 신규 종목 선정 및 목표가 계산
             post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
             tkr_top10 = select_tkrs()
@@ -68,8 +68,8 @@ while True:
             # 매도
             elif get_balance(tkr_top10[i],"KRW") > 5000:
                 current = get_current_price(tkr)
-                # 전 시간 종가대비 -1% 하락 시 매도
-                if current < (close_price[i] * (0.99)):
+                # 전 시간 종가보다 하락 시 매도
+                if current < close_price[i]:
                     sell(tkr)
             time.sleep(0.1)
         time.sleep(1)      

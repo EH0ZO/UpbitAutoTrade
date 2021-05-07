@@ -69,7 +69,7 @@ def get_target_close_prce(ticker):
     high = df.iloc[0]['high']
     low = df.iloc[0]['low']
     close = df.iloc[0]['close']
-    target = close + (high - low) * 0.3
+    target = close + (high - low) * 0.2
     ret = [target, close]
     return ret
 
