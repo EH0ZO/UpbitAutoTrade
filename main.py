@@ -65,9 +65,9 @@ while True:
             if (get_balance(tkr_top10[i],"KRW") < 5000) and balance > 5000:
                 current = get_current_price(tkr)
                 # 매수 기준가보다 상승 시 매수
-                if current > buy_price[i]:
+                if current >= buy_price[i]:
                     buy(tkr, balance)
-                    post_message(myToken, myChannel, tkr_top10[i][4:]+" 매수: 목표가 "+str(round(buy_price[i],2))+" / 현재가 "+str(round(current,2)))
+                    #post_message(myToken, myChannel, tkr_top10[i][4:]+" 매수: 목표가 "+str(round(buy_price[i],2))+" / 현재가 "+str(round(current,2)))
                     num_buy += 1
             # 매도
             elif get_balance(tkr_top10[i],"KRW") > 5000:
@@ -76,12 +76,12 @@ while True:
                 # 매도 기준가보다 하락 시 매도
                 if current < sell_price[i]:
                     sell(tkr)
-                    post_message(myToken, myChannel, tkr_top10[i][4:]+" 매수: 목표가 "+str(round(buy_price[i],2))+" / 현재가 "+str(round(current,2)))
+                    #post_message(myToken, myChannel, tkr_top10[i][4:]+" 매수: 목표가 "+str(round(buy_price[i],2))+" / 현재가 "+str(round(current,2)))
                     num_sell += 1
                 # 상승 기준(Diff*2)보다 상승 후 고점대비 Diff/2만큼 하락 시 매도
-                elif ((high - sell_price[i]) > (diff_price[i] * 1.5)) and (current < (high - diff_price[i] * 0.5)):
+                elif ((high - sell_price[i]) > (diff_price[i] * 2)) and (current < (high - diff_price[i] * 0.5)):
                     sell(tkr)
-                    post_message(myToken, myChannel, tkr_top10[i][4:]+" 매도: 목표가 "+str(round(sell_price[i],2))+" / 현재가 "+str(round(current,2)))
+                    #post_message(myToken, myChannel, tkr_top10[i][4:]+" 매도: 목표가 "+str(round(sell_price[i],2))+" / 현재가 "+str(round(current,2)))
                     buy_price[i] = high
                     num_sell += 1
             time.sleep(0.1)

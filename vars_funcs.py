@@ -76,7 +76,7 @@ def get_target_prce(ticker):
     close = df.iloc[0]['close']
     diff = (high - low) * 0.2
     buy = close + diff
-    sell = close + diff * 0.5
+    sell = close
     ret = [buy, sell, diff]
     return ret
 
