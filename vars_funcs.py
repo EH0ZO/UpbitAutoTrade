@@ -5,10 +5,10 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.07.12"
+VERSION = "21.05.08.13"
 tkr_top10 = ["KRW-"]*10             # 거래량 상위 10종목 Ticker
-target_price = [0]*10               # 매수 목표가
-close_price = [0]*10                # 전 시간 종가
+buy_price = [0]*10                  # 매수 기준가
+sell_price = [0]*10                 # 매도 기준가
 totalBalance = 0                    # 현재 보유 원화
 balanceBackup = 0                   # 이전 보유 원화
 balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
@@ -39,6 +39,10 @@ def get_start_time(ticker):
     start_time = df.index[0]
     return start_time
 
+def get_current_price(ticker):
+    # 현재가 조회
+    return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
+
 def get_ma5(ticker):
     # 5일 이동 평균선 조회
     df = get_ohlcvp(ticker, interval="day", count=5)
@@ -63,26 +67,40 @@ def get_last_hr_low(ticker):
     low = df.iloc[0]['low']
     return low
 
-def get_target_close_prce(ticker):
+def get_target_prce(ticker):
     # 목표가 계산
     df = get_ohlcvp(ticker, interval="minute60", count=2)
     high = df.iloc[0]['high']
     low = df.iloc[0]['low']
     close = df.iloc[0]['close']
-    target = close + (high - low) * 0.2
-    ret = [target, close]
+    buy = close + (high - low) * 0.25
+    sell = close + (buy - close) * 0.5
+    ret = [buy, sell]
     return ret
-
 
 def get_krw():
     # 잔고 조회
     balances = upbit.get_balances()
+    print(balances)
     for b in balances:
         if b['currency'] == "KRW":
             if b['balance'] is not None:
                 return float(b['balance'])
             else:
                 return 0
+
+def get_totalKRW():
+    # 잔고 조회
+    balances = upbit.get_balances()
+    krw = 0
+    for b in balances:
+        if b['currency'] == "KRW":
+            if b['balance'] is not None:
+                krw += float(b['balance'])
+        else:
+            if b['balance'] is not None:
+                krw += float(b['balance']) * get_current_price("KRW-"+b['currency'])
+    return krw
 
 def get_balance(tkr, sel):
     # 잔고 조회
@@ -102,10 +120,6 @@ def get_balance(tkr, sel):
         return ret * get_current_price("KRW-"+coin)
     else:
         return 0
-
-def get_current_price(ticker):
-    # 현재가 조회
-    return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
 def buy(tkr, balance):
     buy_result = upbit.buy_market_order(tkr, balance*0.999)
