@@ -126,14 +126,14 @@ def get_balance(tkr, sel):
         return 0
 
 def buy(tkr, balance):
-    buy_result = 0#upbit.buy_market_order(tkr, balance*0.999)
+    buy_result = upbit.buy_market_order(tkr, balance*0.999)
     if buy_result != None:
         return True
     else:
         return False
 
 def sell(tkr):
-    sell_result = 0#upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
+    sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
     if sell_result != None:
         return True
     else:
