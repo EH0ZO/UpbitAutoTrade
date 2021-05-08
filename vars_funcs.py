@@ -5,11 +5,13 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.08.13"
+VERSION = "21.05.09.14"
 tkr_top10 = ["KRW-"]*10             # 거래량 상위 10종목 Ticker
 buy_price = [0]*10                  # 매수 기준가
 sell_price = [0]*10                 # 매도 기준가
 diff_price = [0]*10                 # 매수 기준가 - 전 시간 종가
+startBalance = 0                    # 09시 기준 잔고
+hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원화
 balanceBackup = 0                   # 이전 보유 원화
 balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
@@ -44,11 +46,11 @@ def get_current_price(ticker):
     # 현재가 조회
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
-def get_ma5(ticker):
-    # 5일 이동 평균선 조회
-    df = get_ohlcvp(ticker, interval="day", count=5)
-    ma5 = df['close'].rolling(5).mean().iloc[-1]
-    return ma5
+def get_hrs_ma(ticker, h):
+    # h시간 이동 평균선 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=h)
+    ma = df['close'].rolling(h).mean().iloc[-1]
+    return ma
 
 def get_min_avg(ticker, minute):
     # minute분 평균가 조회
@@ -124,14 +126,14 @@ def get_balance(tkr, sel):
         return 0
 
 def buy(tkr, balance):
-    buy_result = upbit.buy_market_order(tkr, balance*0.999)
+    buy_result = 0#upbit.buy_market_order(tkr, balance*0.999)
     if buy_result != None:
         return True
     else:
         return False
 
 def sell(tkr):
-    sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
+    sell_result = 0#upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
     if sell_result != None:
         return True
     else:
@@ -143,7 +145,7 @@ def select_tkrs():
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'minute60', 2)
+        df = get_ohlcvp(tkrs[i], 'day', 2)
         vol[i] = df.iloc[0]['price']
         data[i] = (tkrs[i], vol[i])
         time.sleep(0.1)
