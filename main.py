@@ -76,7 +76,7 @@ while True:
                     sell(tkr)
                     num_sell += 1
                 # 상승 기준(Diff*2)보다 상승 후 고점대비 Diff만큼 하락 시 매도
-                elif ((high - sell_price[i]) > (diff_price[i] * 2.5)) and (current < (high - diff_price[i])):
+                elif ((high - sell_price[i]) > (diff_price[i] * 1.5)) and (current < (high - diff_price[i])):
                     sell(tkr)
                     buy_price[i] = high
                     num_sell += 1
