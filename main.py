@@ -22,6 +22,7 @@ while True:
                 ret = get_target_prce(tkr_top10[i])
                 buy_price[i] = ret[0]
                 sell_price[i] = ret[1]
+                diff_price[i] = ret[2]
                 time.sleep(0.1)
             post_message(myToken, myChannel, "=== 종목 선정 완료 : "+str(datetime.datetime.now()))
             post_message(myToken, myChannel, str(tkr_top10))
@@ -62,16 +63,22 @@ while True:
             # 매수
             if (get_balance(tkr_top10[i],"KRW") < 5000) and balance > 5000:
                 current = get_current_price(tkr)
-                # 목표가보다 상승 시 매수
+                # 매수 기준가보다 상승 시 매수
                 if current > buy_price[i]:
                     buy(tkr, balance)
                     num_buy += 1
             # 매도
             elif get_balance(tkr_top10[i],"KRW") > 5000:
                 current = get_current_price(tkr)
-                # 전 시간 종가보다 하락 시 매도
+                high = get_hr_high(tkr_top10[i])
+                # 매도 기준가보다 하락 시 매도
                 if current < sell_price[i]:
                     sell(tkr)
+                    num_sell += 1
+                # 상승 기준(Diff*2)보다 상승 후 고점대비 Diff만큼 하락 시 매도
+                elif ((high - sell_price[i]) > (diff_price[i] * 2.5)) and (current < (high - diff_price[i])):
+                    sell(tkr)
+                    buy_price[i] = high
                     num_sell += 1
             time.sleep(0.1)
         time.sleep(1)      

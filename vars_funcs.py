@@ -9,6 +9,7 @@ VERSION = "21.05.08.13"
 tkr_top10 = ["KRW-"]*10             # 거래량 상위 10종목 Ticker
 buy_price = [0]*10                  # 매수 기준가
 sell_price = [0]*10                 # 매도 기준가
+diff_price = [0]*10                 # 매수 기준가 - 전 시간 종가
 totalBalance = 0                    # 현재 보유 원화
 balanceBackup = 0                   # 이전 보유 원화
 balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
@@ -55,15 +56,15 @@ def get_min_avg(ticker, minute):
     min_avg = df['close'].rolling(minute).mean().iloc[-1]
     return min_avg
     
-def get_last_hr_high(ticker):
-    # 이전 시간 고가 조회
-    df = get_ohlcvp(ticker, interval="minute60", count=2)
+def get_hr_high(ticker):
+    # 현시간 고가 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=1)
     high = df.iloc[0]['high']
     return high
 
-def get_last_hr_low(ticker):
-    # 이전 시간 저가 조회
-    df = get_ohlcvp(ticker, interval="minute60", count=2)
+def get_hr_low(ticker):
+    # 현시간 저가 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=1)
     low = df.iloc[0]['low']
     return low
 
@@ -73,9 +74,10 @@ def get_target_prce(ticker):
     high = df.iloc[0]['high']
     low = df.iloc[0]['low']
     close = df.iloc[0]['close']
-    buy = close + (high - low) * 0.25
+    diff = (high - low) * 0.25
+    buy = close + diff
     sell = close + (buy - close) * 0.5
-    ret = [buy, sell]
+    ret = [buy, sell, diff]
     return ret
 
 def get_krw():
