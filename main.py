@@ -48,11 +48,12 @@ while True:
             balChange = totalBalance - balanceBackup
             balChngPercent = balChange / balanceBackup * 100
         # 1시간 매매 결과 송신
-            post_message(myToken, myChannel, "=== "+str(timeBackup)+"시 ~ "+str(now.hour)+"시 매매 결과 ===")
+            post_message(myToken, myChannel, "=== "+str(timeBackup)+"시 매매 결과 ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
             post_message(myToken, myChannel, " - 시작 잔고 : "+str(round(balanceBackup))+"원")
             post_message(myToken, myChannel, " - 종료 잔고 : "+str(round(totalBalance))+"원")
             post_message(myToken, myChannel, " - 수익 : "+str(round(balChange))+"원 ("+str(round(balChngPercent, 2))+"%)")
+            post_message(myToken, myChannel, "=== "+str(now.hour)+"시 매매 시작 ===")
             num_buy = num_sell = 0
             timeBackup = now.hour
 
@@ -66,6 +67,7 @@ while True:
                 # 매수 기준가보다 상승 시 매수
                 if current > buy_price[i]:
                     buy(tkr, balance)
+                    post_message(myToken, myChannel, tkr_top10[i][4:]+" 매수: 목표가 "+str(round(buy_price[i],2))+" / 현재가 "+str(round(current,2)))
                     num_buy += 1
             # 매도
             elif get_balance(tkr_top10[i],"KRW") > 5000:
@@ -74,10 +76,12 @@ while True:
                 # 매도 기준가보다 하락 시 매도
                 if current < sell_price[i]:
                     sell(tkr)
+                    post_message(myToken, myChannel, tkr_top10[i][4:]+" 매수: 목표가 "+str(round(buy_price[i],2))+" / 현재가 "+str(round(current,2)))
                     num_sell += 1
-                # 상승 기준(Diff*2)보다 상승 후 고점대비 Diff만큼 하락 시 매도
-                elif ((high - sell_price[i]) > (diff_price[i] * 1.5)) and (current < (high - diff_price[i])):
+                # 상승 기준(Diff*2)보다 상승 후 고점대비 Diff/2만큼 하락 시 매도
+                elif ((high - sell_price[i]) > (diff_price[i] * 1.5)) and (current < (high - diff_price[i] * 0.5)):
                     sell(tkr)
+                    post_message(myToken, myChannel, tkr_top10[i][4:]+" 매도: 목표가 "+str(round(sell_price[i],2))+" / 현재가 "+str(round(current,2)))
                     buy_price[i] = high
                     num_sell += 1
             time.sleep(0.1)
