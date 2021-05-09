@@ -45,10 +45,10 @@ def get_current_price(ticker):
     # 현재가 조회
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
-def get_ma(ticker, intv, c):
+def get_ma(ticker, intv, c, p):
     # h시간 이동 평균선 조회
-    df = get_ohlcvp(ticker, interval=intv, count=c)
-    ma = df['close'].rolling(c).mean().iloc[-1]
+    df = get_ohlcvp(ticker, interval=intv, count=(c+p))
+    ma = df['close'].rolling(c).mean().iloc[-p]
     return ma
 
 def get_min_avg(ticker, minute):
