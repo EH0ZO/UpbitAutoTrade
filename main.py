@@ -2,7 +2,7 @@ from vars_funcs import *
 # Main Logic
 
 # 로그인
-fStart = timeBackup = num_buy = num_sell = 0
+fStart = timeBackup = minBackup = num_buy = num_sell = 0
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -11,7 +11,7 @@ post_message(myToken, myChannel, "==================================")
 while True:
     try:
         now = datetime.datetime.now()
-
+        last_sell_time = [now]*10
     # 매일 09시 마다 신규 종목 선정
         if timeBackup != now.hour or fStart == 0:
             if now.hour == 9 or fStart == 0:
@@ -54,28 +54,34 @@ while True:
             fStart = 1
 
     # 매매 logic
-        if now.minute % 5 == 0:
+        now = datetime.datetime.now()
+        if now.minute != minBackup:
             for i in range(0, 10):
                 tkr = tkr_top10[i]
                 # 매수
                 if (get_balance(tkr_top10[i],"KRW") < 5000) and balance > 5000:
                     current = get_current_price(tkr)
-                    ma_old = get_ma(tkr, "minute1", 60, 5)
-                    ma = get_ma(tkr, "minute1", 60, 1)
-                    # 1시간선보다 높으면 매수
-                    if ma > ma_old and current > ma:
+                    ma15_old = get_ma(tkr, "minute1", 30, 2)
+                    ma15 = get_ma(tkr, "minute1", 30, 1)
+                    ma30_old = get_ma(tkr, "minute1", 30, 2)
+                    ma30 = get_ma(tkr, "minute1", 30, 1)
+                    # 기준선보다 높으면 매수
+                    if ma15 > ma15_old and ma30 > ma30_old and current > ma30 and now - datetime.timedelta(minutes=10) > last_sell_time[i]:
                         buy(tkr, balance)
                         num_buy += 1
                 # 매도
                 elif get_balance(tkr_top10[i],"KRW") > 5000:
                     current = get_current_price(tkr)
-                    ma = get_ma(tkr, "minute1", 60, 1)
-                    # 1시간선보다 낮으면 매도
-                    if current < ma:
+                    ma15 = get_ma(tkr, "minute1", 30, 1)
+                    ma30 = get_ma(tkr, "minute1", 30, 1)
+                    # 기준선보다 낮으면 매도
+                    if current < ma15 or current < ma30 :
                         sell(tkr)
                         num_sell += 1
+                        last_sell_time[i] = now
                 time.sleep(0.1)
             time.sleep(1)      
+            minBackup = now.minute
         
 
     except Exception as e:
