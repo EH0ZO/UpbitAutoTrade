@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.09.14"
+VERSION = "21.05.09.15"
 tkr_top10 = ["KRW-"]*10             # 거래량 상위 10종목 Ticker
 buy_price = [0]*10                  # 매수 기준가
 sell_price = [0]*10                 # 매도 기준가
@@ -15,7 +15,6 @@ hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원화
 balanceBackup = 0                   # 이전 보유 원화
 balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
-remain = 10                         # 매수 대기 종목 수
 num_buy = 0                         # 매수 횟수
 num_sell = 0                        # 매도 횟수
 
@@ -46,10 +45,10 @@ def get_current_price(ticker):
     # 현재가 조회
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
-def get_hrs_ma(ticker, h):
+def get_ma(ticker, intv, c):
     # h시간 이동 평균선 조회
-    df = get_ohlcvp(ticker, interval="minute60", count=h)
-    ma = df['close'].rolling(h).mean().iloc[-1]
+    df = get_ohlcvp(ticker, interval=intv, count=c)
+    ma = df['close'].rolling(c).mean().iloc[-1]
     return ma
 
 def get_min_avg(ticker, minute):

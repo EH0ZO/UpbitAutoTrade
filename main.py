@@ -54,22 +54,22 @@ while True:
             fStart = 1
 
     # 매매 logic
-        if now.minute % 10 == 0:
+        if now.minute % 5 == 0:
             for i in range(0, 10):
                 tkr = tkr_top10[i]
                 # 매수
                 if (get_balance(tkr_top10[i],"KRW") < 5000) and balance > 5000:
                     current = get_current_price(tkr)
-                    ma = get_hrs_ma(tkr, 6)
-                    # 6시간선보다 높으면 매수
+                    ma = get_ma(tkr, "minute1", 60)
+                    # 1시간선보다 높으면 매수
                     if current > ma:
                         buy(tkr, balance)
                         num_buy += 1
                 # 매도
                 elif get_balance(tkr_top10[i],"KRW") > 5000:
                     current = get_current_price(tkr)
-                    ma = get_hrs_ma(tkr, 6)
-                    # 6시간선보다 낮으면 매도
+                    ma = get_ma(tkr, "minute1", 60)
+                    # 1시간선보다 낮으면 매도
                     if current < ma:
                         sell(tkr)
                         num_sell += 1
