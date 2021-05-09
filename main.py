@@ -61,8 +61,8 @@ while True:
                 # 매수
                 if (get_balance(tkr_top10[i],"KRW") < 5000) and balance > 5000:
                     current = get_current_price(tkr)
-                    ma15_old = get_ma(tkr, "minute1", 30, 2)
-                    ma15 = get_ma(tkr, "minute1", 30, 1)
+                    ma15_old = get_ma(tkr, "minute1", 15, 2)
+                    ma15 = get_ma(tkr, "minute1", 15, 1)
                     ma30_old = get_ma(tkr, "minute1", 30, 2)
                     ma30 = get_ma(tkr, "minute1", 30, 1)
                     # 기준선보다 높으면 매수
@@ -72,7 +72,7 @@ while True:
                 # 매도
                 elif get_balance(tkr_top10[i],"KRW") > 5000:
                     current = get_current_price(tkr)
-                    ma15 = get_ma(tkr, "minute1", 30, 1)
+                    ma15 = get_ma(tkr, "minute1", 15, 1)
                     ma30 = get_ma(tkr, "minute1", 30, 1)
                     # 기준선보다 낮으면 매도
                     if current < ma15 or current < ma30 :
