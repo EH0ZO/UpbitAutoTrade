@@ -11,10 +11,10 @@ post_message(myToken, myChannel, "==================================")
 while True:
     try:
         now = datetime.datetime.now()
-        last_sell_time = [now]*10
     # 매일 09시 마다 신규 종목 선정
         if timeBackup != now.hour or fStart == 0:
             if now.hour == 9 or fStart == 0:
+                last_sell_time = [now]*10
             # 신규 종목 선정 및 목표가 계산
                 post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
                 tkr_top10 = select_tkrs()
@@ -61,18 +61,19 @@ while True:
                 # 매수
                 if (get_balance(tkr_top10[i],"KRW") < 5000) and balance > 5000:
                     current = get_current_price(tkr)
-                    ma15_old = get_ma(tkr, "minute1", 30, 2)
-                    ma15 = get_ma(tkr, "minute1", 30, 1)
+                    ma15_old = get_ma(tkr, "minute1", 15, 2)
+                    ma15 = get_ma(tkr, "minute1", 15, 1)
                     ma30_old = get_ma(tkr, "minute1", 30, 2)
                     ma30 = get_ma(tkr, "minute1", 30, 1)
                     # 기준선보다 높으면 매수
+                    print(str(now - datetime.timedelta(minutes=10)), str(last_sell_time[i]))
                     if ma15 > ma15_old and ma30 > ma30_old and current > ma30 and now - datetime.timedelta(minutes=10) > last_sell_time[i]:
                         buy(tkr, balance)
                         num_buy += 1
                 # 매도
                 elif get_balance(tkr_top10[i],"KRW") > 5000:
                     current = get_current_price(tkr)
-                    ma15 = get_ma(tkr, "minute1", 30, 1)
+                    ma15 = get_ma(tkr, "minute1", 15, 1)
                     ma30 = get_ma(tkr, "minute1", 30, 1)
                     # 기준선보다 낮으면 매도
                     if current < ma15 or current < ma30 :
