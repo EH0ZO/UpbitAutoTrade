@@ -66,7 +66,6 @@ while True:
                     ma30_old = get_ma(tkr, "minute1", 30, 2)
                     ma30 = get_ma(tkr, "minute1", 30, 1)
                     # 기준선보다 높으면 매수
-                    print(str(now - datetime.timedelta(minutes=10)), str(last_sell_time[i]))
                     if ma15 > ma15_old and ma30 > ma30_old and current > ma30 and now - datetime.timedelta(minutes=10) > last_sell_time[i]:
                         buy(tkr, balance)
                         num_buy += 1
