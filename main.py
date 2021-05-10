@@ -15,8 +15,9 @@ while True:
     # 1시간 마다 신규 종목 선정
         if(timeBackup != now.hour):
         # 신규 종목 선정 및 목표가 계산
-            post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
-            tkr_top10 = select_tkrs()
+        	if now.hour == 9 or fStart == 0
+            	post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
+            	tkr_top10 = select_tkrs()
             for i in range(0,10):
                 # 목표가 : 전 시간 종가 + (전 시간 고점 - 저점) * K
                 ret = get_target_prce(tkr_top10[i])
