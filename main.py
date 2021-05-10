@@ -14,6 +14,7 @@ while True:
     # 매일 09시 마다 신규 종목 선정
         if timeBackup != now.hour or fStart == 0:
             if now.hour == 9 or fStart == 0:
+                fStart = 1
                 last_trade_time = [now - datetime.timedelta(minutes=30)]*5
             # 신규 종목 선정 및 목표가 계산
                 post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
@@ -34,7 +35,7 @@ while True:
                 balances = upbit.get_balances()
                 time.sleep(0.1)
                 for b in balances:
-                    if b['currency'] != 'KRW' and b['currency'] != 'VTHO':
+                    if b['currency'] != 'KRW' and float(b['avg_buy_price']) > 0:
                         tkr = "KRW-"+b['currency']
                         if tkr not in tkr_buy:
                             if get_balance(tkr,"KRW") > 5000:
@@ -43,6 +44,7 @@ while True:
                             time.sleep(0.1)
             # 잔고 Update
                 startBalance = get_totalKRW()
+                hourlyBalance = startBalance
 
         # 1시간 마다 매매 결과 송신
             curBalance = get_totalKRW()
@@ -55,10 +57,8 @@ while True:
             balance[0] = balance[1] = balance[3] = curBalance * 0.1
             post_message(myToken, myChannel, "=== Hourly Report ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
-            post_message(myToken, myChannel, " - 시작 잔고 : "+str(round(balanceBackup))+"원")
-            post_message(myToken, myChannel, " - 종료 잔고 : "+str(round(totalBalance))+"원")
-            post_message(myToken, myChannel, " - 수익 : "+str(round(balChange))+"원 ("+str(round(balChngPercent, 2))+"%)")
-            post_message(myToken, myChannel, "=== "+str(now.hour)+"시 매매 시작 ===")
+            post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
+            post_message(myToken, myChannel, " - 금일 수익 : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
             num_buy = num_sell = 0
             timeBackup = now.hour
 

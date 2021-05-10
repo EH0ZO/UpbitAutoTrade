@@ -21,7 +21,7 @@ num_sell = 0                        # 매도 횟수
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
-myToken = " " 
+myToken = "" 
 myChannel = "#c-pjt"
 upbit = Upbit(access, secret)
 
@@ -45,28 +45,22 @@ def get_current_price(ticker):
     # 현재가 조회
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
-def get_ma5(ticker):
-    # 5일 이동 평균선 조회
-    df = get_ohlcvp(ticker, interval="day", count=5)
-    ma5 = df['close'].rolling(5).mean().iloc[-1]
-    return ma5
-
-def get_min_avg(ticker, minute):
-    # minute분 평균가 조회
-    df = get_ohlcvp(ticker, interval="minute1", count=minute)
-    min_avg = df['close'].rolling(minute).mean().iloc[-1]
-    return min_avg
+def get_ma(ticker, intv, c, p):
+    # 이동 평균선 조회
+    df = get_ohlcvp(ticker, interval=intv, count=(c+p))
+    ma = df['close'].rolling(c).mean().iloc[-p]
+    return ma
     
-def get_hr_high(ticker):
-    # 현시간 고가 조회
-    df = get_ohlcvp(ticker, interval="minute60", count=1)
-    high = df.iloc[0]['high']
+def get_high(ticker, intv, c):
+    # 고가 조회
+    df = get_ohlcvp(ticker, interval=intv, count=c)
+    high = df['high'].rolling(c).max().iloc[-1]
     return high
 
-def get_hr_low(ticker):
-    # 현시간 저가 조회
-    df = get_ohlcvp(ticker, interval="minute60", count=1)
-    low = df.iloc[0]['low']
+def get_low(ticker, intv, c):
+    # 저가 조회
+    df = get_ohlcvp(ticker, interval=intv, count=c)
+    low = df['low'].rolling(c).min().iloc[-1]
     return low
 
 def get_target_prce(ticker):
@@ -100,7 +94,7 @@ def get_totalKRW():
         if b['currency'] == "KRW":
             if b['balance'] is not None:
                 krw += float(b['balance'])
-        else:
+        elif float(b['avg_buy_price']) > 0:
             if b['balance'] is not None:
                 krw += float(b['balance']) * get_current_price("KRW-"+b['currency'])
     return krw
@@ -112,7 +106,7 @@ def get_balance(tkr, sel):
     ret = 0
     for b in balances:
         if b['currency'] == coin:
-            if b['balance'] is not None:
+            if b['balance'] is not None and float(b['avg_buy_price']) > 0:
                 ret = float(b['balance'])
             else:
                 ret = 0
