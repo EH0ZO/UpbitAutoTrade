@@ -141,7 +141,7 @@ def select_tkrs():
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'minute60', 2)
+        df = get_ohlcvp(tkrs[i], 'day', 2)
         vol[i] = df.iloc[0]['price']
         data[i] = (tkrs[i], vol[i])
         time.sleep(0.1)
