@@ -5,16 +5,14 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.09.15"
+VERSION = "21.05.08.13"
 tkr_top10 = ["KRW-"]*10             # 거래량 상위 10종목 Ticker
 buy_price = [0]*10                  # 매수 기준가
 sell_price = [0]*10                 # 매도 기준가
-diff_price = [0]*10                 # 매수 기준가 - 전 시간 종가
-startBalance = 0                    # 09시 기준 잔고
-hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원화
 balanceBackup = 0                   # 이전 보유 원화
 balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
+remain = 10                         # 매수 대기 종목 수
 num_buy = 0                         # 매수 횟수
 num_sell = 0                        # 매도 횟수
 
@@ -45,22 +43,28 @@ def get_current_price(ticker):
     # 현재가 조회
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
-def get_ma(ticker, intv, c, p):
-    # 이동 평균선 조회
-    df = get_ohlcvp(ticker, interval=intv, count=(c+p))
-    ma = df['close'].rolling(c).mean().iloc[-p]
-    return ma
+def get_ma5(ticker):
+    # 5일 이동 평균선 조회
+    df = get_ohlcvp(ticker, interval="day", count=5)
+    ma5 = df['close'].rolling(5).mean().iloc[-1]
+    return ma5
+
+def get_min_avg(ticker, minute):
+    # minute분 평균가 조회
+    df = get_ohlcvp(ticker, interval="minute1", count=minute)
+    min_avg = df['close'].rolling(minute).mean().iloc[-1]
+    return min_avg
     
-def get_high(ticker, intv, c):
-    # 고가 조회
-    df = get_ohlcvp(ticker, interval=intv, count=c)
-    high = df['high'].rolling(c).max().iloc[-1]
+def get_last_hr_high(ticker):
+    # 이전 시간 고가 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=2)
+    high = df.iloc[0]['high']
     return high
 
-def get_low(ticker):
-    # 저가 조회
-    df = get_ohlcvp(ticker, interval=intv, count=c)
-    low = df['low'].rolling(c).min().iloc[-1]
+def get_last_hr_low(ticker):
+    # 이전 시간 저가 조회
+    df = get_ohlcvp(ticker, interval="minute60", count=2)
+    low = df.iloc[0]['low']
     return low
 
 def get_target_prce(ticker):
@@ -69,10 +73,9 @@ def get_target_prce(ticker):
     high = df.iloc[0]['high']
     low = df.iloc[0]['low']
     close = df.iloc[0]['close']
-    diff = (high - low) * 0.2
-    buy = close + diff
-    sell = close
-    ret = [buy, sell, diff]
+    buy = close + (high - low) * 0.2
+    sell = close # + (buy - close) * 0.5
+    ret = [buy, sell]
     return ret
 
 def get_krw():
@@ -138,7 +141,7 @@ def select_tkrs():
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'day', 2)
+        df = get_ohlcvp(tkrs[i], 'minute60', 2)
         vol[i] = df.iloc[0]['price']
         data[i] = (tkrs[i], vol[i])
         time.sleep(0.1)
