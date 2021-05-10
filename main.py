@@ -54,7 +54,7 @@ while True:
             balChngPercent_d = balChange_d / startBalance * 100
             hourlyBalance = curBalance
             balance[0] = balance[1] = curBalance * 0.35
-            balance[0] = balance[1] = balance[3] = curBalance * 0.1
+            balance[2] = balance[3] = balance[4] = curBalance * 0.1
             post_message(myToken, myChannel, "=== Hourly Report ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
             post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
