@@ -5,16 +5,16 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.09.15"
-tkr_top10 = ["KRW-"]*10             # 거래량 상위 10종목 Ticker
-buy_price = [0]*10                  # 매수 기준가
-sell_price = [0]*10                 # 매도 기준가
-diff_price = [0]*10                 # 매수 기준가 - 전 시간 종가
+VERSION = "21.05.10.16"
+tkr_buy = ["KRW-"]*5                # 거래량 상위 10종목 Ticker
+buy_price = [0]*5                   # 매수 기준가
+sell_price = [0]*5                  # 매도 기준가
+diff_price = [0]*5                  # 매수 기준가 - 전 시간 종가
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원화
 balanceBackup = 0                   # 이전 보유 원화
-balance = 0                         # 각 종목별 매수 금액 = totalBalance / tkr_num
+balance = [0]*5                     # 종목별 거래금액
 num_buy = 0                         # 매수 횟수
 num_sell = 0                        # 매도 횟수
 
@@ -138,14 +138,14 @@ def select_tkrs():
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'day', 2)
-        vol[i] = df.iloc[0]['price']
+        df = get_ohlcvp(tkrs[i], 'day', 7)
+        vol[i] = df['price'].rolling(7).sum().iloc[-1]
         data[i] = (tkrs[i], vol[i])
         time.sleep(0.1)
     data = sorted(data, key = lambda data: data[1], reverse = True)
 	# 매수종목 선정
-    top10 = ["KRW-"]*10
-    for i in range(0,10):
-        top10[i] = data[i][0]
+    top5 = ["KRW-"]*5
+    for i in range(0,5):
+        top5[i] = data[i][0]
     
-    return top10
+    return top5
