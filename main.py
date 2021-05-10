@@ -2,7 +2,7 @@ from vars_funcs import *
 # Main Logic
 
 # 로그인
-fStart = timeBackup = minBackup = num_buy = num_sell = 0
+fStart = timeBackup = num_buy = num_sell = 0
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -55,12 +55,13 @@ while True:
             balance[0] = balance[1] = balance[3] = curBalance * 0.1
             post_message(myToken, myChannel, "=== Hourly Report ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
-            post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
-            post_message(myToken, myChannel, " - 금일 수익 : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
+            post_message(myToken, myChannel, " - 시작 잔고 : "+str(round(balanceBackup))+"원")
+            post_message(myToken, myChannel, " - 종료 잔고 : "+str(round(totalBalance))+"원")
+            post_message(myToken, myChannel, " - 수익 : "+str(round(balChange))+"원 ("+str(round(balChngPercent, 2))+"%)")
+            post_message(myToken, myChannel, "=== "+str(now.hour)+"시 매매 시작 ===")
             num_buy = num_sell = 0
-
             timeBackup = now.hour
-            fStart = 1
+
 
     # 매매 logic
         now = datetime.datetime.now()
