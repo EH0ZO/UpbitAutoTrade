@@ -19,15 +19,16 @@ while True:
             # 신규 종목 선정 및 목표가 계산
                 post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
                 tmp = select_tkrs()
-                tkr_buy = ['KRW-BTC', 'KRW-ETH', ' ', ' ', ' ']
+                tkr_buy[0] = 'KRW-BTC'
+                tkr_buy[1] = 'KRW-ETH'
                 j = 2
-                for i in range(0, 5):
+                for i in range(0, 10):
                     if tmp[i] != 'KRW-BTC' and tmp[i] != 'KRW-ETH':
                         tkr_buy[j] = tmp[i]
                         j += 1
-                        if j >= 5:
+                        if j >= 10:
                             break
-                for i in range(0, 5):
+                for i in range(0, 10):
                     close_price[i] = get_close_price(tkr_buy[i])
 
                 post_message(myToken, myChannel, "=== 종목 선정 완료 : "+str(datetime.datetime.now()))
@@ -55,8 +56,9 @@ while True:
             balChange_d = curBalance - startBalance
             balChngPercent_d = balChange_d / startBalance * 100
             hourlyBalance = curBalance
-            balance[0] = balance[1] = curBalance * 0.35
-            balance[2] = balance[3] = balance[4] = curBalance * 0.1
+            balance[0] = balance[1] = curBalance * 0.25
+            for i in range(2, 10):
+                balance[i] = curBalance * 0.05
             post_message(myToken, myChannel, "=== Hourly Report ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
             post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
@@ -67,7 +69,7 @@ while True:
 
     # 매매 logic
         now = datetime.datetime.now()
-        for i in range(0, 5):
+        for i in range(0, 10):
             if now - datetime.timedelta(minutes=30) > last_trade_time[i]:
                 tkr = tkr_buy[i]
                 balanceDiff = balance[i] - get_balance(tkr_buy[i],"KRW")
