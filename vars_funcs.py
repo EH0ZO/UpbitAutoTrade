@@ -61,7 +61,7 @@ def get_low(ticker, intv, c):
     low = df['low'].rolling(c).min().iloc[-1]
     return low
 
-def get_close_prce(ticker):
+def get_close_price(ticker):
     # 전일 종가 return
     df = get_ohlcvp(ticker, interval="day", count=2)
     close = df.iloc[0]['close']
