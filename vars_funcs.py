@@ -5,11 +5,9 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.10.16"
+VERSION = "21.05.11.17"
 tkr_buy = ["KRW-"]*5                # 거래량 상위 10종목 Ticker
-buy_price = [0]*5                   # 매수 기준가
-sell_price = [0]*5                  # 매도 기준가
-diff_price = [0]*5                  # 매수 기준가 - 전 시간 종가
+close_price = [0]*5                 # 매매 기준가
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원화
