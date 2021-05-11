@@ -27,6 +27,7 @@ while True:
                         j += 1
                         if j >= 5:
                             break
+                    close_price[i] = get_close_price(tkr_buy[i])
 
                 post_message(myToken, myChannel, "=== 종목 선정 완료 : "+str(datetime.datetime.now()))
                 post_message(myToken, myChannel, str(tkr_buy))
@@ -72,18 +73,18 @@ while True:
                 # 매수
                 if balanceDiff > 5000:
                     current = get_current_price(tkr)
-                    ma7 = get_ma(tkr, "day", 7, 1)
+                    # ma7 = get_ma(tkr, "day", 7, 1)
                     # 기준선보다 높으면 매수
-                    if current > ma7:
+                    if current > close_price[i]:
                         buy(tkr, balanceDiff)
                         last_trade_time[i] = now
                         num_buy += 1
                 # 매도
                 elif get_balance(tkr_buy[i],"KRW") > 5000:
                     current = get_current_price(tkr)
-                    ma7 = get_ma(tkr, "day", 7, 1)
+                    # ma7 = get_ma(tkr, "day", 7, 1)
                     # 기준선보다 낮으면 매도
-                    if current < ma7:
+                    if current < close_price[i]:
                         sell(tkr)
                         last_trade_time[i] = now
                         num_sell += 1
