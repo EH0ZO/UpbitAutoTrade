@@ -27,6 +27,7 @@ while True:
                         j += 1
                         if j >= 5:
                             break
+                for i in range(0, 5):
                     close_price[i] = get_close_price(tkr_buy[i])
 
                 post_message(myToken, myChannel, "=== 종목 선정 완료 : "+str(datetime.datetime.now()))
