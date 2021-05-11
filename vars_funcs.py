@@ -63,17 +63,11 @@ def get_low(ticker, intv, c):
     low = df['low'].rolling(c).min().iloc[-1]
     return low
 
-def get_target_prce(ticker):
-    # 목표가 계산
-    df = get_ohlcvp(ticker, interval="minute60", count=2)
-    high = df.iloc[0]['high']
-    low = df.iloc[0]['low']
+def get_close_prce(ticker):
+    # 전일 종가 return
+    df = get_ohlcvp(ticker, interval="day", count=2)
     close = df.iloc[0]['close']
-    diff = (high - low) * 0.2
-    buy = close + diff
-    sell = close
-    ret = [buy, sell, diff]
-    return ret
+    return close
 
 def get_krw():
     # 잔고 조회
@@ -138,8 +132,8 @@ def select_tkrs():
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'day', 7)
-        vol[i] = df['price'].rolling(7).sum().iloc[-1]
+        df = get_ohlcvp(tkrs[i], 'day', 30)
+        vol[i] = df['price'].rolling(30).sum().iloc[-1]
         data[i] = (tkrs[i], vol[i])
         time.sleep(0.1)
     data = sorted(data, key = lambda data: data[1], reverse = True)
