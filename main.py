@@ -22,7 +22,7 @@ while True:
                 tkr_buy[0] = 'KRW-BTC'
                 tkr_buy[1] = 'KRW-ETH'
                 j = 2
-                for i in range(0, 10):
+                for i in range(0, 15):
                     if tmp[i] != 'KRW-BTC' and tmp[i] != 'KRW-ETH':
                         tkr_buy[j] = tmp[i]
                         j += 1
@@ -58,7 +58,7 @@ while True:
             hourlyBalance = curBalance
             balance[0] = balance[1] = curBalance * 0.25
             for i in range(2, 10):
-                balance[i] = curBalance * 0.05
+                balance[i] = curBalance * (0.5 / 8)
             post_message(myToken, myChannel, "=== Hourly Report ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
             post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
