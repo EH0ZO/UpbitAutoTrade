@@ -28,8 +28,6 @@ while True:
                         j += 1
                         if j >= 10:
                             break
-                for i in range(0, 10):
-                    close_price[i] = get_close_price(tkr_buy[i])
 
                 post_message(myToken, myChannel, "=== 종목 선정 완료 : "+str(datetime.datetime.now()))
                 post_message(myToken, myChannel, str(tkr_buy))
@@ -48,7 +46,9 @@ while True:
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
-
+        # 전 시간 종가 Update
+            for i in range(0, 10):
+                close_price[i] = get_close_price(tkr_buy[i])
         # 1시간 마다 매매 결과 송신
             curBalance = get_totalKRW()
             balChange_hr = curBalance - hourlyBalance
@@ -58,7 +58,7 @@ while True:
             hourlyBalance = curBalance
             balance[0] = balance[1] = curBalance * 0.25
             for i in range(2, 10):
-                balance[i] = curBalance * (0.5 / 8)
+                balance[i] = curBalance * 0.06
             post_message(myToken, myChannel, "=== Hourly Report ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
             post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
