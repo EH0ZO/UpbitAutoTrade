@@ -69,14 +69,15 @@ while True:
     # 매매 logic
         now = datetime.datetime.now()
         # 전 시간 종가 Update
-        #if now.minute % 5 == 0:
+        #if now.minute % 30 == 0:
         #    for i in range(0, 10):
-        #        close_price[i] = get_close_price(tkr_buy[i])
+        #        close_price[i] = get_close_price(tkr_buy[i], "minute30")
         for i in range(0, 10):
             # if now - datetime.timedelta(minutes=10) > last_trade_time[i]:
             tkr = tkr_buy[i]
             balanceDiff = balance[i] - get_balance(tkr_buy[i],"KRW")
-            close_price[i] = get_close_price(tkr)
+            if now.minute % 30 == 0:
+                close_price[i] = get_close_price(tkr, "minute30")
             # 매수
             if balanceDiff > 5000:
                 current = get_current_price(tkr)
