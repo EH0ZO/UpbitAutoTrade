@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.12.18"
+VERSION = "21.05.12.19"
 tkr_buy = ["KRW-"]*15               # 거래량 상위 10종목 Ticker
 close_price = [0]*15                # 매매 기준가
 startBalance = 0                    # 09시 기준 잔고
@@ -62,8 +62,8 @@ def get_low(ticker, intv, c):
     return low
 
 def get_close_price(ticker):
-    # 전일 종가 return
-    df = get_ohlcvp(ticker, interval="day", count=2)
+    # 전 시간 종가 return
+    df = get_ohlcvp(ticker, interval="minute60", count=2)
     close = df.iloc[0]['close']
     return close
 
