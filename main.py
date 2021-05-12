@@ -14,7 +14,6 @@ while True:
     # 매일 09시 마다 신규 종목 선정
         if timeBackup != now.hour or fStart == 0:
             if now.hour == 9 or fStart == 0:
-                fStart = 1
                 last_trade_time = [now - datetime.timedelta(minutes=10)]*10
             # 신규 종목 선정 및 목표가 계산
                 post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
@@ -43,9 +42,13 @@ while True:
                                 sell(tkr)
                                 num_sell += 1
                             time.sleep(0.1)
+                if fStart == 0:
+                    for i in range(0,10):
+                        close_price[i] = get_current_price(tkr_buy[i])
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
+                fStart = 1
         # 1시간 마다 매매 결과 송신
             curBalance = get_totalKRW()
             balChange_hr = curBalance - hourlyBalance
