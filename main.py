@@ -15,7 +15,7 @@ while True:
         if timeBackup != now.hour or fStart == 0:
             if now.hour == 9 or fStart == 0:
                 fStart = 1
-                last_trade_time = [now - datetime.timedelta(minutes=30)]*5
+                last_trade_time = [now - datetime.timedelta(minutes=10)]*10
             # 신규 종목 선정 및 목표가 계산
                 post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
                 tmp = select_tkrs()
@@ -70,7 +70,7 @@ while True:
     # 매매 logic
         now = datetime.datetime.now()
         for i in range(0, 10):
-            if now - datetime.timedelta(minutes=30) > last_trade_time[i]:
+            if now - datetime.timedelta(minutes=10) > last_trade_time[i]:
                 tkr = tkr_buy[i]
                 balanceDiff = balance[i] - get_balance(tkr_buy[i],"KRW")
                 # 매수
