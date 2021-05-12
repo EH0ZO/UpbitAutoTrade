@@ -46,9 +46,6 @@ while True:
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
-        # 전 시간 종가 Update
-            for i in range(0, 10):
-                close_price[i] = get_close_price(tkr_buy[i])
         # 1시간 마다 매매 결과 송신
             curBalance = get_totalKRW()
             balChange_hr = curBalance - hourlyBalance
@@ -69,29 +66,33 @@ while True:
 
     # 매매 logic
         now = datetime.datetime.now()
+        # 전 시간 종가 Update
+        if now.minute % 5 == 0:
+            for i in range(0, 10):
+                close_price[i] = get_close_price(tkr_buy[i])
         for i in range(0, 10):
-            if now - datetime.timedelta(minutes=10) > last_trade_time[i]:
-                tkr = tkr_buy[i]
-                balanceDiff = balance[i] - get_balance(tkr_buy[i],"KRW")
-                # 매수
-                if balanceDiff > 5000:
-                    current = get_current_price(tkr)
-                    # ma7 = get_ma(tkr, "day", 7, 1)
-                    # 기준선보다 높으면 매수
-                    if current > close_price[i]:
-                        buy(tkr, balanceDiff)
-                        last_trade_time[i] = now
-                        num_buy += 1
-                # 매도
-                elif get_balance(tkr_buy[i],"KRW") > 5000:
-                    current = get_current_price(tkr)
-                    # ma7 = get_ma(tkr, "day", 7, 1)
-                    # 기준선보다 낮으면 매도
-                    if current < close_price[i]:
-                        sell(tkr)
-                        last_trade_time[i] = now
-                        num_sell += 1
-                time.sleep(0.1)
+            # if now - datetime.timedelta(minutes=10) > last_trade_time[i]:
+            tkr = tkr_buy[i]
+            balanceDiff = balance[i] - get_balance(tkr_buy[i],"KRW")
+            # 매수
+            if balanceDiff > 5000:
+                current = get_current_price(tkr)
+                # ma7 = get_ma(tkr, "day", 7, 1)
+                # 기준선보다 높으면 매수
+                if current > close_price[i]:
+                    buy(tkr, balanceDiff)
+                    last_trade_time[i] = now
+                    num_buy += 1
+            # 매도
+            elif get_balance(tkr_buy[i],"KRW") > 5000:
+                current = get_current_price(tkr)
+                # ma7 = get_ma(tkr, "day", 7, 1)
+                # 기준선보다 낮으면 매도
+                if current < close_price[i]:
+                    sell(tkr)
+                    last_trade_time[i] = now
+                    num_sell += 1
+            time.sleep(0.1)
         time.sleep(1)      
         
 
