@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.12.19"
+VERSION = "21.05.13.20"
 tkr_buy = ["KRW-"]*15               # 거래량 상위 10종목 Ticker
 close_price = [0]*15                # 매매 기준가
 startBalance = 0                    # 09시 기준 잔고
@@ -130,8 +130,8 @@ def select_tkrs():
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'day', 2)
-        vol[i] = df['price'].rolling(2).sum().iloc[-1]
+        df = get_ohlcvp(tkrs[i], 'day', 1)
+        vol[i] = df.iloc[0]['price']
         data[i] = (tkrs[i], vol[i])
         time.sleep(0.1)
     data = sorted(data, key = lambda data: data[1], reverse = True)

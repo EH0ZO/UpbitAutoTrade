@@ -2,7 +2,7 @@ from vars_funcs import *
 # Main Logic
 
 # 로그인
-fStart = timeBackup = num_buy = num_sell = 0
+fStart = timeBackup = num_buy = num_sell = minBack = 0
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -11,9 +11,9 @@ post_message(myToken, myChannel, "==================================")
 while True:
     try:
         now = datetime.datetime.now()
-    # 매일 09시 마다 신규 종목 선정
-        if timeBackup != now.hour or fStart == 0:
-            if now.hour == 9 or fStart == 0:
+    # 매일 08시 57분 신규 종목 선정
+        if timeBackup != now.hour or fStart == 0 or (now.hour == 8 and now.minute == 57):
+            if fStart == 0 or (now.hour == 8 and now.minute == 57):
                 last_trade_time = [now - datetime.timedelta(minutes=10)]*10
             # 신규 종목 선정 및 목표가 계산
                 post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
@@ -56,9 +56,9 @@ while True:
             balChange_d = curBalance - startBalance
             balChngPercent_d = balChange_d / startBalance * 100
             hourlyBalance = curBalance
-            balance[0] = balance[1] = curBalance * 0.25
+            balance[0] = balance[1] = curBalance * 0.2
             for i in range(2, 10):
-                balance[i] = curBalance * 0.06
+                balance[i] = curBalance * 0.07
             post_message(myToken, myChannel, "=== Hourly Report ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
             post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
@@ -68,37 +68,31 @@ while True:
 
 
     # 매매 logic
-        now = datetime.datetime.now()
-        # 전 시간 종가 Update
-        #if now.minute % 30 == 0:
-        #    for i in range(0, 10):
-        #        close_price[i] = get_close_price(tkr_buy[i], "minute30")
+        while minBack == now.minute:
+            now = datetime.datetime.now()
+        minBack = now.minute
         for i in range(0, 10):
-            # if now - datetime.timedelta(minutes=10) > last_trade_time[i]:
             tkr = tkr_buy[i]
-            balanceDiff = balance[i] - get_balance(tkr_buy[i],"KRW")
-            if now.minute % 60 == 0:
-                close_price[i] = get_close_price(tkr, "minute60")
-            # 매수
+            balanceDiff = balance[i] - get_balance(tkr,"KRW")
+        # 이전 캔들 종가 Update
+            if now.hour % 4 == 0 and now.minute <= 1:
+                close_price[i] = get_close_price(tkr, "minute240")
+        # 매수
             if balanceDiff > 5000:
                 current = get_current_price(tkr)
-                # ma7 = get_ma(tkr, "day", 7, 1)
-                # 기준선보다 높으면 매수
                 if current > close_price[i]:
                     buy(tkr, balanceDiff)
                     last_trade_time[i] = now
                     num_buy += 1
-            # 매도
+        # 매도
             elif get_balance(tkr_buy[i],"KRW") > 5000:
                 current = get_current_price(tkr)
-                # ma7 = get_ma(tkr, "day", 7, 1)
-                # 기준선보다 낮으면 매도
                 if current < close_price[i]:
                     sell(tkr)
                     last_trade_time[i] = now
                     num_sell += 1
             time.sleep(0.1)
-        time.sleep(1)      
+
         
 
     except Exception as e:
