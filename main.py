@@ -44,7 +44,7 @@ while True:
                             time.sleep(0.1)
                 if fStart == 0:
                     for i in range(0,10):
-                        close_price[i] = get_close_price(tkr, "minute60")
+                        close_price[i] = get_close_price(tkr_buy[i], "minute60")
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
