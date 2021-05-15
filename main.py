@@ -2,7 +2,7 @@ from vars_funcs import *
 # Main Logic
 
 # 로그인
-fStart = timeBackup = num_buy = num_sell = minBack = 0
+fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -44,7 +44,7 @@ while True:
                             time.sleep(0.1)
                 if fStart == 0:
                     for i in range(0,10):
-                        close_price[i] = get_current_price(tkr_buy[i])
+                        close_price[i] = get_close_price(tkr, "minute60")
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
@@ -61,6 +61,7 @@ while True:
                 balance[i] = curBalance * 0.07
             post_message(myToken, myChannel, "=== Hourly Report ===")
             post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
+            post_message(myToken, myChannel, " - 잔고 : "+str(round(curBalance))+"원")
             post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
             post_message(myToken, myChannel, " - 금일 수익 : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
             num_buy = num_sell = 0
@@ -75,19 +76,19 @@ while True:
             tkr = tkr_buy[i]
             balanceDiff = balance[i] - get_balance(tkr,"KRW")
         # 이전 캔들 종가 Update
-            if now.hour % 4 == 0 and now.minute <= 1:
-                close_price[i] = get_close_price(tkr, "minute240")
+            if now.minute <= 1:
+                close_price[i] = get_close_price(tkr, "minute60")
         # 매수
             if balanceDiff > 5000:
                 current = get_current_price(tkr)
-                if current > close_price[i]:
+                if current > (close_price[i] + tick(current)):
                     buy(tkr, balanceDiff)
                     last_trade_time[i] = now
                     num_buy += 1
         # 매도
             elif get_balance(tkr_buy[i],"KRW") > 5000:
                 current = get_current_price(tkr)
-                if current < close_price[i]:
+                if current < (close_price[i] - tick(current)):
                     sell(tkr)
                     last_trade_time[i] = now
                     num_sell += 1

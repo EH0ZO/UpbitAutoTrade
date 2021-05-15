@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.13.20"
+VERSION = "21.05.15.21"
 tkr_buy = ["KRW-"]*15               # 거래량 상위 10종목 Ticker
 close_price = [0]*15                # 매매 기준가
 startBalance = 0                    # 09시 기준 잔고
@@ -123,6 +123,41 @@ def sell(tkr):
         return True
     else:
         return False
+
+def buy_limit(tkr, price, balance):
+    vol = balance / price
+    buy_result = upbit.buy_limit_order(tkr, price, vol * 0.999)
+    if buy_result != None:
+        return True
+    else:
+        return False
+
+def sell_limit(tkr, price):
+    sell_result = upbit.sell_limit_order(tkr, price, get_balance(tkr,"COIN"))
+    if sell_result != None:
+        return True
+    else:
+        return False
+
+def tick(price):
+    if price < 10:
+        return 0.01
+    elif price < 100:
+        return 0.1
+    elif price < 1000:
+        return 1
+    elif price < 10000:
+        return 5
+    elif price < 100000:
+        return 10
+    elif price < 500000:
+        return 50
+    elif price < 1000000:
+        return 100
+    elif price < 2000000:
+        return 500
+    else:
+        return 1000
 
 def select_tkrs():
 	# 데이터 스크래핑
