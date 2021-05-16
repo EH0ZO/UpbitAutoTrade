@@ -68,6 +68,12 @@ def get_close_price(ticker, intv):
     close = df.iloc[0]['close']
     return close
 
+def get_open_price(ticker, intv):
+    # 전 시간 종가 return
+    df = get_ohlcvp(ticker, interval=intv, count=1)
+    open = df.iloc[0]['open']
+    return open
+
 def get_krw():
     # 잔고 조회
     balances = upbit.get_balances()

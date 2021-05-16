@@ -48,7 +48,7 @@ while True:
                             time.sleep(0.1)
                 if fStart == 0:
                     for i in range(0,10):
-                        close_price[i] = get_close_price(tkr_buy[i], "minute30")
+                        close_price[i] = get_open_price(tkr_buy[i], "minute30")
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
@@ -81,7 +81,7 @@ while True:
             balanceDiff = balance[i] - get_balance(tkr,"KRW")
         # 이전 캔들 종가 Update
             if now.minute % 30 <= 1:
-                close_price[i] = get_close_price(tkr, "minute30")
+                close_price[i] = get_open_price(tkr, "minute30")
                 fBuy[i] = 0
         # 매수
             if balanceDiff > 5000 and fBuy[i] == 0:
