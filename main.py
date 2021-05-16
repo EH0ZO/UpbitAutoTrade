@@ -46,9 +46,9 @@ while True:
                                 sell(tkr)
                                 num_sell += 1
                             time.sleep(0.1)
-                if fStart == 0:
-                    for i in range(0,10):
-                        close_price[i] = get_open_price(tkr_buy[i], "day")
+                #if fStart == 0 or (now.hour == 8 and now.minute == 59):
+                for i in range(0,10):
+                    close_price[i] = get_open_price(tkr_buy[i], "day")
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
