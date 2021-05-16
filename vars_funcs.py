@@ -5,8 +5,9 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.15.21"
+VERSION = "21.05.16.22"
 tkr_buy = ["KRW-"]*15               # 거래량 상위 10종목 Ticker
+fBuy = [0]*10                       # 매수 flag
 close_price = [0]*15                # 매매 기준가
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
@@ -159,13 +160,13 @@ def tick(price):
     else:
         return 1000
 
-def select_tkrs():
+def select_tkrs(intv, c):
 	# 데이터 스크래핑
     tkrs = get_tickers(fiat="KRW")
     vol =[0]*len(tkrs)
     data = [("tkr",0)] * len(tkrs)
     for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], 'day', 1)
+        df = get_ohlcvp(tkrs[i], intv, c)
         vol[i] = df.iloc[0]['price']
         data[i] = (tkrs[i], vol[i])
         time.sleep(0.1)
