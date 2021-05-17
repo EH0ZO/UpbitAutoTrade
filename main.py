@@ -11,7 +11,7 @@ post_message(myToken, myChannel, "==================================")
 while True:
     try:
         now = datetime.datetime.now()
-    # 매일 08시 57분 신규 종목 선정
+    # 매일 08시 59분 신규 종목 선정
         if timeBackup != now.hour or fStart == 0 or (now.hour == 8 and now.minute == 59):
             if (fStart == 0) or (now.hour == 8 and now.minute == 59):
                 last_trade_time = [now - datetime.timedelta(minutes=10)]*10
@@ -46,9 +46,8 @@ while True:
                                 sell(tkr)
                                 num_sell += 1
                             time.sleep(0.1)
-                #if fStart == 0 or (now.hour == 8 and now.minute == 59):
                 for i in range(0,10):
-                    close_price[i] = get_open_price(tkr_buy[i], "minute240")
+                    target_price[i] = get_open_price(tkr_buy[i], "minute240")
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
@@ -60,7 +59,7 @@ while True:
             balChange_d = curBalance - startBalance
             balChngPercent_d = balChange_d / startBalance * 100
             hourlyBalance = curBalance
-            balance[0] = balance[1] = curBalance * 0.15
+            balance[0] = balance[1] = curBalance * 0.125
             for i in range(2, 10):
                 balance[i] = curBalance * 0.08
             post_message(myToken, myChannel, "=== Hourly Report ===")
@@ -73,28 +72,24 @@ while True:
 
 
     # 매매 logic
-        while minBack == now.minute:
-            now = datetime.datetime.now()
-        minBack = now.minute
+        now = datetime.datetime.now()
         for i in range(0, 10):
             tkr = tkr_buy[i]
             balanceDiff = balance[i] - get_balance(tkr,"KRW")
-        # 이전 캔들 종가 Update
+        # 목표가 Update (9시, 13시, 17시, 21시, 1시, 5시)
             if (now.hour % 4 == 1) and (now.minute <= 1):
-                close_price[i] = get_open_price(tkr, "minute240")
-                fBuy[i] = 0
+                target_price[i] = get_open_price(tkr, "minute240")
         # 매수
-            if balanceDiff > 5000 and close_price[i] > 0:
+            if balanceDiff > 5000 and (now > last_trade_time[i] + datetime.timedelta(minutes=5)):
                 current = get_current_price(tkr)
-                if current > (close_price[i] + tick(current)):
+                if tick(current) < (current - target_price[i]) < (tick(current) * 5):
                     buy(tkr, balanceDiff)
                     last_trade_time[i] = now
-                    #fBuy[i] = 1
                     num_buy += 1
         # 매도
             elif get_balance(tkr_buy[i],"KRW") > 5000:
                 current = get_current_price(tkr)
-                if current < (close_price[i] - tick(current)):
+                if (target_price[i] - current) > tick(current):
                     sell(tkr)
                     last_trade_time[i] = now
                     num_sell += 1

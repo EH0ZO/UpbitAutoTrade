@@ -5,10 +5,10 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.16.22"
-tkr_buy = ["KRW-"]*15               # 거래량 상위 10종목 Ticker
+VERSION = "21.05.17.23"
+tkr_buy = ["-"]*15               # 거래량 상위 10종목 Ticker
 fBuy = [0]*10                       # 매수 flag
-close_price = [0]*15                # 매매 기준가
+target_price = [0]*15               # 매매 기준가
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원화
@@ -43,6 +43,12 @@ def get_start_time(ticker):
 def get_current_price(ticker):
     # 현재가 조회
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
+
+def get_ohlc(ticker, intv):
+    # 캔들 조회
+    df = get_ohlcvp(ticker, interval=intv, count=1)
+    ret = [df.iloc[0]['open'], df.iloc[0]['high'], df.iloc[0]['low'], df.iloc[0]['close']]
+    return ret
 
 def get_ma(ticker, intv, c, p):
     # 이동 평균선 조회
