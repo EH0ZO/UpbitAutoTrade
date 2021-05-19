@@ -14,8 +14,10 @@ hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원화
 balanceBackup = 0                   # 이전 보유 원화
 balance = [0]*15                    # 종목별 거래금액
-num_buy = 0                         # 매수 횟수
-num_sell = 0                        # 매도 횟수
+num_buy = 0                         # 매수 횟수(시간)
+num_sell = 0                        # 매도 횟수(시간)
+num_buy_total = 0                   # 매수 횟수(일)
+num_sell_total = 0                  # 매도 횟수(일)
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
