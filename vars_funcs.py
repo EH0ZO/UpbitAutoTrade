@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.17.23"
+VERSION = "21.05.20.24"
 tkr_buy = ["-"]*15               # 거래량 상위 10종목 Ticker
 fBuy = [0]*10                       # 매수 flag
 target_price = [0]*15               # 매매 기준가
