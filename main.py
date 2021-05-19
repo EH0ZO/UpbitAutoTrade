@@ -31,7 +31,7 @@ while True:
                         j += 1
                         if j >= 10:
                             break
-
+                num_buy_total = num_sell_total = 0
                 post_message(myToken, myChannel, "=== 종목 선정 완료 : "+str(datetime.datetime.now()))
                 post_message(myToken, myChannel, str(tkr_buy))
             # 탈락 종목 전량 매도
@@ -47,7 +47,7 @@ while True:
                                 num_sell += 1
                             time.sleep(0.1)
                 for i in range(0,10):
-                    target_price[i] = get_open_price(tkr_buy[i], "minute240")
+                    target_price[i] = get_open_price(tkr_buy[i], "day")
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
@@ -59,14 +59,17 @@ while True:
             balChange_d = curBalance - startBalance
             balChngPercent_d = balChange_d / startBalance * 100
             hourlyBalance = curBalance
-            balance[0] = balance[1] = curBalance * 0.125
-            for i in range(2, 10):
-                balance[i] = curBalance * 0.08
+            # balance[0] = balance[1] = curBalance * 0.125
+            for i in range(0, 10):
+                balance[i] = curBalance * 0.095
+            num_buy_total += num_buy
+            num_sell_total += num_sell
             post_message(myToken, myChannel, "=== Hourly Report ===")
-            post_message(myToken, myChannel, " - 매수 : "+str(num_buy)+"회, 매도 : "+str(num_sell)+"회")
             post_message(myToken, myChannel, " - 잔고 : "+str(round(curBalance))+"원")
-            post_message(myToken, myChannel, " - 시간 수익 : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
-            post_message(myToken, myChannel, " - 금일 수익 : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
+            post_message(myToken, myChannel, " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회")
+            post_message(myToken, myChannel, " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회")
+            post_message(myToken, myChannel, " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
+            post_message(myToken, myChannel, " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
             num_buy = num_sell = 0
             timeBackup = now.hour
 
@@ -77,12 +80,12 @@ while True:
             tkr = tkr_buy[i]
             balanceDiff = balance[i] - get_balance(tkr,"KRW")
         # 목표가 Update (9시, 13시, 17시, 21시, 1시, 5시)
-            if (now.hour % 4 == 1) and (now.minute <= 1):
-                target_price[i] = get_open_price(tkr, "minute240")
+        #    if (now.hour % 4 == 1) and (now.minute <= 1):
+        #        target_price[i] = get_open_price(tkr, "minute240")
         # 매수
-            if balanceDiff > 5000 and (now > last_trade_time[i] + datetime.timedelta(minutes=5)):
+            if balanceDiff > 5000: # and (now > last_trade_time[i] + datetime.timedelta(minutes=5)):
                 current = get_current_price(tkr)
-                if tick(current) < (current - target_price[i]) < (tick(current) * 5):
+                if tick(current) < (current - target_price[i]) < (tick(current) * 10):
                     buy(tkr, balanceDiff)
                     last_trade_time[i] = now
                     num_buy += 1
