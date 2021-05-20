@@ -85,7 +85,7 @@ while True:
         # 매수
             if balanceDiff > 5000: # and (now > last_trade_time[i] + datetime.timedelta(minutes=5)):
                 current = get_current_price(tkr)
-                if tick(current) < (current - target_price[i]) and ((current-target_price[i]) / target_price[i]) < 0.01:
+                if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.01:
                     buy(tkr, balanceDiff)
                     last_trade_time[i] = now
                     num_buy += 1
