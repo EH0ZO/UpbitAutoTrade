@@ -23,8 +23,11 @@ while True:
                     tkr_buy = select_tkrs('day', 1)
                 
                 num_buy_total = num_sell_total = 0
+                for i in range(0,25):
+                    target_price[i] = get_open_price(tkr_buy[i], "day")
                 post_message(myToken, myChannel, "=== 종목 선정 완료 : "+str(datetime.datetime.now()))
                 post_message(myToken, myChannel, str(tkr_buy))
+                post_message(myToken, myChannel, str(target_price))
             # 탈락 종목 전량 매도
                 post_message(myToken, myChannel, "=== 미포함 종목 매도 : "+str(datetime.datetime.now()))
                 balances = upbit.get_balances()
@@ -37,8 +40,6 @@ while True:
                                 sell(tkr)
                                 num_sell += 1
                             time.sleep(0.1)
-                for i in range(0,25):
-                    target_price[i] = get_open_price(tkr_buy[i], "day")
             # 잔고 Update
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
@@ -50,7 +51,6 @@ while True:
             balChange_d = curBalance - startBalance
             balChngPercent_d = balChange_d / startBalance * 100
             hourlyBalance = curBalance
-            # balance[0] = balance[1] = curBalance * 0.125
             for i in range(0, 25):
                 balance[i] = curBalance / 26
             num_buy_total += num_buy
