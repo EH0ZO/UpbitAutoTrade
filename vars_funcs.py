@@ -5,15 +5,15 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.05.20.24"
-tkr_buy = ["-"]*15               # 거래량 상위 10종목 Ticker
+VERSION = "21.05.23.25"
+tkr_buy = ["-"]*25                  # 거래량 상위 10종목 Ticker
 fBuy = [0]*10                       # 매수 flag
-target_price = [0]*15               # 매매 기준가
+target_price = [0]*25               # 매매 기준가
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원화
 balanceBackup = 0                   # 이전 보유 원화
-balance = [0]*15                    # 종목별 거래금액
+balance = [0]*25                    # 종목별 거래금액
 num_buy = 0                         # 매수 횟수(시간)
 num_sell = 0                        # 매도 횟수(시간)
 num_buy_total = 0                   # 매수 횟수(일)
@@ -186,8 +186,8 @@ def select_tkrs(intv, c):
         time.sleep(0.1)
     data = sorted(data, key = lambda data: data[1], reverse = True)
 	# 매수종목 선정
-    top15 = ["KRW-"]*15
-    for i in range(0,15):
+    top15 = ["KRW-"]*25
+    for i in range(0,25):
         top15[i] = data[i][0]
     
     return top15
