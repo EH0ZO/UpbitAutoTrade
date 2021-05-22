@@ -71,16 +71,16 @@ while True:
             tkr = tkr_buy[i]
             balanceDiff = balance[i] - get_balance(tkr,"KRW")
         # 매수
-            if balanceDiff > 5000: # and (now > last_trade_time[i] + datetime.timedelta(minutes=5)):
+            if balanceDiff > 5000:
                 current = get_current_price(tkr)
-                if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.01:
+                if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.025:
                     buy(tkr, balanceDiff)
                     last_trade_time[i] = now
                     num_buy += 1
         # 매도
             elif get_balance(tkr_buy[i],"KRW") > 5000:
                 current = get_current_price(tkr)
-                if (target_price[i] - current) > tick(current):
+                if current < (target_price[i] - tick(current)):
                     sell(tkr)
                     last_trade_time[i] = now
                     num_sell += 1
