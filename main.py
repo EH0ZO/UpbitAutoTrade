@@ -3,8 +3,8 @@ from vars_funcs import *
 
 # 로그인
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
-intv = 4
-intv_s = "minute240"
+intv = 1
+intv_s = "minute60"
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -30,6 +30,7 @@ while True:
                 post_message(myToken, myChannel, str(tkr_buy))
                 post_message(myToken, myChannel, str(target_price))
             # 탈락 종목 전량 매도
+                num_buy_total = num_sell_total = 0
                 post_message(myToken, myChannel, "=== 미포함 종목 매도 : "+str(datetime.datetime.now()))
                 balances = upbit.get_balances()
                 time.sleep(0.1)
