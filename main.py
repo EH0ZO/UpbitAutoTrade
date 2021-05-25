@@ -14,8 +14,8 @@ while True:
     try:
         now = datetime.datetime.now()
     # 매일 08시 59분 신규 종목 선정
-        if timeBackup != now.hour or fStart == 0 or (now.hour == 8 and now.minute == 59):
-            if (fStart == 0) or (now.hour == 8 and now.minute == 59):
+        if timeBackup != now.hour or fStart == 0:
+            if fStart == 0 or now.hour == 9:
             # 신규 종목 선정 및 목표가 계산
                 post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
                 if now.hour >= 9:
@@ -30,7 +30,6 @@ while True:
                 post_message(myToken, myChannel, str(tkr_buy))
                 post_message(myToken, myChannel, str(target_price))
             # 탈락 종목 전량 매도
-                num_buy_total = num_sell_total = 0
                 post_message(myToken, myChannel, "=== 미포함 종목 매도 : "+str(datetime.datetime.now()))
                 balances = upbit.get_balances()
                 time.sleep(0.1)
