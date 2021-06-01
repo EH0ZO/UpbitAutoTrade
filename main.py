@@ -15,18 +15,10 @@ while True:
         now = datetime.datetime.now()
     # 매일 08시 59분 신규 종목 선정
         if timeBackup != now.hour or fStart == 0:
-            if fStart == 0 or now.hour == 9:
-            # 신규 종목 선정 및 목표가 계산
-                post_message(myToken, myChannel, "=== 종목 선정 시작 : "+str(datetime.datetime.now()))
-                if now.hour >= 9:
-                    tkr_buy = select_tkrs('day', 2)
-                else:
-                    tkr_buy = select_tkrs('day', 1)
-                
+            if fStart == 0 or now.hour == 9:           
                 num_buy_total = num_sell_total = 0
                 for i in range(0,tkr_num):
                     target_price[i] = get_open_price(tkr_buy[i], intv_s)
-                post_message(myToken, myChannel, "=== 종목 선정 완료 : "+str(datetime.datetime.now()))
                 post_message(myToken, myChannel, str(tkr_buy))
                 post_message(myToken, myChannel, str(target_price))
             # 탈락 종목 전량 매도
@@ -52,7 +44,7 @@ while True:
             balChange_d = curBalance - startBalance
             balChngPercent_d = balChange_d / startBalance * 100
             hourlyBalance = curBalance
-            balance = curBalance / (tkr_num + 1)
+            balance = (curBalance / tkr_num) *0.9
             num_buy_total += num_buy
             num_sell_total += num_sell
             post_message(myToken, myChannel, "=== Hourly Report ===")
