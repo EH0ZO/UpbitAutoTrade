@@ -60,7 +60,7 @@ while True:
     # 매매 logic
         now = datetime.datetime.now()
         while minBack == now.minute:
-            None
+            now = datetime.datetime.now()
         minBack = now.minute
         for i in range(0, tkr_num):
             tkr = tkr_buy[i]
