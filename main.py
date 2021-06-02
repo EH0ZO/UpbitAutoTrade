@@ -3,8 +3,8 @@ from vars_funcs import *
 
 # 로그인
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
-intv = 4
-intv_s = "minute240"
+intv = 1
+intv_s = "minute60"
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
