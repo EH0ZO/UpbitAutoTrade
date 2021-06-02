@@ -59,8 +59,8 @@ while True:
 
     # 매매 logic
         now = datetime.datetime.now()
-        if minBack != now.minute:
-            minBack = now.minute
+        if now.minute % 5 == 0: #minBack != now.minute:
+            #minBack = now.minute
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
                 balanceDiff = balance - get_balance(tkr,"KRW")
