@@ -59,27 +59,26 @@ while True:
 
     # 매매 logic
         now = datetime.datetime.now()
-        while minBack == now.minute:
-            now = datetime.datetime.now()
-        minBack = now.minute
-        for i in range(0, tkr_num):
-            tkr = tkr_buy[i]
-            balanceDiff = balance - get_balance(tkr,"KRW")
-            if isNewCandle(intv, now) == True and now.minute < 3:
-                target_price[i] = get_open_price(tkr_buy[i], intv_s)
-        # 매수
-            if balanceDiff > 5000:
-                current = get_current_price(tkr)
-                if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.025:
-                    buy(tkr, balanceDiff)
-                    num_buy += 1
-        # 매도
-            elif get_balance(tkr_buy[i],"KRW") > 5000:
-                current = get_current_price(tkr)
-                if current < (target_price[i] - tick(current)):
-                    sell(tkr)
-                    num_sell += 1
-            time.sleep(0.1)
+        if minBack != now.minute:
+            minBack = now.minute
+            for i in range(0, tkr_num):
+                tkr = tkr_buy[i]
+                balanceDiff = balance - get_balance(tkr,"KRW")
+                if isNewCandle(intv, now) == True and now.minute < 3:
+                    target_price[i] = get_open_price(tkr_buy[i], intv_s)
+            # 매수
+                if balanceDiff > 5000:
+                    current = get_current_price(tkr)
+                    if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.025:
+                        buy(tkr, balanceDiff)
+                        num_buy += 1
+            # 매도
+                elif get_balance(tkr_buy[i],"KRW") > 5000:
+                    current = get_current_price(tkr)
+                    if current < (target_price[i] - tick(current)):
+                        sell(tkr)
+                        num_sell += 1
+                time.sleep(0.1)
 
         
 
