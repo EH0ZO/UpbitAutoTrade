@@ -16,23 +16,6 @@ while True:
         now = datetime.datetime.now()
     # 매일 08시 59분 신규 종목 선정
         if timeBackup != now.hour or fStart == 0:
-        # 1시간 마다 매매 결과 송신
-            curBalance = get_totalKRW()
-            balChange_hr = curBalance - hourlyBalance
-            balChngPercent_hr = balChange_hr / hourlyBalance * 100
-            balChange_d = curBalance - startBalance
-            balChngPercent_d = balChange_d / startBalance * 100
-            hourlyBalance = curBalance
-            balance = (curBalance / tkr_num) *0.9
-            num_buy_total += num_buy
-            num_sell_total += num_sell
-            post_message(myToken, myChannel, "=== Hourly Report ===")
-            post_message(myToken, myChannel, " - 잔고 : "+str(round(curBalance))+"원")
-            post_message(myToken, myChannel, " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회")
-            post_message(myToken, myChannel, " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회")
-            post_message(myToken, myChannel, " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
-            post_message(myToken, myChannel, " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
-            num_buy = num_sell = 0
             if fStart == 0 or now.hour == 9:           
                 num_buy_total = num_sell_total = 0
                 for i in range(0,tkr_num):
@@ -55,6 +38,23 @@ while True:
                 startBalance = get_totalKRW()
                 hourlyBalance = startBalance
                 fStart = 1
+        # 1시간 마다 매매 결과 송신
+            curBalance = get_totalKRW()
+            balChange_hr = curBalance - hourlyBalance
+            balChngPercent_hr = balChange_hr / hourlyBalance * 100
+            balChange_d = curBalance - startBalance
+            balChngPercent_d = balChange_d / startBalance * 100
+            hourlyBalance = curBalance
+            balance = (curBalance / tkr_num) *0.9
+            num_buy_total += num_buy
+            num_sell_total += num_sell
+            post_message(myToken, myChannel, "=== Hourly Report ===")
+            post_message(myToken, myChannel, " - 잔고 : "+str(round(curBalance))+"원")
+            post_message(myToken, myChannel, " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회")
+            post_message(myToken, myChannel, " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회")
+            post_message(myToken, myChannel, " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
+            post_message(myToken, myChannel, " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
+            num_buy = num_sell = 0
                 
             timeBackup = now.hour
 
