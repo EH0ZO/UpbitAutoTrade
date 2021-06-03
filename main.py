@@ -8,6 +8,7 @@ intv_s = "minute60"
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
+post_message(myToken, myChannel, str(datetime.datetime.now()))
 post_message(myToken, myChannel, "==================================")
 
 while True:
