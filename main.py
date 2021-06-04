@@ -3,8 +3,8 @@ from vars_funcs import *
 
 # 로그인
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
-intv = 1
-intv_s = "minute60"
+intv = 4
+intv_s = "minute240"
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -66,7 +66,7 @@ while True:
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
                 balanceDiff = balance - get_balance(tkr,"KRW")
-                if isNewCandle(intv, now) == True and now.minute < 3:
+                if isNewCandle(intv, now) == True and now.minute < 5:
                     target_price[i] = get_open_price(tkr_buy[i], intv_s)
             # 매수
                 if balanceDiff > 5000:
