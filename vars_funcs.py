@@ -17,6 +17,7 @@ num_buy_total = 0                   # 매수 횟수(일)
 num_sell_total = 0                  # 매도 횟수(일)
 tkr_num = 5                         # 매매종목 수
 target_price = [0]*tkr_num          # 매매 기준가
+open_price = [0]*tkr_num            # 시작가
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"]             # 시총 상위 종목 Ticker
 
 # Keys
