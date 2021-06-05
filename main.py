@@ -19,8 +19,8 @@ while True:
         if timeBackup != now.hour or fStart == 0:
         # 1시간 매매 결과 송신
             curBalance = get_totalKRW()
-            send_hour_report(curBalance)
             balance = (curBalance / tkr_num) *0.9
+            send_hour_report(curBalance)
         # 매일 09시 Reset
             if fStart == 0 or now.hour == 9:           
                 num_buy_total = num_sell_total = 0

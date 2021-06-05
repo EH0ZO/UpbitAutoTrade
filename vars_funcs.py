@@ -228,7 +228,7 @@ def buy_n_hold_start(curBalance):
 
 def send_hour_report(curBalance): 
 # 1시간 마다 매매 결과 송신
-    global hourlyBalance, bnhBalance, num_buy_total, num_buy, num_sell_total, num_sell
+    global hourlyBalance, startBalance, bnhBalance, num_buy_total, num_buy, num_sell_total, num_sell
     balChange_hr = curBalance - hourlyBalance
     balChngPercent_hr = balChange_hr / hourlyBalance * 100
     balChange_d = curBalance - startBalance
