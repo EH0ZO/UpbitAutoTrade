@@ -222,13 +222,14 @@ def sell_not_in():
 
 def buy_n_hold_start(curBalance):
     balance = (curBalance / tkr_num)
+    ret = [0]*tkr_num
     for i in range(0,tkr_num):
         price = get_current_price(tkr_buy[i])
-        buy_n_hold[i] = balance / price
+        ret[i] = balance / price
+    return ret
 
-def send_hour_report(curBalance): 
+def send_hour_report(curBalance, startBalance, hourlyBalance): 
 # 1시간 마다 매매 결과 송신
-    global hourlyBalance, startBalance, bnhBalance, num_buy_total, num_buy, num_sell_total, num_sell
     balChange_hr = curBalance - hourlyBalance
     balChngPercent_hr = balChange_hr / hourlyBalance * 100
     balChange_d = curBalance - startBalance
@@ -240,8 +241,6 @@ def send_hour_report(curBalance):
     balChange_d_bnh = bnhBalance - startBalance
     balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
     hourlyBalance = curBalance
-    num_buy_total += num_buy
-    num_sell_total += num_sell
     post_message(myToken, myChannel, "=== Hourly Report ===")
     post_message(myToken, myChannel, " - 현재 잔고  : "+str(round(curBalance))+"원")
     post_message(myToken, myChannel, " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회")
@@ -249,4 +248,3 @@ def send_hour_report(curBalance):
     post_message(myToken, myChannel, " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
     post_message(myToken, myChannel, " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
     post_message(myToken, myChannel, " - 수익(존버) : "+str(round(balChange_d_bnh))+"원 ("+str(round(balChngPercent_d_bnh, 2))+"%)")
-    num_buy = num_sell = 0

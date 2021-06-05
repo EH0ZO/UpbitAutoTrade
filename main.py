@@ -20,11 +20,14 @@ while True:
         # 1시간 매매 결과 송신
             curBalance = get_totalKRW()
             balance = (curBalance / tkr_num) *0.9
-            send_hour_report(curBalance)
+            send_hour_report(curBalance, startBalance, hourlyBalance)
+            num_buy_total += num_buy
+            num_sell_total += num_sell
+            num_buy = num_sell = 0
         # 매일 09시 Reset
             if fStart == 0 or now.hour == 9:           
                 num_buy_total = num_sell_total = 0
-                buy_n_hold_start(curBalance)
+                buy_n_hold = buy_n_hold_start(curBalance)
                 for i in range(0,tkr_num):
                     target_price[i] = get_open_price(tkr_buy[i], intv_s)
             # 탈락 종목 전량 매도
