@@ -6,6 +6,8 @@ intv = 4                # intv 시간 candle 참조
 intv_s = "minute240"
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 startBalance = hourlyBalance = get_totalKRW()
+curBalance = get_totalKRW()
+buy_n_hold = buy_n_hold_start(curBalance)
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
