@@ -5,10 +5,11 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.06.04.31"
+VERSION = "21.06.05.32"
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
-totalBalance = 0                    # 현재 보유 원화
+bnhBalance = 0               # 매시 정각 기준 Buy&hold 잔고
+totalBalance = 0                    # 현재 보유 원
 balanceBackup = 0                   # 이전 보유 원화
 balance = 0                         # 종목별 거래금액
 num_buy = 0                         # 매수 횟수(시간)
@@ -18,6 +19,7 @@ num_sell_total = 0                  # 매도 횟수(일)
 tkr_num = 5                         # 매매종목 수
 target_price = [0]*tkr_num          # 매매 기준가
 open_price = [0]*tkr_num            # 시작가
+buy_n_hold = [0]*tkr_num            # Buy&hold 수량
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"]             # 시총 상위 종목 Ticker
 
 # Keys
@@ -202,3 +204,49 @@ def select_tkrs(intv, c):
         top[i] = data[i][0]
     
     return top
+
+def sell_not_in():
+# 탈락 종목 전량 매도
+    post_message(myToken, myChannel, "=== 미포함 종목 매도 : "+str(datetime.datetime.now()))
+    balances = upbit.get_balances()
+    global num_sell
+    time.sleep(0.1)
+    for b in balances:
+        if b['currency'] != 'KRW' and float(b['avg_buy_price']) > 0:
+            tkr = "KRW-"+b['currency']
+            if tkr not in tkr_buy:
+                if get_balance(tkr,"KRW") > 5000:
+                    sell(tkr)
+                    num_sell += 1
+                time.sleep(0.1)
+
+def buy_n_hold_start(curBalance):
+    balance = (curBalance / tkr_num)
+    for i in range(0,tkr_num):
+        price = get_current_price(tkr_buy[i])
+        buy_n_hold[i] = balance / price
+
+def send_hour_report(curBalance): 
+# 1시간 마다 매매 결과 송신
+    global hourlyBalance, bnhBalance, num_buy_total, num_buy, num_sell_total, num_sell
+    balChange_hr = curBalance - hourlyBalance
+    balChngPercent_hr = balChange_hr / hourlyBalance * 100
+    balChange_d = curBalance - startBalance
+    balChngPercent_d = balChange_d / startBalance * 100
+    bnhBalance = 0
+    for i in range(0,tkr_num):
+        price = get_current_price(tkr_buy[i])
+        bnhBalance += buy_n_hold[i] * price
+    balChange_d_bnh = bnhBalance - startBalance
+    balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
+    hourlyBalance = curBalance
+    num_buy_total += num_buy
+    num_sell_total += num_sell
+    post_message(myToken, myChannel, "=== Hourly Report ===")
+    post_message(myToken, myChannel, " - 현재 잔고  : "+str(round(curBalance))+"원")
+    post_message(myToken, myChannel, " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회")
+    post_message(myToken, myChannel, " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회")
+    post_message(myToken, myChannel, " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
+    post_message(myToken, myChannel, " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
+    post_message(myToken, myChannel, " - 수익(존버) : "+str(round(balChange_d_bnh))+"원 ("+str(round(balChngPercent_d_bnh, 2))+"%)")
+    num_buy = num_sell = 0
