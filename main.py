@@ -65,7 +65,7 @@ while True:
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
                 balanceDiff = balance - get_balance(tkr,"KRW")
-                if isNewCandle(intv, now) == True and now.minute < 5:
+                if isNewCandle(intv, now) == True and now.minute < (trade_intv * 3):
                     target_price[i] = get_open_price(tkr_buy[i], intv_s)
             # 매수
                 if balanceDiff > 5000:
