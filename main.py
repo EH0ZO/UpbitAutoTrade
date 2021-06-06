@@ -2,11 +2,13 @@ from vars_funcs import *
 
 # Main Logic
 trade_intv = 1          # trade_intv 분 주기로 매매 감시
-intv = 24                # intv 시간 candle 참조
-intv_s = "day"
+intv = 4                # intv 시간 candle 참조
+intv_s = "minute240"
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 startBalance = hourlyBalance = get_totalKRW()
+time.sleep(0.1)
 buy_n_hold = buy_n_hold_start(startBalance)
+time.sleep(0.1)
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -23,19 +25,38 @@ while True:
             balance = (curBalance / tkr_num) *0.9
             num_buy_total += num_buy
             num_sell_total += num_sell
-            send_hour_report(curBalance, startBalance, hourlyBalance)
-            hourlyBalance = get_totalKRW()
+            # 수익 계산
+            balChange_hr = curBalance - hourlyBalance
+            balChngPercent_hr = balChange_hr / hourlyBalance * 100
+            balChange_d = curBalance - startBalance
+            balChngPercent_d = balChange_d / startBalance * 100
+            bnhBalance = 0
+            for i in range(0,tkr_num):
+                price = get_current_price(tkr_buy[i])
+                bnhBalance += buy_n_hold[i] * price
+            balChange_d_bnh = bnhBalance - startBalance
+            balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
+            hourlyBalance = curBalance
+            # 결과 송신
+            post_message(myToken, myChannel, "=== Hourly Report ===")
+            post_message(myToken, myChannel, " - 현재 잔고  : "+str(round(curBalance))+"원")
+            post_message(myToken, myChannel, " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회")
+            post_message(myToken, myChannel, " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회")
+            post_message(myToken, myChannel, " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
+            post_message(myToken, myChannel, " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
+            post_message(myToken, myChannel, " - 수익(존버) : "+str(round(balChange_d_bnh))+"원 ("+str(round(balChngPercent_d_bnh, 2))+"%)")
+            hourlyBalance = curBalance
             num_buy = num_sell = 0
         # 매일 09시 Reset
             if fStart == 0 or now.hour == 9:           
                 num_buy_total = num_sell_total = 0
-                buy_n_hold = buy_n_hold_start(curBalance)
                 for i in range(0,tkr_num):
                     target_price[i] = get_open_price(tkr_buy[i], intv_s)
             # 탈락 종목 전량 매도
                 sell_not_in()
             # 잔고 Update
                 startBalance = hourlyBalance = get_totalKRW()
+                buy_n_hold = buy_n_hold_start(curBalance)
                 fStart = 1
             timeBackup = now.hour
 
