@@ -52,6 +52,7 @@ while True:
                 num_buy_total = num_sell_total = 0
                 for i in range(0,tkr_num):
                     target_price[i] = get_open_price(tkr_buy[i], intv_s)
+                    open_price[i] = get_open_price(tkr_buy[i], "day")
             # 탈락 종목 전량 매도
                 sell_not_in()
             # 잔고 Update
@@ -64,9 +65,16 @@ while True:
         if (minBack != now.minute) and (now.minute % trade_intv == 0):
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
+                current = get_current_price(tkr)
                 balanceDiff = balance - get_balance(tkr,"KRW")
+                if current > open_price[i]:
+                    intv = 1
+                    intv_s = "minute60"
+                else:
+                    intv = 4
+                    intv_s = "minute240"
                 if isNewCandle(intv, now) == True and now.minute < (trade_intv * 3):
-                    target_price[i] = get_open_price(tkr_buy[i], intv_s)
+                    target_price[i] = get_open_price(tkr, intv_s)
             # 매수
                 if balanceDiff > 5000:
                     current = get_current_price(tkr)
