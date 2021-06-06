@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.06.06.33"
+VERSION = "21.06.06.34"
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 bnhBalance = 0               # 매시 정각 기준 Buy&hold 잔고
