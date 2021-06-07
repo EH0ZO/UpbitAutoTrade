@@ -73,7 +73,7 @@ while True:
                 if isNewCandle(intv, now) == True and now.minute < (trade_intv * 3):
                     target_price[i] = get_open_price(tkr, intv_s)
             # 매수
-                if balanceDiff > 5000 and fBuy == 0:
+                if balanceDiff > 5000 and fBuy[i] == 0:
                     current = get_current_price(tkr)
                     if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.02:
                         buy(tkr, balanceDiff)
