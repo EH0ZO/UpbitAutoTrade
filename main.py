@@ -35,7 +35,7 @@ while True:
                 price = get_current_price(tkr_buy[i])
                 bnhBalance += buy_n_hold[i] * price
                 if get_balance(tkr_buy[i],"KRW") > 5000:
-                    sell(tkr)
+                    sell(tkr_buy[i])
                     num_sell += 1
                 fBuy[i] = 0
             balChange_d_bnh = bnhBalance - startBalance
