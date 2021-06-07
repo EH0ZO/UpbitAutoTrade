@@ -179,14 +179,18 @@ def tick(price):
         return 1000
 
 def isNewCandle(intv, now):
-    hour = now.hour
-    if hour < 9:
-        hour += 24
-    hour -= 9
-    if hour % intv == 0:
-        return True
+    ret = False
+    if intv >= 1:
+        hour = now.hour - 9
+        if hour < 0:
+            hour += 24
+        if hour % intv == 0:
+            ret = True
     else:
-        return False
+	min = now.minute
+	if min % (intv*100) == 0:
+	    ret = True
+    return ret
 
 def select_tkrs(intv, c):
 	# 데이터 스크래핑
