@@ -187,9 +187,9 @@ def isNewCandle(intv, now):
         if hour % intv == 0:
             ret = True
     else:
-	min = now.minute
-	if min % (intv*100) == 0:
-	    ret = True
+        min = now.minute
+        if min % (intv*100) == 0:
+            ret = True
     return ret
 
 def select_tkrs(intv, c):
