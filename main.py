@@ -34,6 +34,7 @@ while True:
             for i in range(0,tkr_num):
                 price = get_current_price(tkr_buy[i])
                 bnhBalance += buy_n_hold[i] * price
+                fBuy[i] = 0
             balChange_d_bnh = bnhBalance - startBalance
             balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
             hourlyBalance = curBalance
@@ -69,11 +70,12 @@ while True:
                 if isNewCandle(intv, now) == True and now.minute < (trade_intv * 3):
                     target_price[i] = get_open_price(tkr, intv_s)
             # 매수
-                if balanceDiff > 5000:
+                if balanceDiff > 5000 and fBuy == 0:
                     current = get_current_price(tkr)
                     if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.02:
                         buy(tkr, balanceDiff)
                         num_buy += 1
+                        fBuy[i] = 1
             # 매도
                 elif get_balance(tkr_buy[i],"KRW") > 5000:
                     current = get_current_price(tkr)
