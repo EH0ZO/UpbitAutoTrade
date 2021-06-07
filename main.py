@@ -1,9 +1,9 @@
 from vars_funcs import *
 
 # Main Logic
-trade_intv = 5          # trade_intv 분 주기로 매매 감시
-intv = 24                # intv 시간 candle 참조
-intv_s = "day"
+trade_intv = 1          # trade_intv 분 주기로 매매 감시
+intv = 1                # intv 시간 candle 참조
+intv_s = "minute60"
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 startBalance = hourlyBalance = get_totalKRW()
 time.sleep(0.1)
@@ -34,6 +34,9 @@ while True:
             for i in range(0,tkr_num):
                 price = get_current_price(tkr_buy[i])
                 bnhBalance += buy_n_hold[i] * price
+                if get_balance(tkr_buy[i],"KRW") > 5000:
+                    sell(tkr)
+                    num_sell += 1
                 fBuy[i] = 0
             balChange_d_bnh = bnhBalance - startBalance
             balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
