@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.06.06.34"
+VERSION = "21.06.07.35"
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 bnhBalance = 0               # 매시 정각 기준 Buy&hold 잔고
@@ -20,6 +20,7 @@ tkr_num = 5                         # 매매종목 수
 target_price = [0]*tkr_num          # 매매 기준가
 open_price = [0]*tkr_num            # 시작가
 buy_n_hold = [0]*tkr_num            # Buy&hold 수량
+fBuy = [0]*tkr_num                  # 매매 기준가
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"]             # 시총 상위 종목 Ticker
 
 # Keys
