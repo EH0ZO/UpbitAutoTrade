@@ -75,14 +75,14 @@ while True:
             # 매수
                 if balanceDiff > 5000 and fBuy[i] == 0:
                     current = get_current_price(tkr)
-                    if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.02:
+                    if current > (target_price[i] + (3 * tick(current))) and ((current-target_price[i]) / target_price[i]) < 0.025:
                         buy(tkr, balanceDiff)
                         num_buy += 1
                         fBuy[i] = 1
             # 매도
                 elif get_balance(tkr_buy[i],"KRW") > 5000:
                     current = get_current_price(tkr)
-                    if current < (target_price[i] - tick(current)):
+                    if current < (target_price[i] - (0 * tick(current))):
                         sell(tkr)
                         num_sell += 1
                 time.sleep(0.1)
