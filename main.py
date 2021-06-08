@@ -2,8 +2,8 @@ from vars_funcs import *
 
 # Main Logic
 trade_intv = 1          # trade_intv 분 주기로 매매 감시
-intv = 1                # intv 시간 candle 참조
-intv_s = "minute60"
+intv = 0.30                # intv 시간 candle 참조
+intv_s = "minute30"
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 startBalance = hourlyBalance = get_totalKRW()
 time.sleep(0.1)
@@ -67,8 +67,9 @@ while True:
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
                 balanceDiff = balance - get_balance(tkr,"KRW")
-                if isNewCandle(intv, now) == True and now.minute < (trade_intv * 3):
+                if isNewCandle(intv, now) == True and now.minute < (trade_intv * 2):
                     target_price[i] = get_open_price(tkr, intv_s)
+                    fBuy[i] = 0
             # 매수
                 if balanceDiff > 5000 and fBuy[i] == 0:
                     current = get_current_price(tkr)
