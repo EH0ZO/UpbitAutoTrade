@@ -188,7 +188,7 @@ def isNewCandle(intv, now):
             ret = True
     else:
         min = now.minute
-        if min % (intv*100) == 0:
+        if min % (intv*100) <= 1:
             ret = True
     return ret
 
