@@ -34,9 +34,6 @@ while True:
             for i in range(0,tkr_num):
                 price = get_current_price(tkr_buy[i])
                 bnhBalance += buy_n_hold[i] * price
-                if get_balance(tkr_buy[i],"KRW") > 5000:
-                    sell(tkr_buy[i])
-                    num_sell += 1
                 fBuy[i] = 0
             balChange_d_bnh = bnhBalance - startBalance
             balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
@@ -75,7 +72,7 @@ while True:
             # 매수
                 if balanceDiff > 5000 and fBuy[i] == 0:
                     current = get_current_price(tkr)
-                    if current > (target_price[i] + (3 * tick(current))) and ((current-target_price[i]) / target_price[i]) < 0.025:
+                    if current > (target_price[i] + (2 * tick(current))) and ((current-target_price[i]) / target_price[i]) < 0.025:
                         buy(tkr, balanceDiff)
                         num_buy += 1
                         fBuy[i] = 1
