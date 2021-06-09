@@ -259,3 +259,4 @@ def get_rsi14(symbol, candle):
         return pd.Series(100 - (100 / (1 + RS)), name="RSI")
     rsi = rsi(df, 14).iloc[-1]
     time.sleep(0.5)
+    return rsi
