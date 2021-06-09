@@ -1,15 +1,15 @@
 from pyupbit2 import *
-from chatbot import *
 import time
 import datetime
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.06.09.37"
+VERSION = "21.06.09.40"
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
-bnhBalance = 0               # 매시 정각 기준 Buy&hold 잔고
+bnhBalance = 0                      # 매시 정각 기준 Buy&hold 잔고
 totalBalance = 0                    # 현재 보유 원
 balanceBackup = 0                   # 이전 보유 원화
 balance = 0                         # 종목별 거래금액
@@ -19,15 +19,19 @@ num_buy_total = 0                   # 매수 횟수(일)
 num_sell_total = 0                  # 매도 횟수(일)
 tkr_num = 5                         # 매매종목 수
 target_price = [0]*tkr_num          # 매매 기준가
+buy_price = [0]*tkr_num             # 매수가
 open_price = [0]*tkr_num            # 시작가
 buy_n_hold = [0]*tkr_num            # Buy&hold 수량
-fBuy = [0]*tkr_num                  # 매매 기준가
-tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"]  # 시총 상위 종목 Ticker
+rsi_intv = 5                        # rsi_intv분봉 rsi 참조
+rsi14 = [0]*tkr_num                 # rsi14 값
+rsi14_back = [0]*tkr_num            # 이전 rsi14 값
+f_rsi_under30 = [0]*tkr_num         # rsi 30미만 감지
 trade_intv = 1                      # trade_intv 분 주기로 매매 감시
-intv = 1                            # intv 시간 candle 참조
-intv_s = "minute60"
+intv = 4                            # intv 시간 candle 참조
+intv_s = "minute240"
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
-
+# 시총 상위 종목 Ticker
+tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"]     
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
@@ -185,18 +189,14 @@ def tick(price):
         return 1000
 
 def isNewCandle(intv, now):
-    ret = False
-    if intv >= 1:
-        hour = now.hour - 9
-        if hour < 0:
-            hour += 24
-        if hour % intv == 0:
-            ret = True
+    hour = now.hour
+    if hour < 9:
+        hour += 24
+    hour -= 9
+    if hour % intv == 0:
+        return True
     else:
-        min = now.minute
-        if min % (intv*100) <= 1:
-            ret = True
-    return ret
+        return False
 
 def select_tkrs(intv, c):
 	# 데이터 스크래핑
@@ -239,3 +239,23 @@ def buy_n_hold_start(curBalance):
         ret[i] = balance / price
     return ret
 
+def get_rsi14(symbol, candle):
+    url = "https://api.upbit.com/v1/candles/minutes/"+str(candle)
+    querystring = {"market":symbol,"count":"500"}
+    response = requests.request("GET", url, params=querystring)
+    data = response.json()
+    df = pd.DataFrame(data)
+    df=df.reindex(index=df.index[::-1]).reset_index()
+    df['close']=df["trade_price"]
+    def rsi(ohlc: pd.DataFrame, period: int = 14):
+        ohlc["close"] = ohlc["close"]
+        delta = ohlc["close"].diff()
+        up, down = delta.copy(), delta.copy()
+        up[up < 0] = 0
+        down[down > 0] = 0
+        _gain = up.ewm(com=(period - 1), min_periods=period).mean()
+        _loss = down.abs().ewm(com=(period - 1), min_periods=period).mean()
+        RS = _gain / _loss
+        return pd.Series(100 - (100 / (1 + RS)), name="RSI")
+    rsi = rsi(df, 14).iloc[-1]
+    time.sleep(0.5)
