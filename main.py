@@ -1,10 +1,6 @@
 from vars_funcs import *
 
 # Main Logic
-trade_intv = 1          # trade_intv 분 주기로 매매 감시
-intv = 1                # intv 시간 candle 참조
-intv_s = "minute60"
-fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 startBalance = hourlyBalance = get_totalKRW()
 time.sleep(0.1)
 buy_n_hold = buy_n_hold_start(startBalance)
