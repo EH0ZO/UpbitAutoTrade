@@ -1,4 +1,5 @@
 from pyupbit2 import *
+from chatbot import *
 import time
 import datetime
 import requests
@@ -35,6 +36,10 @@ chat_id = 1883488213
 bot = telegram.Bot(token)
 
 # Functions
+def message(txt):
+    # 텔레그램 메시지 전송
+    bot.sendMessage(chat_id, txt)     
+	
 def post_message(token, channel, text):
     # 슬랙 메시지 전송
     response = requests.post("https://slack.com/api/chat.postMessage",
