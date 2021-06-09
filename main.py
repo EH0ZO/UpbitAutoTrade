@@ -30,7 +30,6 @@ while True:
             for i in range(0,tkr_num):
                 price = get_current_price(tkr_buy[i])
                 bnhBalance += buy_n_hold[i] * price
-                fBuy[i] = 0
             balChange_d_bnh = bnhBalance - startBalance
             balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
             hourlyBalance = curBalance
@@ -59,30 +58,61 @@ while True:
             timeBackup = now.hour
 
     # 매매 logic
-        if (minBack != now.minute) and (now.minute % trade_intv == 0):
+        
+        if now.minute % rsi_intv == 0:
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
                 balanceDiff = balance - get_balance(tkr,"KRW")
-                if isNewCandle(intv, now) == True and now.minute < (trade_intv * 2):
-                    target_price[i] = get_open_price(tkr, intv_s)
-                    fBuy[i] = 0
-            # 매수
-                if balanceDiff > 5000 and fBuy[i] == 0:
-                    current = get_current_price(tkr)
-                    if current > (target_price[i] + (2 * tick(current))) and ((current-target_price[i]) / target_price[i]) < 0.025:
-                        buy(tkr, balanceDiff)
-                        num_buy += 1
-                        #fBuy[i] = 1
-            # 매도
+                rsi14[i] = get_rsi14(tkr, rsi_intv)
+                if rsi14[i] < 30:
+                    f_rsi_under30[i] = 1
+                if f_rsi_under30[i] == 1 and rsi14[i] > 30:
+                    f_rsi_under30[i] = 2
+            # 매수 : rsi 30 미만 -> 초과 시
+                if balanceDiff > 5000 and f_rsi_under30[i] == 2:
+                    buy(tkr, balanceDiff)
+                    buy_price[i] = get_current_price(tkr)
+                    f_rsi_under30[i] = 0
+                    num_buy += 1
+            # 매도 : 이전 rsi 70 초과 & rsi 꺾일 시
                 elif get_balance(tkr_buy[i],"KRW") > 5000:
-                    current = get_current_price(tkr)
-                    if current < (target_price[i] - (0 * tick(current))):
+                    if rsi14_back[i] > 70 and rsi14[i] < rsi14_back[i]:
                         sell(tkr)
                         num_sell += 1
+                rsi14_back[i] = rsi14[i]
                 time.sleep(0.1)
-            minBack = now.minute
-
+                
     except Exception as e:
         print(e)
         post_message(myToken, myChannel, e)
         time.sleep(1)
+        
+        """
+        if (minBack != now.minute) and (now.minute % trade_intv == 0):
+            for i in range(0, tkr_num):
+                tkr = tkr_buy[i]
+                current = get_current_price(tkr)
+                balanceDiff = balance - get_balance(tkr,"KRW")
+                if current > open_price[i]:
+                    intv = 1
+                    intv_s = "minute60"
+                else:
+                    intv = 4
+                    intv_s = "minute240"
+                if isNewCandle(intv, now) == True and now.minute < (trade_intv * 3):
+                    target_price[i] = get_open_price(tkr, intv_s)
+            # 매수
+                if balanceDiff > 5000:
+                    current = get_current_price(tkr)
+                    if current > (target_price[i] + tick(current)) and ((current-target_price[i]) / target_price[i]) < 0.02:
+                        buy(tkr, balanceDiff)
+                        num_buy += 1
+            # 매도
+                elif get_balance(tkr_buy[i],"KRW") > 5000:
+                    current = get_current_price(tkr)
+                    if current < (target_price[i] - tick(current)):
+                        sell(tkr)
+                        num_sell += 1
+                time.sleep(0.1)
+            minBack = now.minute
+        """
