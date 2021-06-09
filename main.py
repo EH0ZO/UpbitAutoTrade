@@ -76,7 +76,7 @@ while True:
                     if current > (target_price[i] + (2 * tick(current))) and ((current-target_price[i]) / target_price[i]) < 0.025:
                         buy(tkr, balanceDiff)
                         num_buy += 1
-                        fBuy[i] = 1
+                        #fBuy[i] = 1
             # 매도
                 elif get_balance(tkr_buy[i],"KRW") > 5000:
                     current = get_current_price(tkr)
