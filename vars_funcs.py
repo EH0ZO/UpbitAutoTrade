@@ -22,7 +22,12 @@ target_price = [0]*tkr_num          # 매매 기준가
 open_price = [0]*tkr_num            # 시작가
 buy_n_hold = [0]*tkr_num            # Buy&hold 수량
 fBuy = [0]*tkr_num                  # 매매 기준가
-tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"]             # 시총 상위 종목 Ticker
+tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"]  # 시총 상위 종목 Ticker
+trade_intv = 1                      # trade_intv 분 주기로 매매 감시
+intv = 1                            # intv 시간 candle 참조
+intv_s = "minute60"
+fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
+
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
