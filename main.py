@@ -66,7 +66,7 @@ while True:
 
     # 매매 logic
         
-        if now.minute % rsi_intv == 0:
+        if now.minute % rsi_intv == 0 and minBack != now.minute:
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
                 balanceDiff = balance - get_balance(tkr,"KRW")
@@ -91,7 +91,9 @@ while True:
                         num_sell += 1
                 rsi14_back[i] = rsi14[i]
                 time.sleep(0.1)
-                
+            minBack = now.minute
+            
+            
     except Exception as e:
         print(e)
         post_message(myToken, myChannel, e)
