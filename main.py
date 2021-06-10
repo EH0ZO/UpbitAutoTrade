@@ -87,7 +87,7 @@ while True:
             # 매도 : 이전 rsi 70 초과 & rsi 꺾일 시
                 elif get_balance(tkr_buy[i],"KRW") > 5000:
                     current = get_current_price(tkr)
-                    if rsi14_back[i] > 70 and rsi14[i] < rsi14_back[i] and buy_price(i) < current:
+                    if rsi14_back[i] > 70 and rsi14[i] < rsi14_back[i] and buy_price[i] < current:
                         sell(tkr)
                         num_sell += 1
                 rsi14_back[i] = rsi14[i]
