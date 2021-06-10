@@ -50,7 +50,7 @@ while True:
             for i in range(0,tkr_num):
                 if rsi14[i] == 0:
                     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-                post_message(myToken, myChannel, tkr_buy[i]+" : rsi14("+str(round(rsi14[i],1))+")")
+                post_message(myToken, myChannel, tkr_buy[i]+" : "+str(round(rsi14[i],1)))
         # 매일 09시 Reset
             if fStart == 0 or now.hour == 9:           
                 num_buy_total = num_sell_total = 0
