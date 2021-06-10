@@ -6,7 +6,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.06.09.40"
+VERSION = "21.06.10.41"
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 bnhBalance = 0                      # 매시 정각 기준 Buy&hold 잔고
@@ -17,7 +17,7 @@ num_buy = 0                         # 매수 횟수(시간)
 num_sell = 0                        # 매도 횟수(시간)
 num_buy_total = 0                   # 매수 횟수(일)
 num_sell_total = 0                  # 매도 횟수(일)
-tkr_num = 5                         # 매매종목 수
+tkr_num = 10                        # 매매종목 수
 target_price = [0]*tkr_num          # 매매 기준가
 buy_price = [0]*tkr_num             # 매수가
 open_price = [0]*tkr_num            # 시작가
@@ -31,7 +31,8 @@ intv = 4                            # intv 시간 candle 참조
 intv_s = "minute240"
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 # 시총 상위 종목 Ticker
-tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"]     
+tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-UNI", "KRW-BCH", "KRW-LTC", "KRW-LINK"]     
+     
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
