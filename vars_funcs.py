@@ -3,6 +3,7 @@ import time
 import datetime
 import requests
 import pandas as pd
+import telegram
 from bs4 import BeautifulSoup
 
 # Global variables
@@ -42,8 +43,15 @@ secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
 myToken = "" 
 myChannel = "#c-pjt"
 upbit = Upbit(access, secret)
+token = "1814838763:AAGNuB_LWtq8zJMHuezB-vsSI8C4b9X9QLk"
+chat_id = 1883488213
+bot = telegram.Bot(token)
 
 # Functions
+
+def send(str):
+    bot.sendMessage(chat_id,str)
+	
 def post_message(token, channel, text):
     # 슬랙 메시지 전송
     response = requests.post("https://slack.com/api/chat.postMessage",
