@@ -48,7 +48,7 @@ while True:
             post_message(myToken, myChannel, "=== RSI14 Value ===")
             for i in range(0,tkr_num):
                 if rsi14[i] == 0:
-                    rsi14[i] = get_rsi14(tkr, rsi_intv)
+                    rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
                 post_message(myToken, myChannel, tkr_buy[i]+" : rsi14("+str(round(rsi14[i],1))+")")
         # 매일 09시 Reset
             if fStart == 0 or now.hour == 9:           
