@@ -25,8 +25,9 @@ buy_n_hold = [0]*tkr_num            # Buy&hold 수량
 rsi_intv = 5                        # rsi_intv분봉 rsi 참조
 rsi14 = [0]*tkr_num                 # rsi14 값
 rsi14_back = [0]*tkr_num            # 이전 rsi14 값
-f_rsi_over70 = [0]*tkr_num          # rsi 70미만 감지
 f_rsi_under30 = [0]*tkr_num         # rsi 30미만 감지
+f_rsi_30 = [0]*tkr_num              # rsi 30 송신 flag
+f_rsi_70 = [0]*tkr_num              # rsi 70 송신 flag
 trade_intv = 1                      # trade_intv 분 주기로 매매 감시
 intv = 4                            # intv 시간 candle 참조
 intv_s = "minute240"
@@ -262,3 +263,24 @@ def get_rsi14(symbol, candle):
     rsi = rsi(df, 14).iloc[-1]
     time.sleep(0.5)
     return rsi
+
+def send_rsi(i):
+    global f_rsi_30, f_rsi_70
+    if rsi14[i] < 30 and f_rsi_30[i] != 1:
+        post_message(myToken, myChannel, tkt_buy[i]+" : rsi14 30 미만 감지("+str(round(rsi14[i],1))+")")
+        f_rsi_30[i] = 1
+    if rsi14[i] > 30 and f_rsi_30[i] != 2:
+        post_message(myToken, myChannel, tkt_buy[i]+" : rsi14 30 초과 감지("+str(round(rsi14[i],1))+")")
+        f_rsi_30[i] = 2
+    if rsi14[i] < 70 and f_rsi_70[i] != 1:
+        post_message(myToken, myChannel, tkt_buy[i]+" : rsi14 70 미만 감지("+str(round(rsi14[i],1))+")")
+        f_rsi_70[i] = 1
+    if rsi14[i] > 70 and f_rsi_70[i] != 2:
+        post_message(myToken, myChannel, tkt_buy[i]+" : rsi14 70 초과 감지("+str(round(rsi14[i],1))+")")
+        f_rsi_70[i] = 2
+		
+		
+		
+		
+		
+		
