@@ -1,11 +1,9 @@
 from vars_funcs import *
 
 # Main Logic
-minBack = 3
+minBack = -1
 startBalance = hourlyBalance = get_totalKRW()
 time.sleep(0.1)
-#buy_n_hold = buy_n_hold_start(startBalance)
-#time.sleep(0.1)
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -27,14 +25,6 @@ while True:
             balChngPercent_hr = balChange_hr / hourlyBalance * 100
             balChange_d = curBalance - startBalance
             balChngPercent_d = balChange_d / startBalance * 100
-            """
-            bnhBalance = 0
-            for i in range(0,tkr_num):
-                price = get_current_price(tkr_buy[i])
-                bnhBalance += buy_n_hold[i] * price
-            balChange_d_bnh = bnhBalance - startBalance
-            balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
-            """
             hourlyBalance = curBalance
             # 결과 송신
             post_message(myToken, myChannel, "=== Hourly Report ===")
@@ -43,7 +33,6 @@ while True:
             post_message(myToken, myChannel, " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회")
             post_message(myToken, myChannel, " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
             post_message(myToken, myChannel, " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
-            #post_message(myToken, myChannel, " - 수익(존버) : "+str(round(balChange_d_bnh))+"원 ("+str(round(balChngPercent_d_bnh, 2))+"%)")
             hourlyBalance = curBalance
             num_buy = num_sell = 0
             post_message(myToken, myChannel, "=== RSI14 Value ===")
@@ -61,35 +50,44 @@ while True:
                 sell_not_in()
             # 잔고 Update
                 startBalance = hourlyBalance = get_totalKRW()
-                #buy_n_hold = buy_n_hold_start(curBalance)
                 fStart = 1
             timeBackup = now.hour
 
     # 매매 logic
-        
         if now.minute % rsi_intv == 0 and minBack != now.minute:
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
                 balanceDiff = balance - get_balance(tkr,"KRW")
                 rsi14[i] = get_rsi14(tkr, rsi_intv)
+                # rsi 하방 check
                 if rsi14[i] < 30:
                     f_rsi_under30[i] = 1
                 if f_rsi_under30[i] == 1 and rsi14[i] > 30:
                     f_rsi_under30[i] = 2
+                # rsi 상방 check
+                if rsi14[i] > 70:
+                    f_rsi_over70[i] = 1
+                if f_rsi_over70[i] == 1 and rsi14[i] < 70:
+                    f_rsi_over70[i] = 2
                 send_rsi(i)
             # 매수 : rsi 30 미만 -> 초과 시
-                if 5000 < balanceDiff < get_totalKRW():
-                    if f_rsi_under30[i] == 2:
+                if f_rsi_under30[i] == 2:
+                    if 5000 < balanceDiff < get_krw():
+                        current = get_current_price(tkr)
                         buy(tkr, balanceDiff)
-                        buy_price[i] = get_current_price(tkr)
-                        f_rsi_under30[i] = 0
+                        buy_price[i] = current
                         num_buy += 1
-            # 매도 : 이전 rsi 70 초과 & rsi 꺾일 시
-                elif get_balance(tkr_buy[i],"KRW") > 5000:
-                    current = get_current_price(tkr)
-                    if rsi14_back[i] > 70 and rsi14[i] < rsi14_back[i] and buy_price[i] < current:
-                        sell(tkr)
-                        num_sell += 1
+                        post_message(myToken, myChannel, tkr+" 매수 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current)))
+                    f_rsi_under30[i] = 0
+            # 매도 : rsi 70 초과 -> 미만 시
+                if f_rsi_over70[i] == 2:
+                    if get_balance(tkr_buy[i],"KRW") > 5000:
+                        current = get_current_price(tkr)
+                        if buy_price[i] < current:
+                            sell(tkr)
+                            num_sell += 1
+                            post_message(myToken, myChannel, tkr+" 매도 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current)))
+                    f_rsi_over70[i] = 0
                 rsi14_back[i] = rsi14[i]
                 time.sleep(0.1)
             minBack = now.minute
