@@ -33,7 +33,7 @@ intv = 4                            # intv 시간 candle 참조
 intv_s = "minute240"
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 # 시총 상위 종목 Ticker
-tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-UNI", "KRW-BCH", "KRW-LTC", "KRW-LINK"]     
+tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-ETC", "KRW-BCH", "KRW-LTC", "KRW-LINK"]     
      
 
 # Keys
