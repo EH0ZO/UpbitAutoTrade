@@ -1,6 +1,7 @@
 from vars_funcs import *
 
 # Main Logic
+minBack = 3
 startBalance = hourlyBalance = get_totalKRW()
 time.sleep(0.1)
 #buy_n_hold = buy_n_hold_start(startBalance)
