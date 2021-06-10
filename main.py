@@ -3,8 +3,8 @@ from vars_funcs import *
 # Main Logic
 startBalance = hourlyBalance = get_totalKRW()
 time.sleep(0.1)
-buy_n_hold = buy_n_hold_start(startBalance)
-time.sleep(0.1)
+#buy_n_hold = buy_n_hold_start(startBalance)
+#time.sleep(0.1)
 # 시작 메세지 슬랙 전송
 post_message(myToken, myChannel, "==================================")
 post_message(myToken, myChannel, "autotrade start (ver."+VERSION+"))")
@@ -26,12 +26,14 @@ while True:
             balChngPercent_hr = balChange_hr / hourlyBalance * 100
             balChange_d = curBalance - startBalance
             balChngPercent_d = balChange_d / startBalance * 100
+            """
             bnhBalance = 0
             for i in range(0,tkr_num):
                 price = get_current_price(tkr_buy[i])
                 bnhBalance += buy_n_hold[i] * price
             balChange_d_bnh = bnhBalance - startBalance
             balChngPercent_d_bnh = balChange_d_bnh / startBalance * 100
+            """
             hourlyBalance = curBalance
             # 결과 송신
             post_message(myToken, myChannel, "=== Hourly Report ===")
@@ -40,7 +42,7 @@ while True:
             post_message(myToken, myChannel, " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회")
             post_message(myToken, myChannel, " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)")
             post_message(myToken, myChannel, " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)")
-            post_message(myToken, myChannel, " - 수익(존버) : "+str(round(balChange_d_bnh))+"원 ("+str(round(balChngPercent_d_bnh, 2))+"%)")
+            #post_message(myToken, myChannel, " - 수익(존버) : "+str(round(balChange_d_bnh))+"원 ("+str(round(balChngPercent_d_bnh, 2))+"%)")
             hourlyBalance = curBalance
             num_buy = num_sell = 0
             post_message(myToken, myChannel, "=== RSI14 Value ===")
@@ -56,7 +58,7 @@ while True:
                 sell_not_in()
             # 잔고 Update
                 startBalance = hourlyBalance = get_totalKRW()
-                buy_n_hold = buy_n_hold_start(curBalance)
+                #buy_n_hold = buy_n_hold_start(curBalance)
                 fStart = 1
             timeBackup = now.hour
 
