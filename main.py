@@ -69,11 +69,12 @@ while True:
                 if f_rsi_under30[i] == 1 and rsi14[i] > 30:
                     f_rsi_under30[i] = 2
             # 매수 : rsi 30 미만 -> 초과 시
-                if balanceDiff > 5000 and f_rsi_under30[i] == 2:
-                    buy(tkr, balanceDiff)
-                    buy_price[i] = get_current_price(tkr)
-                    f_rsi_under30[i] = 0
-                    num_buy += 1
+                if 5000 < balanceDiff < get_totalKRW():
+                    if f_rsi_under30[i] == 2:
+                        buy(tkr, balanceDiff)
+                        buy_price[i] = get_current_price(tkr)
+                        f_rsi_under30[i] = 0
+                        num_buy += 1
             # 매도 : 이전 rsi 70 초과 & rsi 꺾일 시
                 elif get_balance(tkr_buy[i],"KRW") > 5000:
                     current = get_current_price(tkr)
