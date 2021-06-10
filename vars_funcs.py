@@ -25,6 +25,7 @@ buy_n_hold = [0]*tkr_num            # Buy&hold 수량
 rsi_intv = 5                        # rsi_intv분봉 rsi 참조
 rsi14 = [0]*tkr_num                 # rsi14 값
 rsi14_back = [0]*tkr_num            # 이전 rsi14 값
+f_rsi_over70 = [0]*tkr_num          # rsi 70미만 감지
 f_rsi_under30 = [0]*tkr_num         # rsi 30미만 감지
 trade_intv = 1                      # trade_intv 분 주기로 매매 감시
 intv = 4                            # intv 시간 candle 참조
