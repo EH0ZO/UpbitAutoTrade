@@ -68,6 +68,7 @@ while True:
                     f_rsi_under30[i] = 1
                 if f_rsi_under30[i] == 1 and rsi14[i] > 30:
                     f_rsi_under30[i] = 2
+                send_rsi(i)
             # 매수 : rsi 30 미만 -> 초과 시
                 if 5000 < balanceDiff < get_totalKRW():
                     if f_rsi_under30[i] == 2:
