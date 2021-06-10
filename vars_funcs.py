@@ -6,7 +6,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 # Global variables
-VERSION = "21.06.10.43"
+VERSION = "21.06.10.44"
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 bnhBalance = 0                      # 매시 정각 기준 Buy&hold 잔고
@@ -267,16 +267,20 @@ def get_rsi14(symbol, candle):
 def send_rsi(i):
     global f_rsi_30, f_rsi_70
     if rsi14[i] < 30 and f_rsi_30[i] != 1:
-        post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 30 미만 감지("+str(round(rsi14[i],1))+")")
+        if f_rsi_30[i] != 0:
+            post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 30 미만 감지("+str(round(rsi14[i],1))+")")
         f_rsi_30[i] = 1
     if rsi14[i] > 30 and f_rsi_30[i] != 2:
-        post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 30 초과 감지("+str(round(rsi14[i],1))+")")
+        if f_rsi_30[i] != 0:
+            post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 30 초과 감지("+str(round(rsi14[i],1))+")")
         f_rsi_30[i] = 2
     if rsi14[i] < 70 and f_rsi_70[i] != 1:
-        post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 70 미만 감지("+str(round(rsi14[i],1))+")")
+        if f_rsi_70[i] != 0:
+            post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 70 미만 감지("+str(round(rsi14[i],1))+")")
         f_rsi_70[i] = 1
     if rsi14[i] > 70 and f_rsi_70[i] != 2:
-        post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 70 초과 감지("+str(round(rsi14[i],1))+")")
+        if f_rsi_70[i] != 0:
+            post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 70 초과 감지("+str(round(rsi14[i],1))+")")
         f_rsi_70[i] = 2
 		
 		
