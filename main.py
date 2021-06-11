@@ -43,6 +43,7 @@ while True:
                 if rsi14[i] == 0:
                     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
                 txt += tkr_buy[i]+" : "+str(round(rsr_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsr_l_avg[i],1))+"\n"
+            send(txt)
         # 매일 09시 Reset
             if fStart == 0 or now.hour == 9:           
                 num_buy_total = num_sell_total = 0
