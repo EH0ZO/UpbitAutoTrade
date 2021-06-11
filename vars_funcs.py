@@ -300,7 +300,7 @@ def send_rsi(i):
             post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 70 초과 감지("+str(round(rsi14[i],1))+")")
         f_rsi_70[i] = 2
 
-def calc_rsi_high_low(i):
+def calc_rsi_avg(i):
     global rsi_high_chk, rsi_high_max, rsi_high_sum, rsi_high_cnt, rsi_high_avg
     global rsi_low_chk, rsi_low_min, rsi_low_sum, rsi_low_cnt, rsi_low_avg
     if rsi14[i] > 60:
