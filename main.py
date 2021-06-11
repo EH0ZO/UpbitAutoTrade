@@ -48,13 +48,13 @@ while True:
                 num_buy_total = num_sell_total = 0
                 for i in range(0,tkr_num):
                     rsr_l_sum[i] = 30 + rsr_l_avg[i] * rsr_l_cnt_d[i]
-                    rsr_l_cnt[i] = rsr_l_cnt_d + 1
+                    rsr_l_cnt[i] = rsr_l_cnt_d[i] + 1
                     rsr_l_cnt_d[i] = 0
-                    rsr_l_avg[i] = rsr_l_sum / rsr_l_cnt
+                    rsr_l_avg[i] = rsr_l_sum[i] / rsr_l_cnt[i]
                     rsr_h_sum[i] = 70 + rsr_h_avg[i] * rsr_h_cnt_d[i]
-                    rsr_h_cnt[i] = rsr_h_cnt_d + 1
+                    rsr_h_cnt[i] = rsr_h_cnt_d[i] + 1
                     rsr_h_cnt_d[i] = 0
-                    rsr_h_avg[i] = rsr_h_sum / rsr_h_cnt
+                    rsr_h_avg[i] = rsr_h_sum[i] / rsr_h_cnt[i]
             # 탈락 종목 전량 매도
                 sell_not_in()
             # 잔고 Update
