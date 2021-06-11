@@ -31,11 +31,13 @@ f_rsi_70 = [0]*tkr_num              # rsi 70 송신 flag
 rsi_low_min = [100]*tkr_num           # rsi low 계산
 rsi_low_sum = [0]*tkr_num           # rsi low 계산
 rsi_low_cnt = [0]*tkr_num           # rsi low 계산
+rsi_low_cnt_d = [0]*tkr_num           # rsi low 계산
 rsi_low_avg = [30]*tkr_num           # rsi low 계산
 rsi_low_chk = [0]*tkr_num           # rsi low 계산
 rsi_high_max = [0]*tkr_num           # rsi high 계산
 rsi_high_sum = [0]*tkr_num           # rsi high 계산
 rsi_high_cnt = [0]*tkr_num           # rsi high 계산
+rsi_high_cnt_d = [0]*tkr_num           # rsi high 계산
 rsi_high_avg = [70]*tkr_num           # rsi high 계산
 rsi_high_chk = [0]*tkr_num           # rsi high 계산
 trade_intv = 1                      # trade_intv 분 주기로 매매 감시
@@ -309,6 +311,7 @@ def calc_rsi_high_low(i):
         if rsi_high_chk[i] == 1:
             rsi_high_sum[i] += rsi_high_max[i]
             rsi_high_cnt[i] += 1
+            rsi_high_cnt_d[i] += 1
             rsi_high_avg[i] = rsi_high_sum[i] / rsi_high_cnt[i]
             rsi_high_max[i] = 0
             rsi_high_chk[i] = 0
@@ -320,6 +323,7 @@ def calc_rsi_high_low(i):
         if rsi_low_chk[i] == 1:
             rsi_low_sum[i] += rsi_low_min[i]
             rsi_low_cnt[i] += 1
+            rsi_low_cnt_d[i] += 1
             rsi_low_avg[i] = rsi_low_sum[i] / rsi_low_cnt[i]
             rsi_low_min[i] = 100
             rsi_low_chk[i] = 0
