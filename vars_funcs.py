@@ -301,24 +301,22 @@ def send_rsi(i):
 def calc_rsi_high_low(i):
     global rsi_high_chk, rsi_high_max, rsi_high_sum, rsi_high_cnt, rsi_high_avg
     global rsi_low_chk, rsi_low_min, rsi_low_sum, rsi_low_cnt, rsi_low_avg
-
     if rsi14[i] > 60:
         rsi_high_chk[i] = 1
         if rsi14[i] > rsi_high_max[i]:
             rsi_high_max[i] = rsi14[i]
-    if rsi14[i] < 60:
+    else:
         if rsi_high_chk[i] == 1:
             rsi_high_sum[i] += rsi_high_max[i]
             rsi_high_cnt[i] += 1
             rsi_high_avg[i] = rsi_high_sum[i] / rsi_high_cnt[i]
             rsi_high_max[i] = 0
             rsi_high_chk[i] = 0
-
     if rsi14[i] < 40:
         rsi_low_chk[i] = 1
         if rsi14[i] < rsi_low_min[i]:
             rsi_low_min[i] = rsi14[i]
-    if rsi14[i] > 40:
+    else:
         if rsi_low_chk[i] == 1:
             rsi_low_sum[i] += rsi_low_min[i]
             rsi_low_cnt[i] += 1
