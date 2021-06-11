@@ -3,11 +3,10 @@ import time
 import datetime
 import requests
 import pandas as pd
-#import telegram
-from bs4 import BeautifulSoup
+import telegram
 
 # Global variables
-VERSION = "21.06.10.45"
+VERSION = "21.06.12.50"
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원
@@ -24,25 +23,22 @@ open_price = [0]*tkr_num            # 시작가
 rsi_intv = 5                        # rsi_intv분봉 rsi 참조
 rsi14 = [0]*tkr_num                 # rsi14 값
 rsi14_back = [0]*tkr_num            # 이전 rsi14 값
-f_rsi_under30 = [0]*tkr_num         # rsi 30미만 감지
-f_rsi_over70 = [0]*tkr_num          # rsi 70초과 감지
+f_rsi_l = [0]*tkr_num               # rsi 30미만 감지
+f_rsi_h = [0]*tkr_num               # rsi 70초과 감지
 f_rsi_30 = [0]*tkr_num              # rsi 30 송신 flag
 f_rsi_70 = [0]*tkr_num              # rsi 70 송신 flag
-rsi_low_min = [100]*tkr_num           # rsi low 계산
-rsi_low_sum = [0]*tkr_num           # rsi low 계산
-rsi_low_cnt = [0]*tkr_num           # rsi low 계산
-rsi_low_cnt_d = [0]*tkr_num           # rsi low 계산
-rsi_low_avg = [30]*tkr_num           # rsi low 계산
-rsi_low_chk = [0]*tkr_num           # rsi low 계산
-rsi_high_max = [0]*tkr_num           # rsi high 계산
-rsi_high_sum = [0]*tkr_num           # rsi high 계산
-rsi_high_cnt = [0]*tkr_num           # rsi high 계산
-rsi_high_cnt_d = [0]*tkr_num           # rsi high 계산
-rsi_high_avg = [70]*tkr_num           # rsi high 계산
-rsi_high_chk = [0]*tkr_num           # rsi high 계산
-trade_intv = 1                      # trade_intv 분 주기로 매매 감시
-intv = 4                            # intv 시간 candle 참조
-intv_s = "minute240"
+rsr_l_min = [100]*tkr_num           # rsi low 계산
+rsr_l_sum = [0]*tkr_num             # rsi low 계산
+rsr_l_cnt = [0]*tkr_num             # rsi low 계산
+rsr_l_cnt_d = [0]*tkr_num           # rsi low 계산
+rsr_l_avg = [30]*tkr_num            # rsi low 계산
+rsr_l_chk = [0]*tkr_num             # rsi low 계산
+rsr_h_max = [0]*tkr_num             # rsi high 계산
+rsr_h_sum = [0]*tkr_num             # rsi high 계산
+rsr_h_cnt = [0]*tkr_num             # rsi high 계산
+rsr_h_cnt_d = [0]*tkr_num           # rsi high 계산
+rsr_h_avg = [70]*tkr_num            # rsi high 계산
+rsr_h_chk = [0]*tkr_num             # rsi high 계산
 fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
 # 시총 상위 종목 Ticker
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]     
@@ -56,12 +52,12 @@ myChannel = "#c-pjt"
 upbit = Upbit(access, secret)
 token = "1814838763:AAGNuB_LWtq8zJMHuezB-vsSI8C4b9X9QLk"
 chat_id = 1883488213
-#bot = telegram.Bot(token)
+bot = telegram.Bot(token)
 
 # Functions
-#def send(str):
-#    bot.sendMessage(chat_id,str)
-	
+def send(str):
+    bot.sendMessage(chat_id,str)
+
 def post_message(token, channel, text):
     # 슬랙 메시지 전송
     response = requests.post("https://slack.com/api/chat.postMessage",
@@ -167,8 +163,15 @@ def buy(tkr, balance):
     else:
         return False
 
-def sell(tkr):
-    sell_result = upbit.sell_market_order(tkr, get_balance(tkr,"COIN"))
+def sell(tkr, balance):
+    tot_c = get_balance(tkr,"COIN")
+    tot_k = get_balance(tkr,"KRW")
+    if balance == 0:
+        sell_result = upbit.sell_market_order(tkr, tot_c)
+    else:
+        num_c = tot_c * (balance/tot_k)
+        sell_result = upbit.sell_market_order(tkr, num_c)
+
     if sell_result != None:
         return True
     else:
@@ -285,47 +288,46 @@ def send_rsi(i):
     global f_rsi_30, f_rsi_70
     if rsi14[i] < 30 and f_rsi_30[i] != 1:
         if f_rsi_30[i] != 0:
-            post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 30 미만 감지("+str(round(rsi14[i],1))+")")
+            send(tkr_buy[i]+" : 과매도 감지("+str(round(rsi14[i],1))+")")
         f_rsi_30[i] = 1
     if rsi14[i] > 30 and f_rsi_30[i] != 2:
         if f_rsi_30[i] != 0:
-            post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 30 초과 감지("+str(round(rsi14[i],1))+")")
+            send(tkr_buy[i]+" : 과매도 해제("+str(round(rsi14[i],1))+")")
         f_rsi_30[i] = 2
     if rsi14[i] < 70 and f_rsi_70[i] != 1:
         if f_rsi_70[i] != 0:
-            post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 70 미만 감지("+str(round(rsi14[i],1))+")")
+            send(tkr_buy[i]+" : 과매수 감지("+str(round(rsi14[i],1))+")")
         f_rsi_70[i] = 1
     if rsi14[i] > 70 and f_rsi_70[i] != 2:
         if f_rsi_70[i] != 0:
-            post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 70 초과 감지("+str(round(rsi14[i],1))+")")
+            send(tkr_buy[i]+" : 과매수 해제("+str(round(rsi14[i],1))+")")
         f_rsi_70[i] = 2
 
 def calc_rsi_avg(i):
-    global rsi_high_chk, rsi_high_max, rsi_high_sum, rsi_high_cnt, rsi_high_avg
-    global rsi_low_chk, rsi_low_min, rsi_low_sum, rsi_low_cnt, rsi_low_avg
+    global rsr_h_chk, rsr_h_max, rsr_h_sum, rsr_h_cnt, rsr_h_avg
+    global rsr_l_chk, rsr_l_min, rsr_l_sum, rsr_l_cnt, rsr_l_avg
     if rsi14[i] > 60:
-        rsi_high_chk[i] = 1
-        if rsi14[i] > rsi_high_max[i]:
-            rsi_high_max[i] = rsi14[i]
+        rsr_h_chk[i] = 1
+        if rsi14[i] > rsr_h_max[i]:
+            rsr_h_max[i] = rsi14[i]
     else:
-        if rsi_high_chk[i] == 1:
-            rsi_high_sum[i] += rsi_high_max[i]
-            rsi_high_cnt[i] += 1
-            rsi_high_cnt_d[i] += 1
-            rsi_high_avg[i] = rsi_high_sum[i] / rsi_high_cnt[i]
-            rsi_high_max[i] = 0
-            rsi_high_chk[i] = 0
+        if rsr_h_chk[i] == 1:
+            rsr_h_sum[i] += rsr_h_max[i]
+            rsr_h_cnt[i] += 1
+            rsr_h_cnt_d[i] += 1
+            rsr_h_avg[i] = rsr_h_sum[i] / rsr_h_cnt[i]
+            rsr_h_max[i] = 0
+            rsr_h_chk[i] = 0
     if rsi14[i] < 40:
-        rsi_low_chk[i] = 1
-        if rsi14[i] < rsi_low_min[i]:
-            rsi_low_min[i] = rsi14[i]
+        rsr_l_chk[i] = 1
+        if rsi14[i] < rsr_l_min[i]:
+            rsr_l_min[i] = rsi14[i]
     else:
-        if rsi_low_chk[i] == 1:
-            rsi_low_sum[i] += rsi_low_min[i]
-            rsi_low_cnt[i] += 1
-            rsi_low_cnt_d[i] += 1
-            rsi_low_avg[i] = rsi_low_sum[i] / rsi_low_cnt[i]
-            rsi_low_min[i] = 100
-            rsi_low_chk[i] = 0
-		
+        if rsr_l_chk[i] == 1:
+            rsr_l_sum[i] += rsr_l_min[i]
+            rsr_l_cnt[i] += 1
+            rsr_l_cnt_d[i] += 1
+            rsr_l_avg[i] = rsr_l_sum[i] / rsr_l_cnt[i]
+            rsr_l_min[i] = 100
+            rsr_l_chk[i] = 0
 		
