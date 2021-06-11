@@ -46,6 +46,14 @@ while True:
                 for i in range(0,tkr_num):
                     target_price[i] = get_open_price(tkr_buy[i], intv_s)
                     open_price[i] = get_open_price(tkr_buy[i], "day")
+                    rsi_low_sum[i] = 30 + rsi_low_avg[i] * rsi_low_cnt_d[i]
+                    rsi_low_cnt[i] = rsi_low_cnt_d + 1
+                    rsi_low_cnt_d[i] = 0
+                    rsi_low_avg[i] = rsi_low_sum / rsi_low_cnt
+                    rsi_high_sum[i] = 70 + rsi_high_avg[i] * rsi_high_cnt_d[i]
+                    rsi_high_cnt[i] = rsi_high_cnt_d + 1
+                    rsi_high_cnt_d[i] = 0
+                    rsi_high_avg[i] = rsi_high_sum / rsi_high_cnt
             # 탈락 종목 전량 매도
                 sell_not_in()
             # 잔고 Update
@@ -60,14 +68,14 @@ while True:
                 balanceDiff = balance - get_balance(tkr,"KRW")
                 rsi14[i] = get_rsi14(tkr, rsi_intv)
                 # rsi 하방 check
-                if rsi14[i] < 30:
+                if rsi14[i] < rsi_low_avg[i]:
                     f_rsi_under30[i] = 1
-                if f_rsi_under30[i] == 1 and rsi14[i] > 30:
+                if f_rsi_under30[i] == 1 and rsi14[i] > rsi_low_avg[i]:
                     f_rsi_under30[i] = 2
                 # rsi 상방 check
-                if rsi14[i] > 70:
+                if rsi14[i] > rsi_high_avg[i]:
                     f_rsi_over70[i] = 1
-                if f_rsi_over70[i] == 1 and rsi14[i] < 70:
+                if f_rsi_over70[i] == 1 and rsi14[i] < rsi_high_avg[i]:
                     f_rsi_over70[i] = 2
                 send_rsi(i)
             # 매수 : rsi 30 미만 -> 초과 시
@@ -88,6 +96,7 @@ while True:
                             num_sell += 1
                             post_message(myToken, myChannel, tkr+" 매도 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current)))
                     f_rsi_over70[i] = 0
+                calc_rsi_avg(i)
                 rsi14_back[i] = rsi14[i]
                 time.sleep(0.1)
             minBack = now.minute
