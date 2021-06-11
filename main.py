@@ -54,7 +54,7 @@ while True:
             timeBackup = now.hour
 
     # 매매 logic
-        if now.minute % rsi_intv == 0 and minBack != now.minute:
+        if minBack != now.minute:    # now.minute % rsi_intv == 0 and 
             for i in range(0, tkr_num):
                 tkr = tkr_buy[i]
                 balanceDiff = balance - get_balance(tkr,"KRW")
