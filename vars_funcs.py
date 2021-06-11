@@ -28,6 +28,16 @@ f_rsi_under30 = [0]*tkr_num         # rsi 30미만 감지
 f_rsi_over70 = [0]*tkr_num          # rsi 70초과 감지
 f_rsi_30 = [0]*tkr_num              # rsi 30 송신 flag
 f_rsi_70 = [0]*tkr_num              # rsi 70 송신 flag
+rsi_low_min = [100]*tkr_num           # rsi low 계산
+rsi_low_sum = [0]*tkr_num           # rsi low 계산
+rsi_low_cnt = [0]*tkr_num           # rsi low 계산
+rsi_low_avg = [30]*tkr_num           # rsi low 계산
+rsi_low_chk = [0]*tkr_num           # rsi low 계산
+rsi_high_max = [0]*tkr_num           # rsi high 계산
+rsi_high_sum = [0]*tkr_num           # rsi high 계산
+rsi_high_cnt = [0]*tkr_num           # rsi high 계산
+rsi_high_avg = [70]*tkr_num           # rsi high 계산
+rsi_high_chk = [0]*tkr_num           # rsi high 계산
 trade_intv = 1                      # trade_intv 분 주기로 매매 감시
 intv = 4                            # intv 시간 candle 참조
 intv_s = "minute240"
@@ -287,9 +297,33 @@ def send_rsi(i):
         if f_rsi_70[i] != 0:
             post_message(myToken, myChannel, tkr_buy[i]+" : rsi14 70 초과 감지("+str(round(rsi14[i],1))+")")
         f_rsi_70[i] = 2
-		
-		
-		
-		
+
+def calc_rsi_high_low(i):
+    global rsi_high_chk, rsi_high_max, rsi_high_sum, rsi_high_cnt, rsi_high_avg
+    global rsi_low_chk, rsi_low_min, rsi_low_sum, rsi_low_cnt, rsi_low_avg
+
+    if rsi14[i] > 60:
+        rsi_high_chk[i] = 1
+        if rsi14[i] > rsi_high_max[i]:
+            rsi_high_max[i] = rsi14[i]
+    if rsi14[i] < 60:
+        if rsi_high_chk[i] == 1:
+            rsi_high_sum[i] += rsi_high_max[i]
+            rsi_high_cnt[i] += 1
+            rsi_high_avg[i] = rsi_high_sum[i] / rsi_high_cnt[i]
+            rsi_high_max[i] = 0
+            rsi_high_chk[i] = 0
+
+    if rsi14[i] < 40:
+        rsi_low_chk[i] = 1
+        if rsi14[i] < rsi_low_min[i]:
+            rsi_low_min[i] = rsi14[i]
+    if rsi14[i] > 40:
+        if rsi_low_chk[i] == 1:
+            rsi_low_sum[i] += rsi_low_min[i]
+            rsi_low_cnt[i] += 1
+            rsi_low_avg[i] = rsi_low_sum[i] / rsi_low_cnt[i]
+            rsi_low_max[i] = 0
+            rsi_low_chk[i] = 0
 		
 		
