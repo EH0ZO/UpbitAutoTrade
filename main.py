@@ -91,7 +91,7 @@ while True:
                         else:
                             buy(tkr, 10000)
                         num_buy += 1
-                        send(tkr+" 매수 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current)))
+                        send(tkr+" 매수 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current))+")")
                     f_rsi_l[i] = 0
             # 매도 : rsi 70 초과 -> 미만 시
                 if f_rsi_h[i] == 2:
@@ -105,7 +105,7 @@ while True:
                         else:
                             sell(tkr, 10000)
                         num_sell += 1
-                        send(tkr+" 매도 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current)))
+                        send(tkr+" 매도 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current))+")")
                     f_rsi_h[i] = 0
                 calc_rsi_avg(i)
                 rsi14_back[i] = rsi14[i]
