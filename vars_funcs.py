@@ -321,7 +321,7 @@ def calc_rsi_high_low(i):
             rsi_low_sum[i] += rsi_low_min[i]
             rsi_low_cnt[i] += 1
             rsi_low_avg[i] = rsi_low_sum[i] / rsi_low_cnt[i]
-            rsi_low_max[i] = 0
+            rsi_low_min[i] = 100
             rsi_low_chk[i] = 0
 		
 		
