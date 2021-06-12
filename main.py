@@ -109,6 +109,11 @@ while True:
                     f_rsi_h[i] = 0
                 calc_rsi_avg(i)
                 rsi14_back[i] = rsi14[i]
+            # 손절 : -2% 미만 시 전량 매도
+                avg_buy = get_avg_buy_price(tkr)
+                current = get_current_price(tkr)
+                if (current-avg_buy)/avg_buy < -0.02:
+                    sell(tkr,0)
                 time.sleep(0.1)
             minBack = now.minute
             
