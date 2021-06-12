@@ -7,34 +7,45 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.55"     # 오류 수정, 매수/매도 메시지 추가
+VERSION = "21.06.12.56"     # 오류 수정
 # 잔고
-startBalance = hourlyBalance = totalBalance = balanceBackup = balance = 0
+startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
-num_buy = num_sell = num_buy_total = num_sell_total = 0
+num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 # 종목
 tkr_num = 10
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]     
 # RSI
 rsi_intv = 5
-rsi14 = rsi14_back = [0]*tkr_num
+rsi14 = [0]*tkr_num
 rsi_l_min = [100]*tkr_num
 rsi_h_max = [0]*tkr_num
 rsi_l_sum = [300]*tkr_num
 rsi_h_sum = [700]*tkr_num
 rsi_l_avg = [30]*tkr_num
 rsi_h_avg = [70]*tkr_num
-f_rsi_l = f_rsi_h = f_rsi_30 = f_rsi_70 = rsi_l_chk = rsi_h_chk = [0]*tkr_num
-rsi_l_cnt = rsi_l_cnt_d = rsi_h_cnt = rsi_h_cnt_d = [10]*tkr_num
+f_rsi_l = [0]*tkr_num
+f_rsi_h = [0]*tkr_num
+f_rsi_30 = [0]*tkr_num
+f_rsi_70 = [0]*tkr_num
+rsi_l_chk = [0]*tkr_num
+rsi_h_chk = [0]*tkr_num
+rsi_l_cnt = [10]*tkr_num
+rsi_l_cnt_d = [10]*tkr_num
+rsi_h_cnt = [10]*tkr_num
+rsi_h_cnt_d = [10]*tkr_num
 # 기준값
 unit_trade_price = 10000
 rsi_l_std = 40
 rsi_h_std = 60
 # 챗봇 confirm
-confirm_sell = confirm_quit = 0
+confirm_sell = 0
+confirm_quit = 0
 # 시간
 f_start = 0
-time_backup = min_backup = last_rx_time = -1
+time_backup = -1
+min_backup = -1
+last_rx_time = -1
 
 
 # Keys
@@ -186,49 +197,55 @@ def get_rsi14(symbol, candle):
 def check_rsi(i):
     global rsi14, f_rsi_l, f_rsi_h
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-    # rsi 하방 check
-    if rsi14[i] < rsi_l_avg[i]:
-        f_rsi_l[i] = 1
-    elif rsi14[i] > rsi_l_avg[i]:
-        if f_rsi_l[i] == 1:
-            f_rsi_l[i] = 2
-
-    # rsi 상방 check
-    if rsi14[i] > rsi_h_avg[i]:
-        f_rsi_h[i] = 1
-    elif rsi14[i] < rsi_h_avg[i]:
-        if f_rsi_h[i] == 1:
-            f_rsi_h[i] = 2
+    def check_low():
+        # rsi 하방 check
+        if rsi14[i] < rsi_l_avg[i]:
+            f_rsi_l[i] = 1
+        elif rsi14[i] > rsi_l_avg[i]:
+            if f_rsi_l[i] == 1:
+                f_rsi_l[i] = 2
+    def check_high():
+        # rsi 상방 check
+        if rsi14[i] > rsi_h_avg[i]:
+            f_rsi_h[i] = 1
+        elif rsi14[i] < rsi_h_avg[i]:
+            if f_rsi_h[i] == 1:
+                f_rsi_h[i] = 2
+    check_low()
+    check_high()
     time.sleep(0.01)
 
 def calc_rsi_avg(i):
-    global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg
     global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg
-    if rsi14[i] > rsi_h_std:
-        rsi_h_chk[i] = 1
-        if rsi14[i] > rsi_h_max[i]:
-            rsi_h_max[i] = rsi14[i]
-    elif rsi14[i] <= rsi_h_std:
-        if rsi_h_chk[i] == 1 and rsi_h_max[i] > 50:
-            rsi_h_sum[i] += rsi_h_max[i]
-            rsi_h_cnt[i] += 1
-            rsi_h_cnt_d[i] += 1
-            rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
-        rsi_h_max[i] = 0
-        rsi_h_chk[i] = 0
-
-    if rsi14[i] < rsi_l_std:
-        rsi_l_chk[i] = 1
-        if rsi14[i] < rsi_l_min[i]:
-            rsi_l_min[i] = rsi14[i]
-    elif rsi14[i] >= rsi_l_std:
-        if rsi_l_chk[i] == 1 and rsi_h_max[i] < 50:
-            rsi_l_sum[i] += rsi_l_min[i]
-            rsi_l_cnt[i] += 1
-            rsi_l_cnt_d[i] += 1
-            rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
-        rsi_l_min[i] = 100
-        rsi_l_chk[i] = 0
+    global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg
+    def calc_low():
+        if rsi14[i] < rsi_l_std:
+            rsi_l_chk[i] = 1
+            if rsi14[i] < rsi_l_min[i]:
+                rsi_l_min[i] = rsi14[i]
+        elif rsi14[i] >= rsi_l_std:
+            if rsi_l_chk[i] == 1 and rsi_l_min[i] < 50:
+                rsi_l_sum[i] += rsi_l_min[i]
+                rsi_l_cnt[i] += 1
+                rsi_l_cnt_d[i] += 1
+                rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
+            rsi_l_min[i] = 100
+            rsi_l_chk[i] = 0
+    def calc_high():
+        if rsi14[i] > rsi_h_std:
+            rsi_h_chk[i] = 1
+            if rsi14[i] > rsi_h_max[i]:
+                rsi_h_max[i] = rsi14[i]
+        elif rsi14[i] <= rsi_h_std:
+            if rsi_h_chk[i] == 1 and rsi_h_max[i] > 50:
+                rsi_h_sum[i] += rsi_h_max[i]
+                rsi_h_cnt[i] += 1
+                rsi_h_cnt_d[i] += 1
+                rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
+            rsi_h_max[i] = 0
+            rsi_h_chk[i] = 0
+    calc_low()
+    calc_high()
     time.sleep(0.01)
 		
 def trade(i):
