@@ -165,8 +165,8 @@ def get_avg_buy_price(tkr):
             if b['balance'] is not None:
                 return float(b['avg_buy_price'])
             else:
-                return 0
-    return 0
+                return 1
+    return 1
 
 def buy(tkr, balance):
     buy_result = upbit.buy_market_order(tkr, balance*0.999)
