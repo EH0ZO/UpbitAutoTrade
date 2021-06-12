@@ -4,9 +4,10 @@ import datetime
 import requests
 import pandas as pd
 import telegram
+import sys
 
 # Global variables
-VERSION = "21.06.12.53"     # 오류 수정, 일부 변수 채팅으로 수정 가능
+VERSION = "21.06.12.54"     # 전량매도, 프로그램 종료 추가
 # 잔고
 startBalance = hourlyBalance = totalBalance = balanceBackup = balance = 0
 # 매매 횟수
@@ -29,6 +30,8 @@ rsi_l_cnt = rsi_l_cnt_d = rsi_h_cnt = rsi_h_cnt_d = [10]*tkr_num
 unit_trade_price = 10000
 rsi_l_std = 40
 rsi_h_std = 60
+# 챗봇 confirm
+confirm_sell = confirm_quit = 0
 # 시간
 f_start = 0
 time_backup = min_backup = last_rx_time = -1
@@ -133,8 +136,8 @@ def sell(tkr, balance):
 
 def sell_not_in():
     # 미관리 종목 전량 매도
-    balances = upbit.get_balances()
     global num_sell
+    balances = upbit.get_balances()
     time.sleep(0.1)
     for b in balances:
         if b['currency'] != 'KRW' and float(b['avg_buy_price']) > 0:
@@ -144,6 +147,19 @@ def sell_not_in():
                     sell(tkr)
                     num_sell += 1
                 time.sleep(0.1)
+
+def sell_all():
+    # 전량 매도
+    global num_sell
+    balances = upbit.get_balances()
+    time.sleep(0.1)
+    for b in balances:
+        if b['currency'] != 'KRW' and float(b['avg_buy_price']) > 0:
+            tkr = "KRW-"+b['currency']
+            if get_balance(tkr,"KRW") > 5000:
+                sell(tkr)
+                num_sell += 1
+            time.sleep(0.1)
 
 def get_rsi14(symbol, candle):
     url = "https://api.upbit.com/v1/candles/minutes/"+str(candle)
@@ -173,12 +189,13 @@ def check_rsi(i):
     # rsi 하방 check
     if rsi14[i] < rsi_l_avg[i]:
         f_rsi_l[i] = 1
-    if f_rsi_l[i] == 1 and rsi14[i] > rsi_l_avg[i]:
+    elif f_rsi_l[i] == 1 and rsi14[i] > rsi_l_avg[i]:
         f_rsi_l[i] = 2
+
     # rsi 상방 check
     if rsi14[i] > rsi_h_avg[i]:
         f_rsi_h[i] = 1
-    if f_rsi_h[i] == 1 and rsi14[i] < rsi_h_avg[i]:
+    elif f_rsi_h[i] == 1 and rsi14[i] < rsi_h_avg[i]:
         f_rsi_h[i] = 2
 
 def calc_rsi_avg(i):
@@ -300,7 +317,7 @@ def send_hourly_report(req):
     send(txt)
 
 def check_message():
-    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std
+    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, confirm_sell, confirm_quit
     latest = bot.getUpdates()[-1].message
     if latest.date != last_rx_time:
         if latest.text[0] == "1":
@@ -331,13 +348,40 @@ def check_message():
             txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
             txt+= "rsi_l_std        : "+str(rsi_l_std)
             send(txt)
+        elif latest.text[0] == "sell":
+            confirm_sell = 1
+            txt = "보유종목을 전량 매도합니다.\n"
+            txt+= "진행하시겠습니까? (yes/no)"
+            send(txt)
+        elif latest.text[0] == "quit":
+            confirm_quit = 1
+            txt = "프로그램을 종료합니다.\n"
+            txt+= "진행하시겠습니까? (yes/no)"
+            send(txt)
+        elif confirm_sell == 1:
+            if latest.text[0] == "yes":
+                confirm_sell = 0
+                send("보유종목을 전량 매도합니다.")
+                sell_all()
+            else:
+                confirm_sell = 0
+                send("취소합니다.")
+        elif confirm_quit == 1:
+            if latest.text[0] == "yes":
+                send("프로그램을 종료합니다.")
+                sys.exit()
+            else:
+                confirm_quit = 0
+                send("취소합니다.")
         else:
             txt = "========== Menu ==========\n"
             txt+= "1    : 현재 상태 출력\n"
-            txt+= "2, N : 단위 매매 금액 N으로 변경\n"
-            txt+= "3, N : RSI 평균값 상위 기준 N으로 변경\n"
-            txt+= "4, N : RSI 평균값 하위 기준 N으로 변경\n"
-            txt+= "5    : 2 ~ 4 현재 값 확인"
+            txt+= "2, N : unit_trade_price N으로 변경\n"
+            txt+= "3, N : rsi_h_std N으로 변경\n"
+            txt+= "4, N : rsi_l_std N으로 변경\n"
+            txt+= "5    : 2 ~ 4 현재 값 확인\n"
+            txt+= "sell : 전량 매도\n"
+            txt+= "quit : 프로그램 종료"
             send(txt)
         last_rx_time = latest.date
 
