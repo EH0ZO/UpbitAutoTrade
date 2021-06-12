@@ -352,21 +352,21 @@ def check_message():
         if latest.text[0] == "1":
             send_hourly_report(0)
         elif latest.text[0] == "2":
-            num = int(latest.text[3:])
+            num = float(latest.text[3:])
             if num > 5000:
                 unit_trade_price = num
                 send("unit_trade_price changed : "+str(unit_trade_price))
             else:
                 send("wrong input")
         elif latest.text[0] == "3":
-            num = int(latest.text[3:])
+            num = float(latest.text[3:])
             if 50 < num < 100:
                 rsi_h_std = int(latest.text[3:])
                 send("rsi_h_std changed : "+str(rsi_h_std))
             else:
                 send("wrong input")
         elif latest.text[0] == "4":
-            num = int(latest.text[3:])
+            num = float(latest.text[3:])
             if 0 < num < 50:
                 rsi_l_std = int(latest.text[3:])
                 send("rsi_l_std changed : "+str(rsi_l_std))
