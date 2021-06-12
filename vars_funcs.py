@@ -6,49 +6,33 @@ import pandas as pd
 import telegram
 
 # Global variables
-VERSION = "21.06.12.51" # 손절 추가
-startBalance = 0                    # 09시 기준 잔고
-hourlyBalance = 0                   # 매시 정각 기준 잔고
-totalBalance = 0                    # 현재 보유 원
-balanceBackup = 0                   # 이전 보유 원화
-balance = 0                         # 종목별 거래금액
-num_buy = 0                         # 매수 횟수(시간)
-num_sell = 0                        # 매도 횟수(시간)
-num_buy_total = 0                   # 매수 횟수(일)
-num_sell_total = 0                  # 매도 횟수(일)
-tkr_num = 10                        # 매매종목 수
-target_price = [0]*tkr_num          # 매매 기준가
-buy_price = [0]*tkr_num             # 매수가
-open_price = [0]*tkr_num            # 시작가
-rsi_intv = 5                        # rsi_intv분봉 rsi 참조
-rsi14 = [0]*tkr_num                 # rsi14 값
-rsi14_back = [0]*tkr_num            # 이전 rsi14 값
-f_rsi_l = [0]*tkr_num               # rsi 30미만 감지
-f_rsi_h = [0]*tkr_num               # rsi 70초과 감지
-f_rsi_30 = [0]*tkr_num              # rsi 30 송신 flag
-f_rsi_70 = [0]*tkr_num              # rsi 70 송신 flag
-rsr_l_min = [100]*tkr_num           # rsi low 계산
-rsr_l_sum = [300]*tkr_num             # rsi low 계산
-rsr_l_cnt = [10]*tkr_num             # rsi low 계산
-rsr_l_cnt_d = [10]*tkr_num           # rsi low 계산
-rsr_l_avg = [30]*tkr_num            # rsi low 계산
-rsr_l_chk = [0]*tkr_num             # rsi low 계산
-rsr_h_max = [0]*tkr_num             # rsi high 계산
-rsr_h_sum = [700]*tkr_num             # rsi high 계산
-rsr_h_cnt = [10]*tkr_num             # rsi high 계산
-rsr_h_cnt_d = [10]*tkr_num           # rsi high 계산
-rsr_h_avg = [70]*tkr_num            # rsi high 계산
-rsr_h_chk = [0]*tkr_num             # rsi high 계산
-fStart = timeBackup = num_buy = num_sell = minBack = hrBack = 0
-# 시총 상위 종목 Ticker
+VERSION = "21.06.12.52"     # 미사용 함수, 변수 삭제, main 구문 함수화
+# 잔고
+startBalance = hourlyBalance = totalBalance = balanceBackup = balance = 0
+# 매매 횟수
+num_buy = num_sell = num_buy_total = num_sell_total = 0
+# 종목
+tkr_num = 10
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]     
-     
+# RSI
+rsi_intv = 5
+rsi14 = rsi14_back = [0]*tkr_num
+rsr_l_min = [100]*tkr_num
+rsr_h_max = [0]*tkr_num
+rsr_l_sum = [300]*tkr_num
+rsr_h_sum = [700]*tkr_num
+rsr_l_avg = [30]*tkr_num
+rsr_h_avg = [70]*tkr_num
+f_rsi_l = f_rsi_h = f_rsi_30 = f_rsi_70 = rsr_l_chk = rsr_h_chk = [0]*tkr_num
+rsr_l_cnt = rsr_l_cnt_d = rsr_h_cnt = rsr_h_cnt_d = [10]*tkr_num
+# 시간
+f_start = 0
+time_backup = min_backup = last_rx_time = -1
+
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
-myToken = "" 
-myChannel = "#c-pjt"
 upbit = Upbit(access, secret)
 token = "1814838763:AAGNuB_LWtq8zJMHuezB-vsSI8C4b9X9QLk"
 chat_id = 1883488213
@@ -58,60 +42,16 @@ bot = telegram.Bot(token)
 def send(str):
     bot.sendMessage(chat_id,str)
 
-def post_message(token, channel, text):
-    # 슬랙 메시지 전송
-    response = requests.post("https://slack.com/api/chat.postMessage",
-        headers={"Authorization": "Bearer "+token},
-        data={"channel": channel,"text": text}
-    )
-    time.sleep(0.1)
-    return response
-
-def get_start_time(ticker):
-    # 시작 시간 조회
-    df = get_ohlcvp(ticker, interval="day", count=1)
-    start_time = df.index[0]
-    return start_time
+def send_start_message():
+    txt = "==================================\n"
+    txt+= "autotrade start (ver."+VERSION+"))\n"
+    txt+= str(datetime.datetime.now())+"\n"
+    txt+= "=================================="
+    send(txt)
 
 def get_current_price(ticker):
     # 현재가 조회
     return get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
-
-def get_ohlc(ticker, intv):
-    # 캔들 조회
-    df = get_ohlcvp(ticker, interval=intv, count=1)
-    ret = [df.iloc[0]['open'], df.iloc[0]['high'], df.iloc[0]['low'], df.iloc[0]['close']]
-    return ret
-
-def get_ma(ticker, intv, c, p):
-    # 이동 평균선 조회
-    df = get_ohlcvp(ticker, interval=intv, count=(c+p))
-    ma = df['close'].rolling(c).mean().iloc[-p]
-    return ma
-    
-def get_high(ticker, intv, c):
-    # 고가 조회
-    df = get_ohlcvp(ticker, interval=intv, count=c)
-    high = df['high'].rolling(c).max().iloc[-1]
-    return high
-
-def get_low(ticker, intv, c):
-    # 저가 조회
-    df = get_ohlcvp(ticker, interval=intv, count=c)
-    low = df['low'].rolling(c).min().iloc[-1]
-    return low
-
-def get_close_price(ticker, intv):
-    # 전 시간 종가 return
-    df = get_ohlcvp(ticker, interval=intv, count=2)
-    close = df.iloc[0]['close']
-    return close
-
-def get_open_price(ticker, intv):
-    # 전 시간 종가 return
-    df = get_ohlcvp(ticker, interval=intv, count=1)
-    open = df.iloc[0]['open']
-    return open
 
 def get_krw():
     # 잔고 조회
@@ -148,7 +88,6 @@ def get_balance(tkr, sel):
                 ret = float(b['balance'])
             else:
                 ret = 0
-    
     if sel == "COIN":
         return ret
     elif sel == "KRW":
@@ -189,71 +128,8 @@ def sell(tkr, balance):
     else:
         return False
 
-def buy_limit(tkr, price, balance):
-    vol = balance / price
-    buy_result = upbit.buy_limit_order(tkr, price, vol * 0.999)
-    if buy_result != None:
-        return True
-    else:
-        return False
-
-def sell_limit(tkr, price):
-    sell_result = upbit.sell_limit_order(tkr, price, get_balance(tkr,"COIN"))
-    if sell_result != None:
-        return True
-    else:
-        return False
-
-def tick(price):
-    if price < 10:
-        return 0.01
-    elif price < 100:
-        return 0.1
-    elif price < 1000:
-        return 1
-    elif price < 10000:
-        return 5
-    elif price < 100000:
-        return 10
-    elif price < 500000:
-        return 50
-    elif price < 1000000:
-        return 100
-    elif price < 2000000:
-        return 500
-    else:
-        return 1000
-
-def isNewCandle(intv, now):
-    hour = now.hour
-    if hour < 9:
-        hour += 24
-    hour -= 9
-    if hour % intv == 0:
-        return True
-    else:
-        return False
-
-def select_tkrs(intv, c):
-	# 데이터 스크래핑
-    tkrs = get_tickers(fiat="KRW")
-    vol =[0]*len(tkrs)
-    data = [("tkr",0)] * len(tkrs)
-    for i in range(0,len(tkrs)):
-        df = get_ohlcvp(tkrs[i], intv, c)
-        vol[i] = df.iloc[0]['price']
-        data[i] = (tkrs[i], vol[i])
-        time.sleep(0.1)
-    data = sorted(data, key = lambda data: data[1], reverse = True)
-	# 매수종목 선정
-    top = ["KRW-"] * tkr_num
-    for i in range(0, tkr_num):
-        top[i] = data[i][0]
-    
-    return top
-
 def sell_not_in():
-# 탈락 종목 전량 매도
+    # 미관리 종목 전량 매도
     balances = upbit.get_balances()
     global num_sell
     time.sleep(0.1)
@@ -265,14 +141,6 @@ def sell_not_in():
                     sell(tkr)
                     num_sell += 1
                 time.sleep(0.1)
-
-def buy_n_hold_start(curBalance):
-    balance = (curBalance / tkr_num)
-    ret = [0]*tkr_num
-    for i in range(0,tkr_num):
-        price = get_current_price(tkr_buy[i])
-        ret[i] = balance / price
-    return ret
 
 def get_rsi14(symbol, candle):
     url = "https://api.upbit.com/v1/candles/minutes/"+str(candle)
@@ -296,24 +164,19 @@ def get_rsi14(symbol, candle):
     time.sleep(0.5)
     return rsi
 
-def send_rsi(i):
-    global f_rsi_30, f_rsi_70
-    if rsi14[i] < 30 and f_rsi_30[i] != 1:
-        if f_rsi_30[i] != 0:
-            send(tkr_buy[i]+" : 과매도 감지("+str(round(rsi14[i],1))+")")
-        f_rsi_30[i] = 1
-    if rsi14[i] > 30 and f_rsi_30[i] != 2:
-        if f_rsi_30[i] != 0:
-            send(tkr_buy[i]+" : 과매도 해제("+str(round(rsi14[i],1))+")")
-        f_rsi_30[i] = 2
-    if rsi14[i] < 70 and f_rsi_70[i] != 1:
-        if f_rsi_70[i] != 0:
-            send(tkr_buy[i]+" : 과매수 감지("+str(round(rsi14[i],1))+")")
-        f_rsi_70[i] = 1
-    if rsi14[i] > 70 and f_rsi_70[i] != 2:
-        if f_rsi_70[i] != 0:
-            send(tkr_buy[i]+" : 과매수 해제("+str(round(rsi14[i],1))+")")
-        f_rsi_70[i] = 2
+def check_rsi(i):
+    global rsi14, f_rsi_l, f_rsi_h
+    rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
+    # rsi 하방 check
+    if rsi14[i] < rsr_l_avg[i]:
+        f_rsi_l[i] = 1
+    if f_rsi_l[i] == 1 and rsi14[i] > rsr_l_avg[i]:
+        f_rsi_l[i] = 2
+    # rsi 상방 check
+    if rsi14[i] > rsr_h_avg[i]:
+        f_rsi_h[i] = 1
+    if f_rsi_h[i] == 1 and rsi14[i] < rsr_h_avg[i]:
+        f_rsi_h[i] = 2
 
 def calc_rsi_avg(i):
     global rsr_h_chk, rsr_h_max, rsr_h_sum, rsr_h_cnt, rsr_h_avg
@@ -343,3 +206,102 @@ def calc_rsi_avg(i):
             rsr_l_min[i] = 100
             rsr_l_chk[i] = 0
 		
+def trade(i):
+    global num_buy, num_sell, f_rsi_l, f_rsi_h
+    avg_buy = get_avg_buy_price(tkr_buy[i])
+    current = get_current_price(tkr_buy[i])
+    # 매수 : rsi low 미만 -> 초과 시
+    if f_rsi_l[i] == 2:
+        krw = get_krw()
+        tkr_balance = get_balance(tkr_buy[i], "KRW")
+        total_krw = get_totalKRW()
+        if tkr_balance < (total_krw/tkr_num) and krw > 5000:
+            current = get_current_price(tkr_buy[i])
+            if krw - 10000 < 5000:
+                buy(tkr_buy[i], krw)
+            else:
+                buy(tkr_buy[i], 10000)
+            num_buy += 1
+            send(tkr_buy[i]+" 매수 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current))+")")
+        f_rsi_l[i] = 0
+    # 매도 : rsi 70 초과 -> 미만 시
+    if f_rsi_h[i] == 2:
+        krw = get_krw()
+        tkr_balance = get_balance(tkr_buy[i], "KRW")
+        total_krw = get_totalKRW()
+        if tkr_balance > 5000:
+            current = get_current_price(tkr_buy[i])
+            if tkr_balance - 10000 < 5000:
+                sell(tkr_buy[i], 0)
+            else:
+                sell(tkr_buy[i], 10000)
+            num_sell += 1
+            send(tkr_buy[i]+" 매도 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current))+")")
+        f_rsi_h[i] = 0
+    # 손절 : -2% 미만 시 전량 매도
+    if (current-avg_buy)/avg_buy < -0.02:
+        sell(tkr_buy[i], 0)
+        num_sell += 1
+        send(tkr_buy[i]+" 손절("+str(round((current-avg_buy)/avg_buy, 2))+")")
+
+def reset_newday():
+    global num_buy_total, num_sell_total, startBalance, hourlyBalance
+    global rsr_l_sum, rsr_l_cnt, rsr_l_cnt_d, rsr_l_avg, rsr_h_sum, rsr_h_cnt, rsr_h_cnt_d, rsr_h_avg
+    num_buy_total = num_sell_total = 0
+    for i in range(0,tkr_num):
+        rsr_l_sum[i] = 30 + rsr_l_avg[i] * rsr_l_cnt_d[i]
+        rsr_l_cnt[i] = rsr_l_cnt_d[i] + 1
+        rsr_l_cnt_d[i] = 0
+        rsr_l_avg[i] = rsr_l_sum[i] / rsr_l_cnt[i]
+        rsr_h_sum[i] = 70 + rsr_h_avg[i] * rsr_h_cnt_d[i]
+        rsr_h_cnt[i] = rsr_h_cnt_d[i] + 1
+        rsr_h_cnt_d[i] = 0
+        rsr_h_avg[i] = rsr_h_sum[i] / rsr_h_cnt[i]
+    # 미관리 종목 전량 매도
+    sell_not_in()
+    # 잔고 Update
+    startBalance = hourlyBalance = get_totalKRW()
+
+def send_hourly_report(req):
+    global rsi14, hourlyBalance, num_buy_total, num_sell_total, num_buy, num_sell
+    # 수익 계산
+    num_buy_total += num_buy
+    num_sell_total += num_sell
+    curBalance = get_totalKRW()
+    balChange_hr = curBalance - hourlyBalance
+    balChngPercent_hr = balChange_hr / hourlyBalance * 100
+    balChange_d = curBalance - startBalance
+    balChngPercent_d = balChange_d / startBalance * 100
+    # 결과 송신
+    if req == 1:
+        txt = "=== Hourly Report ===\n"
+    elif req == 0:
+        txt = "=== Current Report ===\n"
+    txt+= " - 현재 잔고  : "+str(round(curBalance))+"원\n"
+    txt+= " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회\n"
+    txt+= " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회\n"
+    txt+= " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)\n"
+    txt+= " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)"
+    send(txt)
+    if req == 1:
+        hourlyBalance = curBalance
+        num_buy = num_sell = 0
+    elif req == 0:
+        num_buy_total -= num_buy
+        num_sell_total -= num_sell
+    # RSI 값 송신
+    txt = "=== RSI14 Value ===\n"
+    for i in range(0,tkr_num):
+        if rsi14[i] == 0:
+            rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
+        txt += tkr_buy[i]+" : "+str(round(rsr_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsr_l_avg[i],1))+"\n"
+    send(txt)
+
+def check_message():
+    global last_rx_time
+    latest = bot.getUpdates()[-1].message
+    if latest.date != last_rx_time:
+        if latest.text == "report":
+            send_hourly_report(0)
+        last_rx_time = latest.date
+
