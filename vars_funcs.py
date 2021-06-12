@@ -342,3 +342,4 @@ def check_message():
         last_rx_time = latest.date
 
 startBalance = hourlyBalance = get_totalKRW()
+last_rx_time = bot.getUpdates()[-1].message.date
