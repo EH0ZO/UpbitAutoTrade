@@ -144,7 +144,7 @@ def sell_not_in():
             tkr = "KRW-"+b['currency']
             if tkr not in tkr_buy:
                 if get_balance(tkr,"KRW") > 5000:
-                    sell(tkr)
+                    sell(tkr, 0)
                     num_sell += 1
                 time.sleep(0.1)
 
@@ -157,7 +157,7 @@ def sell_all():
         if b['currency'] != 'KRW' and float(b['avg_buy_price']) > 0:
             tkr = "KRW-"+b['currency']
             if get_balance(tkr,"KRW") > 5000:
-                sell(tkr)
+                sell(tkr, 0)
                 num_sell += 1
             time.sleep(0.1)
 
