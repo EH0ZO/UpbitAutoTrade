@@ -189,14 +189,16 @@ def check_rsi(i):
     # rsi 하방 check
     if rsi14[i] < rsi_l_avg[i]:
         f_rsi_l[i] = 1
-    elif f_rsi_l[i] == 1 and rsi14[i] > rsi_l_avg[i]:
-        f_rsi_l[i] = 2
+    elif rsi14[i] > rsi_l_avg[i]:
+        if f_rsi_l[i] == 1:
+            f_rsi_l[i] = 2
 
     # rsi 상방 check
     if rsi14[i] > rsi_h_avg[i]:
         f_rsi_h[i] = 1
-    elif f_rsi_h[i] == 1 and rsi14[i] < rsi_h_avg[i]:
-        f_rsi_h[i] = 2
+    elif rsi14[i] < rsi_h_avg[i]:
+        if f_rsi_h[i] == 1:
+            f_rsi_h[i] = 2
     
     print("rsi14 : "+str(rsi14[i]))
     print("f_rsi_l : "+str(f_rsi_l[i]))
@@ -210,11 +212,12 @@ def calc_rsi_avg(i):
         rsi_h_chk[i] = 1
         if rsi14[i] > rsi_h_max[i]:
             rsi_h_max[i] = rsi14[i]
-    elif rsi14[i] <= rsi_h_std and rsi_h_chk[i] == 1:
-        rsi_h_sum[i] += rsi_h_max[i]
-        rsi_h_cnt[i] += 1
-        rsi_h_cnt_d[i] += 1
-        rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
+    elif rsi14[i] <= rsi_h_std:
+        if rsi_h_chk[i] == 1 and rsi_h_max[i] > 50:
+            rsi_h_sum[i] += rsi_h_max[i]
+            rsi_h_cnt[i] += 1
+            rsi_h_cnt_d[i] += 1
+            rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
         rsi_h_max[i] = 0
         rsi_h_chk[i] = 0
 
@@ -222,11 +225,12 @@ def calc_rsi_avg(i):
         rsi_l_chk[i] = 1
         if rsi14[i] < rsi_l_min[i]:
             rsi_l_min[i] = rsi14[i]
-    elif rsi14[i] >= rsi_l_std and rsi_l_chk[i] == 1:
-        rsi_l_sum[i] += rsi_l_min[i]
-        rsi_l_cnt[i] += 1
-        rsi_l_cnt_d[i] += 1
-        rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
+    elif rsi14[i] >= rsi_l_std:
+        if rsi_l_chk[i] == 1 and rsi_h_max[i] < 50:
+            rsi_l_sum[i] += rsi_l_min[i]
+            rsi_l_cnt[i] += 1
+            rsi_l_cnt_d[i] += 1
+            rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
         rsi_l_min[i] = 100
         rsi_l_chk[i] = 0
 
