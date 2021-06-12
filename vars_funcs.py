@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.54"     # 전량매도, 프로그램 종료 추가
+VERSION = "21.06.12.55"     # 오류 수정, 매수/매도 메시지 추가
 # 잔고
 startBalance = hourlyBalance = totalBalance = balanceBackup = balance = 0
 # 매매 횟수
@@ -197,6 +197,11 @@ def check_rsi(i):
         f_rsi_h[i] = 1
     elif f_rsi_h[i] == 1 and rsi14[i] < rsi_h_avg[i]:
         f_rsi_h[i] = 2
+    
+    print("rsi14 : "+str(rsi14[i]))
+    print("f_rsi_l : "+str(f_rsi_l[i]))
+    print("f_rsi_h : "+str(f_rsi_h[i]))
+    time.sleep(0.01)
 
 def calc_rsi_avg(i):
     global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg
@@ -224,6 +229,9 @@ def calc_rsi_avg(i):
         rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
         rsi_l_min[i] = 100
         rsi_l_chk[i] = 0
+
+    print("rsi_l_avg : "+str(rsi_l_avg[i]))
+    print("rsi_h_avg : "+str(rsi_h_avg[i]))
     time.sleep(0.01)
 		
 def trade(i):
@@ -242,7 +250,9 @@ def trade(i):
             else:
                 buy(tkr_buy[i], unit_trade_price)
             num_buy += 1
-            send(tkr_buy[i]+" 매수 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current))+")")
+            txt = tkr_buy[i]+" 매수(price : "+str(round(current))+")\n"
+            txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
+            send(txt)
         f_rsi_l[i] = 0
     # 매도 : rsi 70 초과 -> 미만 시
     if f_rsi_h[i] == 2:
@@ -256,13 +266,16 @@ def trade(i):
             else:
                 sell(tkr_buy[i], unit_trade_price)
             num_sell += 1
-            send(tkr_buy[i]+" 매도 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current))+")")
+            txt = tkr_buy[i]+" 매도(price : "+str(round(current))+")\n"
+            txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
+            send(txt)
         f_rsi_h[i] = 0
     # 손절 : -2% 미만 시 전량 매도
     if (current-avg_buy)/avg_buy < -0.02:
         sell(tkr_buy[i], 0)
         num_sell += 1
         send(tkr_buy[i]+" 손절("+str(round((current-avg_buy)/avg_buy, 2))+")")
+    time.sleep(0.01)
 
 def reset_newday():
     global num_buy_total, num_sell_total, startBalance, hourlyBalance
@@ -318,6 +331,7 @@ def send_hourly_report(req):
 
 def check_message():
     global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, confirm_sell, confirm_quit
+    time.sleep(1)
     latest = bot.getUpdates()[-1].message
     if latest.date != last_rx_time:
         if latest.text[0] == "1":
@@ -348,18 +362,18 @@ def check_message():
             txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
             txt+= "rsi_l_std        : "+str(rsi_l_std)
             send(txt)
-        elif latest.text[0] == "sell":
+        elif latest.text == "sell":
             confirm_sell = 1
             txt = "보유종목을 전량 매도합니다.\n"
             txt+= "진행하시겠습니까? (yes/no)"
             send(txt)
-        elif latest.text[0] == "quit":
+        elif latest.text == "quit":
             confirm_quit = 1
             txt = "프로그램을 종료합니다.\n"
             txt+= "진행하시겠습니까? (yes/no)"
             send(txt)
         elif confirm_sell == 1:
-            if latest.text[0] == "yes":
+            if latest.text == "yes":
                 confirm_sell = 0
                 send("보유종목을 전량 매도합니다.")
                 sell_all()
@@ -367,7 +381,7 @@ def check_message():
                 confirm_sell = 0
                 send("취소합니다.")
         elif confirm_quit == 1:
-            if latest.text[0] == "yes":
+            if latest.text == "yes":
                 send("프로그램을 종료합니다.")
                 sys.exit()
             else:

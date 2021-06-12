@@ -22,11 +22,9 @@ while True:
                 check_rsi(i)
                 calc_rsi_avg(i)
                 trade(i)
-                time.sleep(0.1)
             min_backup = now.minute
         else:
             check_message()
-            time.sleep(1)
             
     except Exception as e:
         send(e)
