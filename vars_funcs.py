@@ -293,9 +293,9 @@ def send_hourly_report(req):
     balChngPercent_d = balChange_d / startBalance * 100
     # 결과 송신
     if req == 1:
-        txt = "=== Hourly Report ===\n"
+        txt = "========== Hourly Report ==========\n"
     elif req == 0:
-        txt = "=== Current Report ===\n"
+        txt = "========== Current Report ==========\n"
     txt+= " - 현재 잔고  : "+str(round(curBalance))+"원\n"
     txt+= " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회\n"
     txt+= " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회\n"
@@ -309,7 +309,7 @@ def send_hourly_report(req):
         num_buy_total -= num_buy
         num_sell_total -= num_sell
     # RSI 값 송신
-    txt = "=== RSI14 Value ===\n"
+    txt = "========== RSI14 Value ==========\n"
     for i in range(0,tkr_num):
         if rsi14[i] == 0:
             rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
