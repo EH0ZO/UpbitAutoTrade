@@ -6,7 +6,7 @@ import pandas as pd
 import telegram
 
 # Global variables
-VERSION = "21.06.12.50"
+VERSION = "21.06.12.51" # 손절 추가
 startBalance = 0                    # 09시 기준 잔고
 hourlyBalance = 0                   # 매시 정각 기준 잔고
 totalBalance = 0                    # 현재 보유 원
@@ -155,6 +155,18 @@ def get_balance(tkr, sel):
         return ret * get_current_price("KRW-"+coin)
     else:
         return 0
+
+def get_avg_buy_price(tkr):
+    # 잔고 조회
+    coin = tkr[4:]
+    balances = upbit.get_balances()
+    for b in balances:
+        if b['currency'] == coin:
+            if b['balance'] is not None:
+                return float(b['avg_buy_price'])
+            else:
+                return 0
+    return 0
 
 def buy(tkr, balance):
     buy_result = upbit.buy_market_order(tkr, balance*0.999)
