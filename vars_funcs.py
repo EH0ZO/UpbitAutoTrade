@@ -6,7 +6,7 @@ import pandas as pd
 import telegram
 
 # Global variables
-VERSION = "21.06.12.52"     # 미사용 함수, 변수 삭제, main 구문 함수화
+VERSION = "21.06.12.53"     # 오류 수정, 일부 변수 채팅으로 수정 가능
 # 잔고
 startBalance = hourlyBalance = totalBalance = balanceBackup = balance = 0
 # 매매 횟수
@@ -17,14 +17,18 @@ tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "K
 # RSI
 rsi_intv = 5
 rsi14 = rsi14_back = [0]*tkr_num
-rsr_l_min = [100]*tkr_num
-rsr_h_max = [0]*tkr_num
-rsr_l_sum = [300]*tkr_num
-rsr_h_sum = [700]*tkr_num
-rsr_l_avg = [30]*tkr_num
-rsr_h_avg = [70]*tkr_num
-f_rsi_l = f_rsi_h = f_rsi_30 = f_rsi_70 = rsr_l_chk = rsr_h_chk = [0]*tkr_num
-rsr_l_cnt = rsr_l_cnt_d = rsr_h_cnt = rsr_h_cnt_d = [10]*tkr_num
+rsi_l_min = [100]*tkr_num
+rsi_h_max = [0]*tkr_num
+rsi_l_sum = [300]*tkr_num
+rsi_h_sum = [700]*tkr_num
+rsi_l_avg = [30]*tkr_num
+rsi_h_avg = [70]*tkr_num
+f_rsi_l = f_rsi_h = f_rsi_30 = f_rsi_70 = rsi_l_chk = rsi_h_chk = [0]*tkr_num
+rsi_l_cnt = rsi_l_cnt_d = rsi_h_cnt = rsi_h_cnt_d = [10]*tkr_num
+# 기준값
+unit_trade_price = 10000
+rsi_l_std = 40
+rsi_h_std = 60
 # 시간
 f_start = 0
 time_backup = min_backup = last_rx_time = -1
@@ -56,7 +60,6 @@ def get_current_price(ticker):
 def get_krw():
     # 잔고 조회
     balances = upbit.get_balances()
-    print(balances)
     for b in balances:
         if b['currency'] == "KRW":
             if b['balance'] is not None:
@@ -168,43 +171,43 @@ def check_rsi(i):
     global rsi14, f_rsi_l, f_rsi_h
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
     # rsi 하방 check
-    if rsi14[i] < rsr_l_avg[i]:
+    if rsi14[i] < rsi_l_avg[i]:
         f_rsi_l[i] = 1
-    if f_rsi_l[i] == 1 and rsi14[i] > rsr_l_avg[i]:
+    if f_rsi_l[i] == 1 and rsi14[i] > rsi_l_avg[i]:
         f_rsi_l[i] = 2
     # rsi 상방 check
-    if rsi14[i] > rsr_h_avg[i]:
+    if rsi14[i] > rsi_h_avg[i]:
         f_rsi_h[i] = 1
-    if f_rsi_h[i] == 1 and rsi14[i] < rsr_h_avg[i]:
+    if f_rsi_h[i] == 1 and rsi14[i] < rsi_h_avg[i]:
         f_rsi_h[i] = 2
 
 def calc_rsi_avg(i):
-    global rsr_h_chk, rsr_h_max, rsr_h_sum, rsr_h_cnt, rsr_h_avg
-    global rsr_l_chk, rsr_l_min, rsr_l_sum, rsr_l_cnt, rsr_l_avg
-    if rsi14[i] > 60:
-        rsr_h_chk[i] = 1
-        if rsi14[i] > rsr_h_max[i]:
-            rsr_h_max[i] = rsi14[i]
-    else:
-        if rsr_h_chk[i] == 1:
-            rsr_h_sum[i] += rsr_h_max[i]
-            rsr_h_cnt[i] += 1
-            rsr_h_cnt_d[i] += 1
-            rsr_h_avg[i] = rsr_h_sum[i] / rsr_h_cnt[i]
-            rsr_h_max[i] = 0
-            rsr_h_chk[i] = 0
-    if rsi14[i] < 40:
-        rsr_l_chk[i] = 1
-        if rsi14[i] < rsr_l_min[i]:
-            rsr_l_min[i] = rsi14[i]
-    else:
-        if rsr_l_chk[i] == 1:
-            rsr_l_sum[i] += rsr_l_min[i]
-            rsr_l_cnt[i] += 1
-            rsr_l_cnt_d[i] += 1
-            rsr_l_avg[i] = rsr_l_sum[i] / rsr_l_cnt[i]
-            rsr_l_min[i] = 100
-            rsr_l_chk[i] = 0
+    global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg
+    global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg
+    if rsi14[i] > rsi_h_std:
+        rsi_h_chk[i] = 1
+        if rsi14[i] > rsi_h_max[i]:
+            rsi_h_max[i] = rsi14[i]
+    elif rsi14[i] <= rsi_h_std and rsi_h_chk[i] == 1:
+        rsi_h_sum[i] += rsi_h_max[i]
+        rsi_h_cnt[i] += 1
+        rsi_h_cnt_d[i] += 1
+        rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
+        rsi_h_max[i] = 0
+        rsi_h_chk[i] = 0
+
+    if rsi14[i] < rsi_l_std:
+        rsi_l_chk[i] = 1
+        if rsi14[i] < rsi_l_min[i]:
+            rsi_l_min[i] = rsi14[i]
+    elif rsi14[i] >= rsi_l_std and rsi_l_chk[i] == 1:
+        rsi_l_sum[i] += rsi_l_min[i]
+        rsi_l_cnt[i] += 1
+        rsi_l_cnt_d[i] += 1
+        rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
+        rsi_l_min[i] = 100
+        rsi_l_chk[i] = 0
+    time.sleep(0.01)
 		
 def trade(i):
     global num_buy, num_sell, f_rsi_l, f_rsi_h
@@ -217,10 +220,10 @@ def trade(i):
         total_krw = get_totalKRW()
         if tkr_balance < (total_krw/tkr_num) and krw > 5000:
             current = get_current_price(tkr_buy[i])
-            if krw - 10000 < 5000:
+            if krw - unit_trade_price < 5000:
                 buy(tkr_buy[i], krw)
             else:
-                buy(tkr_buy[i], 10000)
+                buy(tkr_buy[i], unit_trade_price)
             num_buy += 1
             send(tkr_buy[i]+" 매수 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current))+")")
         f_rsi_l[i] = 0
@@ -231,10 +234,10 @@ def trade(i):
         total_krw = get_totalKRW()
         if tkr_balance > 5000:
             current = get_current_price(tkr_buy[i])
-            if tkr_balance - 10000 < 5000:
+            if tkr_balance - unit_trade_price < 5000:
                 sell(tkr_buy[i], 0)
             else:
-                sell(tkr_buy[i], 10000)
+                sell(tkr_buy[i], unit_trade_price)
             num_sell += 1
             send(tkr_buy[i]+" 매도 (rsi: "+str(round(rsi14[i]))+", 가격: "+str(round(current))+")")
         f_rsi_h[i] = 0
@@ -246,17 +249,16 @@ def trade(i):
 
 def reset_newday():
     global num_buy_total, num_sell_total, startBalance, hourlyBalance
-    global rsr_l_sum, rsr_l_cnt, rsr_l_cnt_d, rsr_l_avg, rsr_h_sum, rsr_h_cnt, rsr_h_cnt_d, rsr_h_avg
+    global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
     num_buy_total = num_sell_total = 0
     for i in range(0,tkr_num):
-        rsr_l_sum[i] = 30 + rsr_l_avg[i] * rsr_l_cnt_d[i]
-        rsr_l_cnt[i] = rsr_l_cnt_d[i] + 1
-        rsr_l_cnt_d[i] = 0
-        rsr_l_avg[i] = rsr_l_sum[i] / rsr_l_cnt[i]
-        rsr_h_sum[i] = 70 + rsr_h_avg[i] * rsr_h_cnt_d[i]
-        rsr_h_cnt[i] = rsr_h_cnt_d[i] + 1
-        rsr_h_cnt_d[i] = 0
-        rsr_h_avg[i] = rsr_h_sum[i] / rsr_h_cnt[i]
+        rsi_l_sum[i] = 30 + rsi_l_avg[i] * rsi_l_cnt_d[i]
+        rsi_l_cnt[i] = rsi_l_cnt_d[i] + 1
+        rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
+        rsi_h_sum[i] = 70 + rsi_h_avg[i] * rsi_h_cnt_d[i]
+        rsi_h_cnt[i] = rsi_h_cnt_d[i] + 1
+        rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
+        rsi_l_cnt_d[i] = rsi_h_cnt_d[i] = 0
     # 미관리 종목 전량 매도
     sell_not_in()
     # 잔고 Update
@@ -294,14 +296,49 @@ def send_hourly_report(req):
     for i in range(0,tkr_num):
         if rsi14[i] == 0:
             rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-        txt += tkr_buy[i]+" : "+str(round(rsr_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsr_l_avg[i],1))+"\n"
+        txt += tkr_buy[i]+" : "+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))+"\n"
     send(txt)
 
 def check_message():
-    global last_rx_time
+    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std
     latest = bot.getUpdates()[-1].message
     if latest.date != last_rx_time:
-        if latest.text == "report":
+        if latest.text[0] == "1":
             send_hourly_report(0)
+        elif latest.text[0] == "2":
+            num = int(latest.text[3:])
+            if num > 5000:
+                unit_trade_price = num
+                send("unit_trade_price changed : "+str(unit_trade_price))
+            else:
+                send("wrong input")
+        elif latest.text[0] == "3":
+            num = int(latest.text[3:])
+            if 50 < num < 100:
+                rsi_h_std = int(latest.text[3:])
+                send("rsi_h_std changed : "+str(rsi_h_std))
+            else:
+                send("wrong input")
+        elif latest.text[0] == "4":
+            num = int(latest.text[3:])
+            if 0 < num < 50:
+                rsi_l_std = int(latest.text[3:])
+                send("rsi_l_std changed : "+str(rsi_l_std))
+            else:
+                send("wrong input")
+        elif latest.text[0] == "5":
+            txt = "unit_trade_price : "+str(unit_trade_price)+"\n"
+            txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
+            txt+= "rsi_l_std        : "+str(rsi_l_std)
+            send(txt)
+        else:
+            txt = "========== Menu ==========\n"
+            txt+= "1    : 현재 상태 출력\n"
+            txt+= "2, N : 단위 매매 금액 N으로 변경\n"
+            txt+= "3, N : RSI 평균값 상위 기준 N으로 변경\n"
+            txt+= "4, N : RSI 평균값 하위 기준 N으로 변경\n"
+            txt+= "5    : 2 ~ 4 현재 값 확인"
+            send(txt)
         last_rx_time = latest.date
 
+startBalance = hourlyBalance = get_totalKRW()

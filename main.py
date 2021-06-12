@@ -1,7 +1,6 @@
 from vars_funcs import *
 
 # Main Logic
-startBalance = hourlyBalance = get_totalKRW()
 # 시작 메시지 전송
 send_start_message()
 
@@ -24,8 +23,10 @@ while True:
                 calc_rsi_avg(i)
                 trade(i)
                 time.sleep(0.1)
-            check_message()
             min_backup = now.minute
+        else:
+            check_message()
+            time.sleep(1)
             
     except Exception as e:
         send(e)
