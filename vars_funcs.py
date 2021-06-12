@@ -199,10 +199,6 @@ def check_rsi(i):
     elif rsi14[i] < rsi_h_avg[i]:
         if f_rsi_h[i] == 1:
             f_rsi_h[i] = 2
-    
-    print("rsi14 : "+str(rsi14[i]))
-    print("f_rsi_l : "+str(f_rsi_l[i]))
-    print("f_rsi_h : "+str(f_rsi_h[i]))
     time.sleep(0.01)
 
 def calc_rsi_avg(i):
@@ -233,9 +229,6 @@ def calc_rsi_avg(i):
             rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
         rsi_l_min[i] = 100
         rsi_l_chk[i] = 0
-
-    print("rsi_l_avg : "+str(rsi_l_avg[i]))
-    print("rsi_h_avg : "+str(rsi_h_avg[i]))
     time.sleep(0.01)
 		
 def trade(i):
@@ -330,7 +323,8 @@ def send_hourly_report(req):
     for i in range(0,tkr_num):
         if rsi14[i] == 0:
             rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-        txt += tkr_buy[i]+" : "+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))+"\n"
+        txt += tkr_buy[i]+" : "+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))
+        txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
     send(txt)
 
 def check_message():
