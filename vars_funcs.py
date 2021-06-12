@@ -36,8 +36,8 @@ rsi_h_cnt = [10]*tkr_num
 rsi_h_cnt_d = [10]*tkr_num
 # 기준값
 unit_trade_price = 10000
-rsi_l_std = 40
-rsi_h_std = 60
+rsi_l_std = 37.5
+rsi_h_std = 62.5
 # 챗봇 confirm
 confirm_sell = 0
 confirm_quit = 0
