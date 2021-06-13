@@ -17,7 +17,7 @@ while True:
                 f_start = 1
             time_backup = now.hour
     # 매매 logic
-        if min_backup != now.minute:
+        if min_backup != now.minute and now.minute % trade_intv == 0:
             for i in range(0, tkr_num):
                 check_rsi(i)
                 calc_rsi_avg(i)
