@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.58"     # 손절 기준 챗봇 추가, 동작 시간 표시 형식 수정
+VERSION = "21.06.12.58"     # 오류 수정
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -331,7 +331,7 @@ def send_hourly_report(req):
     txt+= " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회\n"
     txt+= " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)\n"
     txt+= " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)\n"
-    txt+= " - Running  : "+str(r_time.hour)+"시간 "+str(r_time.minute)+"분"
+    txt+= " - Running  : "+str(r_time)
     send(txt)
     if req == 1:
         hourlyBalance = curBalance
