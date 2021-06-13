@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.58"     # 오류 수정
+VERSION = "21.06.12.59"     # trade_intv, rsi_intv 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -48,7 +48,7 @@ time_backup = -1
 min_backup = -1
 last_rx_time = -1
 start_time = 0
-
+trade_intv = 1
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
@@ -349,7 +349,7 @@ def send_hourly_report(req):
     send(txt)
 
 def check_message():
-    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit
+    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv
     time.sleep(1)
     latest = bot.getUpdates()[-1].message
     if latest.date != last_rx_time:
@@ -370,12 +370,32 @@ def check_message():
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
+                if 0 < num < 60:
+                    trade_intv = num
+                    send("trade_intv changed : "+str(trade_intv))
+                else:
+                    send("wrong input")
+        elif latest.text[0] == "4":
+            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+                send("wrong input")
+            else:
+                num = float(latest.text[3:])
+                if 0 < num <= 240:
+                    rsi_intv = num
+                    send("rsi_intv changed : "+str(rsi_intv))
+                else:
+                    send("wrong input")
+        elif latest.text[0] == "5":
+            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+                send("wrong input")
+            else:
+                num = float(latest.text[3:])
                 if 50 < num < 100:
                     rsi_h_std = num
                     send("rsi_h_std changed : "+str(rsi_h_std))
                 else:
                     send("wrong input")
-        elif latest.text[0] == "4":
+        elif latest.text[0] == "6":
             if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
                 send("wrong input")
             else:
@@ -385,7 +405,7 @@ def check_message():
                     send("rsi_l_std changed : "+str(rsi_l_std))
                 else:
                     send("wrong input")
-        elif latest.text[0] == "5":
+        elif latest.text[0] == "7":
             if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
                 send("wrong input")
             else:
@@ -395,8 +415,10 @@ def check_message():
                     send("stop_loss changed : "+str(stop_loss))
                 else:
                     send("wrong input")
-        elif latest.text[0] == "6":
+        elif latest.text[0] == "8":
             txt = "unit_trade_price : "+str(unit_trade_price)+"\n"
+            txt+= "trade_intv       : "+str(trade_intv)+"\n"
+            txt+= "rsi_intv         : "+str(rsi_intv)+"\n"
             txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
             txt+= "rsi_l_std        : "+str(rsi_l_std)+"\n"
             txt+= "stop_loss        : "+str(stop_loss)
@@ -430,10 +452,12 @@ def check_message():
             txt = "========== Menu ==========\n"
             txt+= "1    : 현재 상태 출력\n"
             txt+= "2, N : unit_trade_price N으로 변경\n"
-            txt+= "3, N : rsi_h_std N으로 변경\n"
-            txt+= "4, N : rsi_l_std N으로 변경\n"
-            txt+= "5, N : stop_loss N으로 변경\n"
-            txt+= "6    : 2 ~ 4 현재 값 확인\n"
+            txt+= "3, N : trade_intv N으로 변경\n"
+            txt+= "4, N : rsi_intv N으로 변경\n"
+            txt+= "5, N : rsi_h_std N으로 변경\n"
+            txt+= "6, N : rsi_l_std N으로 변경\n"
+            txt+= "7, N : stop_loss N으로 변경\n"
+            txt+= "8    : 현재 parameter 값 확인\n"
             txt+= "sell : 전량 매도\n"
             txt+= "quit : 프로그램 종료"
             send(txt)
