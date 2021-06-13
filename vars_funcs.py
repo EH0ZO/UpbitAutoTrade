@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.56"     # 오류 수정
+VERSION = "21.06.12.57"     # 오류 수정
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -38,6 +38,7 @@ rsi_h_cnt_d = [10]*tkr_num
 unit_trade_price = 10000
 rsi_l_std = 37.5
 rsi_h_std = 62.5
+stop_loss = 0.02
 # 챗봇 confirm
 confirm_sell = 0
 confirm_quit = 0
@@ -285,7 +286,7 @@ def trade(i):
             send(txt)
         f_rsi_h[i] = 0
     # 손절 : -2% 미만 시 전량 매도
-    if (current-avg_buy)/avg_buy < -0.02:
+    if (current-avg_buy)/avg_buy < -stop_loss:
         sell(tkr_buy[i], 0)
         num_sell += 1
         send(tkr_buy[i]+" 손절("+str(round((current-avg_buy)/avg_buy, 2))+")")
@@ -345,37 +346,57 @@ def send_hourly_report(req):
     send(txt)
 
 def check_message():
-    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, confirm_sell, confirm_quit
+    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit
     time.sleep(1)
     latest = bot.getUpdates()[-1].message
     if latest.date != last_rx_time:
         if latest.text[0] == "1":
             send_hourly_report(0)
         elif latest.text[0] == "2":
-            num = float(latest.text[3:])
-            if num > 5000:
-                unit_trade_price = num
-                send("unit_trade_price changed : "+str(unit_trade_price))
-            else:
+            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
                 send("wrong input")
+            else:
+                num = float(latest.text[3:])
+                if num > 5000:
+                    unit_trade_price = num
+                    send("unit_trade_price changed : "+str(unit_trade_price))
+                else:
+                    send("wrong input")
         elif latest.text[0] == "3":
-            num = float(latest.text[3:])
-            if 50 < num < 100:
-                rsi_h_std = int(latest.text[3:])
-                send("rsi_h_std changed : "+str(rsi_h_std))
-            else:
+            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
                 send("wrong input")
+            else:
+                num = float(latest.text[3:])
+                if 50 < num < 100:
+                    rsi_h_std = num
+                    send("rsi_h_std changed : "+str(rsi_h_std))
+                else:
+                    send("wrong input")
         elif latest.text[0] == "4":
-            num = float(latest.text[3:])
-            if 0 < num < 50:
-                rsi_l_std = int(latest.text[3:])
-                send("rsi_l_std changed : "+str(rsi_l_std))
-            else:
+            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
                 send("wrong input")
+            else:
+                num = float(latest.text[3:])
+                if 0 < num < 50:
+                    rsi_l_std = num
+                    send("rsi_l_std changed : "+str(rsi_l_std))
+                else:
+                    send("wrong input")
         elif latest.text[0] == "5":
+            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+                send("wrong input")
+            else:
+                num = float(latest.text[3:])
+                if 0 < num < 1:
+                    stop_loss = num
+                    send("stop_loss changed : "+str(stop_loss))
+                else:
+                    send("wrong input")
+        elif latest.text[0] == "6":
             txt = "unit_trade_price : "+str(unit_trade_price)+"\n"
             txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
-            txt+= "rsi_l_std        : "+str(rsi_l_std)
+            txt+= "rsi_l_std        : "+str(rsi_l_std)+"\n"
+            txt+= "stop_loss        : "+str(stop_loss)
             send(txt)
         elif latest.text == "sell":
             confirm_sell = 1
@@ -408,7 +429,8 @@ def check_message():
             txt+= "2, N : unit_trade_price N으로 변경\n"
             txt+= "3, N : rsi_h_std N으로 변경\n"
             txt+= "4, N : rsi_l_std N으로 변경\n"
-            txt+= "5    : 2 ~ 4 현재 값 확인\n"
+            txt+= "5, N : stop_loss N으로 변경\n"
+            txt+= "6    : 2 ~ 4 현재 값 확인\n"
             txt+= "sell : 전량 매도\n"
             txt+= "quit : 프로그램 종료"
             send(txt)
