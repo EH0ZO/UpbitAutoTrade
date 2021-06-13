@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.59"     # trade_intv, rsi_intv 추가
+VERSION = "21.06.12.5A"     # trade_intv, rsi_intv 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
