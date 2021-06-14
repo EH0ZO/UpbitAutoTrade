@@ -283,7 +283,7 @@ def trade(i):
                 sell(tkr_buy[i], unit_trade_price)
             num_sell += 1
             txt = tkr_buy[i]+" 매도(price : "+str(round(current,2))+")\n"
-            txt+= "평단가 : "+str(round(get_avg_buy_price(tkr_buy_[i]),2)+"\n"
+            txt+= "평단가 : "+str(round(get_avg_buy_price(tkr_buy_[i]),2))+"\n"
             txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
             send(txt)
         f_rsi_h[i] = 0
