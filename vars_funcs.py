@@ -359,7 +359,7 @@ def check_message():
         elif latest.text[0] == "2":
             if len(latest.text) < 4:
                 send("wrong input")
-            elif latest.text[]not('0' <= latest.text[3] <= '9'):
+            elif not('0' <= latest.text[3] <= '9'):
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
