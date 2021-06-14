@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.5A"     # trade_intv, rsi_intv 추가
+VERSION = "21.06.12.5B"     # 오류수정, 매도 메시지에 평단가 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -282,7 +282,8 @@ def trade(i):
             else:
                 sell(tkr_buy[i], unit_trade_price)
             num_sell += 1
-            txt = tkr_buy[i]+" 매도(price : "+str(round(current))+")\n"
+            txt = tkr_buy[i]+" 매도(price : "+str(round(current,2))+")\n"
+            txt+= "평단가 : "+str(round(get_avg_buy_price(tkr_buy_[i]),2)+"\n"
             txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
             send(txt)
         f_rsi_h[i] = 0
@@ -356,7 +357,7 @@ def check_message():
         if latest.text[0] == "1":
             send_hourly_report(0)
         elif latest.text[0] == "2":
-            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+            if len(latest.text) < 4 or not('0' <= latest.text[3] <= '9'):
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
@@ -366,7 +367,7 @@ def check_message():
                 else:
                     send("wrong input")
         elif latest.text[0] == "3":
-            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+            if len(latest.text) < 4 or not('0' <= latest.text[3] <= '9'):
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
@@ -376,7 +377,7 @@ def check_message():
                 else:
                     send("wrong input")
         elif latest.text[0] == "4":
-            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+            if len(latest.text) < 4 or not('0' <= latest.text[3] <= '9'):
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
@@ -386,7 +387,7 @@ def check_message():
                 else:
                     send("wrong input")
         elif latest.text[0] == "5":
-            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+            if len(latest.text) < 4 or not('0' <= latest.text[3] <= '9'):
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
@@ -396,7 +397,7 @@ def check_message():
                 else:
                     send("wrong input")
         elif latest.text[0] == "6":
-            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+            if len(latest.text) < 4 or not('0' <= latest.text[3] <= '9'):
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
@@ -406,7 +407,7 @@ def check_message():
                 else:
                     send("wrong input")
         elif latest.text[0] == "7":
-            if len(latest.text) < 4 or not('0' <= str[3] <= '9'):
+            if len(latest.text) < 4 or not('0' <= latest.text[3] <= '9'):
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
