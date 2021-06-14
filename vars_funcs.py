@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.5C"     # 챗봇 오류수정
+VERSION = "21.06.12.5D"     # 매도 메시지 수정
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -282,8 +282,8 @@ def trade(i):
             else:
                 sell(tkr_buy[i], unit_trade_price)
             num_sell += 1
-            txt = tkr_buy[i]+" 매도(price : "+str(round(current,2))+")\n"
-            txt+= "평단가 : "+str(round(get_avg_buy_price(tkr_buy[i]),2))+"\n"
+            txt = tkr_buy[i]+" 매도\n"
+            txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
             txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
             send(txt)
         f_rsi_h[i] = 0
