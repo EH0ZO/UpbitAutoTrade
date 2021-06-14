@@ -283,7 +283,7 @@ def trade(i):
                 sell(tkr_buy[i], unit_trade_price)
             num_sell += 1
             txt = tkr_buy[i]+" 매도(price : "+str(round(current,2))+")\n"
-            txt+= "평단가 : "+str(round(get_avg_buy_price(tkr_buy_[i]),2))+"\n"
+            txt+= "평단가 : "+str(round(get_avg_buy_price(tkr_buy[i]),2))+"\n"
             txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
             send(txt)
         f_rsi_h[i] = 0
@@ -359,7 +359,7 @@ def check_message():
         elif latest.text[0] == "2":
             if len(latest.text) < 4:
                 send("wrong input")
-            elif not('0' <= latest.text[3] <= '9'):
+            elif latest.text[]not('0' <= latest.text[3] <= '9'):
                 send("wrong input")
             else:
                 num = float(latest.text[3:])
