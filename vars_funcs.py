@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.5E"     # 손절 기준 -1.5%로 수정, 챗봇 강건설계
+VERSION = "21.06.12.5F"     # 챗봇 주기 수정
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -351,7 +351,7 @@ def send_hourly_report(req):
 
 def check_message():
     global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv
-    time.sleep(1)
+    time.sleep(5)
     latest = bot.getUpdates()[-1].message
     if latest.text != None and latest.date != last_rx_time:
         if latest.text[0] == "1":
