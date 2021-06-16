@@ -376,7 +376,7 @@ def check_message():
             else:
                 num = float(latest.text[3:])
                 if 0 < num < 60:
-                    trade_intv = num
+                    trade_intv = int(num)
                     send("trade_intv changed : "+str(trade_intv))
                 else:
                     send("wrong input")
@@ -388,7 +388,7 @@ def check_message():
             else:
                 num = float(latest.text[3:])
                 if 0 < num <= 240:
-                    rsi_intv = num
+                    rsi_intv = int(num)
                     send("rsi_intv changed : "+str(rsi_intv))
                 else:
                     send("wrong input")
