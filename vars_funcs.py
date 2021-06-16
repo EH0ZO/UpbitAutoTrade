@@ -291,7 +291,7 @@ def trade(i):
     if (current-avg_buy)/avg_buy < -stop_loss:
         sell(tkr_buy[i], 0)
         num_sell += 1
-        send(tkr_buy[i]+" 손절("+str(round(((current-avg_buy)/avg_buy)*100, 2))+")")
+        send(tkr_buy[i]+" 손절("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)")
     time.sleep(0.01)
 
 def reset_newday():
