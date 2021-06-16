@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.12.5F"     # 챗봇 주기 수정
+VERSION = "21.06.16.60"     # 챗봇 parameter 자료형 수정
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
