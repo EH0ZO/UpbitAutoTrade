@@ -38,7 +38,7 @@ rsi_h_cnt_d = [10]*tkr_num
 unit_trade_price = 10000
 rsi_l_std = 37.5
 rsi_h_std = 62.5
-stop_loss = 0.015
+stop_loss = 0.01
 # 챗봇 confirm
 confirm_sell = 0
 confirm_quit = 0
@@ -291,7 +291,7 @@ def trade(i):
     if (current-avg_buy)/avg_buy < -stop_loss:
         sell(tkr_buy[i], 0)
         num_sell += 1
-        send(tkr_buy[i]+" 손절("+str(round((current-avg_buy)/avg_buy, 2))+")")
+        send(tkr_buy[i]+" 손절("+str(round(((current-avg_buy)/avg_buy)*100, 2))+")")
     time.sleep(0.01)
 
 def reset_newday():
