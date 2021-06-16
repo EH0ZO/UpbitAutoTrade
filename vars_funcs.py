@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.16.60"     # 챗봇 parameter 자료형 수정
+VERSION = "21.06.16.61"     # 매매로직 수행 주기 변경, rsi 기준 리셋 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -16,7 +16,7 @@ num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 tkr_num = 10
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]     
 # RSI
-rsi_intv = 5
+rsi_intv = 10
 rsi14 = [0]*tkr_num
 rsi_l_min = [100]*tkr_num
 rsi_h_max = [0]*tkr_num
@@ -48,7 +48,7 @@ time_backup = -1
 min_backup = -1
 last_rx_time = -1
 start_time = 0
-trade_intv = 1
+trade_intv = 2
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
@@ -311,6 +311,17 @@ def reset_newday():
     # 잔고 Update
     startBalance = hourlyBalance = get_totalKRW()
 
+def reset_rsi_std():
+    global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
+    for i in range(0,tkr_num):
+        rsi_l_sum[i] = 30 + rsi_l_avg[i] * rsi_l_cnt_d[i]
+        rsi_l_cnt[i] = rsi_l_cnt_d[i] + 1
+        rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
+        rsi_h_sum[i] = 70 + rsi_h_avg[i] * rsi_h_cnt_d[i]
+        rsi_h_cnt[i] = rsi_h_cnt_d[i] + 1
+        rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
+        rsi_l_cnt_d[i] = rsi_h_cnt_d[i] = 0
+
 def send_hourly_report(req):
     global rsi14, hourlyBalance, num_buy_total, num_sell_total, num_buy, num_sell
     # 수익 계산
@@ -429,6 +440,9 @@ def check_message():
                 else:
                     send("wrong input")
         elif latest.text[0] == "8":
+            reset_rsi_std()
+            send("reset rsi std")
+        elif latest.text[0] == "9":
             txt = "unit_trade_price : "+str(unit_trade_price)+"\n"
             txt+= "trade_intv       : "+str(trade_intv)+"\n"
             txt+= "rsi_intv         : "+str(rsi_intv)+"\n"
@@ -470,7 +484,8 @@ def check_message():
             txt+= "5, N : rsi_h_std N으로 변경\n"
             txt+= "6, N : rsi_l_std N으로 변경\n"
             txt+= "7, N : stop_loss N으로 변경\n"
-            txt+= "8    : 현재 parameter 값 확인\n"
+            txt+= "8    : reset rsi std\n"
+            txt+= "9    : 현재 parameter 값 확인\n"
             txt+= "sell : 전량 매도\n"
             txt+= "quit : 프로그램 종료"
             send(txt)
