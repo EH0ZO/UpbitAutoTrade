@@ -177,14 +177,3 @@ def chat(update, context):
 updater = Updater(token, use_context=True)
 msg_handler = MessageHandler(Filters.text, chat)
 updater.dispatcher.add_handler(msg_handler)
-
-
-while True:
-    try:
-        updater.start_polling(timeout=3, drop_pending_updates=True)
-        updater.idle
-        time.sleep(1)
-
-    except Exception as e:
-        send(e)
-        time.sleep(1)
