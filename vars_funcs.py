@@ -7,7 +7,7 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.19.62"     # 챗봇 수정, 코인 5종목으로 축소, 거래금액 15000원, rsi 기준값 변경
+VERSION = "21.06.19.62"     # 오류 수정
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수

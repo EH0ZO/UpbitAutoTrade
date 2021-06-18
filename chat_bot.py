@@ -29,7 +29,7 @@ def send_hourly_report(req):
     txt+= " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회\n"
     txt+= " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)\n"
     txt+= " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)\n"
-    txt+= " - Running  : "+str(r_time)
+    txt+= " - Running  : "+str(r_time)+"\n"
     if req == 1:
         hourlyBalance = curBalance
         num_buy = num_sell = 0

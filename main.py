@@ -1,4 +1,3 @@
-from vars_funcs import *
 from chat_bot import *
 
 # Main Logic
