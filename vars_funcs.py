@@ -45,7 +45,7 @@ bot = telegram.Bot(token)
 
 # Functions
 def send(str):
-    bot.sendMessage(chat_id,str)
+    bot.sendMessage(chat_id,str,timeout=3)
 
 def get_current_price(ticker):
     # 현재가 조회
