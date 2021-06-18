@@ -1,4 +1,5 @@
 from vars_funcs import *
+from chat_bot import *
 
 # Main Logic
 # 시작 메시지 전송
@@ -23,8 +24,10 @@ while True:
                 calc_rsi_avg(i)
                 trade(i)
         else:
-            check_message()
+            updater.start_polling(timeout=3, drop_pending_updates=True)
+            updater.idle
         min_backup = now.minute
+        time.sleep(1)
             
     except Exception as e:
         send(e)

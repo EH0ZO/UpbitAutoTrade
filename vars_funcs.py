@@ -7,48 +7,33 @@ import telegram
 import sys
 
 # Global variables
-VERSION = "21.06.16.61"     # 매매로직 수행 주기 변경, rsi 기준 리셋 추가
+VERSION = "21.06.19.62"     # 챗봇 수정, 코인 5종목으로 축소, 거래금액 15000원, rsi 기준값 변경
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
 num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 # 종목
-tkr_num = 10
-tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]     
+tkr_num = 5
+tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"] #, "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]     
 # RSI
 rsi_intv = 10
 rsi14 = [0]*tkr_num
-rsi_l_min = [100]*tkr_num
-rsi_h_max = [0]*tkr_num
-rsi_l_sum = [300]*tkr_num
-rsi_h_sum = [700]*tkr_num
-rsi_l_avg = [30]*tkr_num
-rsi_h_avg = [70]*tkr_num
-f_rsi_l = [0]*tkr_num
-f_rsi_h = [0]*tkr_num
-f_rsi_30 = [0]*tkr_num
-f_rsi_70 = [0]*tkr_num
-rsi_l_chk = [0]*tkr_num
-rsi_h_chk = [0]*tkr_num
-rsi_l_cnt = [10]*tkr_num
-rsi_l_cnt_d = [10]*tkr_num
-rsi_h_cnt = [10]*tkr_num
-rsi_h_cnt_d = [10]*tkr_num
+rsi_l_min = [100]*tkr_num; rsi_l_sum = [300]*tkr_num; rsi_l_avg = [30]*tkr_num
+rsi_h_max = [0]*tkr_num; rsi_h_sum = [700]*tkr_num; rsi_h_avg = [70]*tkr_num
+f_rsi_l = [0]*tkr_num; rsi_l_chk = [0]*tkr_num
+f_rsi_h = [0]*tkr_num; rsi_h_chk = [0]*tkr_num
+f_rsi_30 = [0]*tkr_num; f_rsi_70 = [0]*tkr_num
+rsi_l_cnt = [10]*tkr_num; rsi_l_cnt_d = [10]*tkr_num
+rsi_h_cnt = [10]*tkr_num; rsi_h_cnt_d = [10]*tkr_num
 # 기준값
-unit_trade_price = 10000
-rsi_l_std = 37.5
-rsi_h_std = 62.5
+unit_trade_price = 15000
+rsi_l_std = 35
+rsi_h_std = 65
 stop_loss = 0.01
 # 챗봇 confirm
-confirm_sell = 0
-confirm_quit = 0
+confirm_sell = 0; confirm_quit = 0
 # 시간
-f_start = 0
-time_backup = -1
-min_backup = -1
-last_rx_time = -1
-start_time = 0
-trade_intv = 2
+f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 2
 
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
@@ -61,13 +46,6 @@ bot = telegram.Bot(token)
 # Functions
 def send(str):
     bot.sendMessage(chat_id,str)
-
-def send_start_message():
-    txt = "==================================\n"
-    txt+= "autotrade start (ver."+VERSION+"))\n"
-    txt+= str(start_time)+"\n"
-    txt+= "=================================="
-    send(txt)
 
 def get_current_price(ticker):
     # 현재가 조회
@@ -291,7 +269,10 @@ def trade(i):
     if (current-avg_buy)/avg_buy < -stop_loss:
         sell(tkr_buy[i], 0)
         num_sell += 1
-        send(tkr_buy[i]+" 손절("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)")
+        txt = tkr_buy[i]+" 손절\n"
+        txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
+        txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
+        send(txt)
     time.sleep(0.01)
 
 def reset_newday():
@@ -314,183 +295,12 @@ def reset_newday():
 def reset_rsi_std():
     global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
     for i in range(0,tkr_num):
-        rsi_l_sum[i] = 30 + rsi_l_avg[i] * rsi_l_cnt_d[i]
-        rsi_l_cnt[i] = rsi_l_cnt_d[i] + 1
+        rsi_l_cnt[i] = rsi_h_cnt[i] = 10
+        rsi_l_sum[i] = 30 * rsi_l_cnt[i]
         rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
-        rsi_h_sum[i] = 70 + rsi_h_avg[i] * rsi_h_cnt_d[i]
-        rsi_h_cnt[i] = rsi_h_cnt_d[i] + 1
+        rsi_h_sum[i] = 70 * rsi_h_cnt[i]
         rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
         rsi_l_cnt_d[i] = rsi_h_cnt_d[i] = 0
 
-def send_hourly_report(req):
-    global rsi14, hourlyBalance, num_buy_total, num_sell_total, num_buy, num_sell
-    # 수익 계산
-    num_buy_total += num_buy
-    num_sell_total += num_sell
-    curBalance = get_totalKRW()
-    balChange_hr = curBalance - hourlyBalance
-    balChngPercent_hr = balChange_hr / hourlyBalance * 100
-    balChange_d = curBalance - startBalance
-    balChngPercent_d = balChange_d / startBalance * 100
-    r_time = datetime.datetime.now() - start_time
-    # 결과 송신
-    if req == 1:
-        txt = "========== Hourly Report ==========\n"
-    elif req == 0:
-        txt = "========== Current Report ==========\n"
-    txt+= " - 현재 잔고  : "+str(round(curBalance))+"원\n"
-    txt+= " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회\n"
-    txt+= " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회\n"
-    txt+= " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)\n"
-    txt+= " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)\n"
-    txt+= " - Running  : "+str(r_time)
-    send(txt)
-    if req == 1:
-        hourlyBalance = curBalance
-        num_buy = num_sell = 0
-    elif req == 0:
-        num_buy_total -= num_buy
-        num_sell_total -= num_sell
-    # RSI 값 송신
-    txt = "========== RSI14 Value ==========\n"
-    for i in range(0,tkr_num):
-        if rsi14[i] == 0:
-            rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-        txt += tkr_buy[i]+" : "+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))
-        txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
-    send(txt)
-
-def check_message():
-    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv
-    time.sleep(5)
-    latest = bot.getUpdates()[-1].message
-    if latest.text != None and latest.date != last_rx_time:
-        if latest.text[0] == "1":
-            send_hourly_report(0)
-        elif latest.text[0] == "2":
-            if len(latest.text) < 4:
-                send("wrong input")
-            elif not('0' <= latest.text[3] <= '9'):
-                send("wrong input")
-            else:
-                num = float(latest.text[3:])
-                if num > 5000:
-                    unit_trade_price = num
-                    send("unit_trade_price changed : "+str(unit_trade_price))
-                else:
-                    send("wrong input")
-        elif latest.text[0] == "3":
-            if len(latest.text) < 4: 
-                send("wrong input")
-            elif not('0' <= latest.text[3] <= '9'):
-                send("wrong input")
-            else:
-                num = float(latest.text[3:])
-                if 0 < num < 60:
-                    trade_intv = int(num)
-                    send("trade_intv changed : "+str(trade_intv))
-                else:
-                    send("wrong input")
-        elif latest.text[0] == "4":
-            if len(latest.text) < 4:
-                send("wrong input")
-            elif not('0' <= latest.text[3] <= '9'):
-                send("wrong input")
-            else:
-                num = float(latest.text[3:])
-                if 0 < num <= 240:
-                    rsi_intv = int(num)
-                    send("rsi_intv changed : "+str(rsi_intv))
-                else:
-                    send("wrong input")
-        elif latest.text[0] == "5":
-            if len(latest.text) < 4: 
-                send("wrong input")
-            elif not('0' <= latest.text[3] <= '9'):
-                send("wrong input")
-            else:
-                num = float(latest.text[3:])
-                if 50 < num < 100:
-                    rsi_h_std = num
-                    send("rsi_h_std changed : "+str(rsi_h_std))
-                else:
-                    send("wrong input")
-        elif latest.text[0] == "6":
-            if len(latest.text) < 4: 
-                send("wrong input")
-            elif not('0' <= latest.text[3] <= '9'):
-                send("wrong input")
-            else:
-                num = float(latest.text[3:])
-                if 0 < num < 50:
-                    rsi_l_std = num
-                    send("rsi_l_std changed : "+str(rsi_l_std))
-                else:
-                    send("wrong input")
-        elif latest.text[0] == "7":
-            if len(latest.text) < 4: 
-                send("wrong input")
-            elif not('0' <= latest.text[3] <= '9'):
-                send("wrong input")
-            else:
-                num = float(latest.text[3:])
-                if 0 < num < 1:
-                    stop_loss = num
-                    send("stop_loss changed : "+str(stop_loss))
-                else:
-                    send("wrong input")
-        elif latest.text[0] == "8":
-            reset_rsi_std()
-            send("reset rsi std")
-        elif latest.text[0] == "9":
-            txt = "unit_trade_price : "+str(unit_trade_price)+"\n"
-            txt+= "trade_intv       : "+str(trade_intv)+"\n"
-            txt+= "rsi_intv         : "+str(rsi_intv)+"\n"
-            txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
-            txt+= "rsi_l_std        : "+str(rsi_l_std)+"\n"
-            txt+= "stop_loss        : "+str(stop_loss)
-            send(txt)
-        elif latest.text == "sell":
-            confirm_sell = 1
-            txt = "보유종목을 전량 매도합니다.\n"
-            txt+= "진행하시겠습니까? (yes/no)"
-            send(txt)
-        elif latest.text == "quit":
-            confirm_quit = 1
-            txt = "프로그램을 종료합니다.\n"
-            txt+= "진행하시겠습니까? (yes/no)"
-            send(txt)
-        elif confirm_sell == 1:
-            if latest.text == "yes":
-                confirm_sell = 0
-                send("보유종목을 전량 매도합니다.")
-                sell_all()
-            else:
-                confirm_sell = 0
-                send("취소합니다.")
-        elif confirm_quit == 1:
-            if latest.text == "yes":
-                send("프로그램을 종료합니다.")
-                sys.exit()
-            else:
-                confirm_quit = 0
-                send("취소합니다.")
-        else:
-            txt = "========== Menu ==========\n"
-            txt+= "1    : 현재 상태 출력\n"
-            txt+= "2, N : unit_trade_price N으로 변경\n"
-            txt+= "3, N : trade_intv N으로 변경\n"
-            txt+= "4, N : rsi_intv N으로 변경\n"
-            txt+= "5, N : rsi_h_std N으로 변경\n"
-            txt+= "6, N : rsi_l_std N으로 변경\n"
-            txt+= "7, N : stop_loss N으로 변경\n"
-            txt+= "8    : reset rsi std\n"
-            txt+= "9    : 현재 parameter 값 확인\n"
-            txt+= "sell : 전량 매도\n"
-            txt+= "quit : 프로그램 종료"
-            send(txt)
-        last_rx_time = latest.date
-
 startBalance = hourlyBalance = get_totalKRW()
-last_rx_time = bot.getUpdates()[-1].message.date
 start_time = datetime.datetime.now()
