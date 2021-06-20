@@ -88,7 +88,8 @@ def chat(update, context):
             txt+= "rsi_intv         : "+str(rsi_intv)+"\n"
             txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
             txt+= "rsi_l_std        : "+str(rsi_l_std)+"\n"
-            txt+= "stop_loss        : "+str(stop_loss)
+            txt+= "stop_loss        : "+str(stop_loss)+"\n"
+            txt+= "pg version        : "+VERSION
             send(txt)
         elif new_text == "sell":
             confirm_sell = 1
