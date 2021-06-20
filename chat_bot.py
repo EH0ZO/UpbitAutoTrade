@@ -1,50 +1,6 @@
 from vars_funcs import *
 from telegram.ext import Updater, MessageHandler, Filters
 
-def send_start_message():
-    txt = "==================================\n"
-    txt+= "autotrade start (ver."+VERSION+"))\n"
-    txt+= str(start_time)+"\n"
-    txt+= "=================================="
-    send(txt)
-
-def send_hourly_report(req):
-    global rsi14, hourlyBalance, num_buy_total, num_sell_total, num_buy, num_sell
-    # 수익 계산
-    num_buy_total += num_buy
-    num_sell_total += num_sell
-    curBalance = get_totalKRW()
-    balChange_hr = curBalance - hourlyBalance
-    balChngPercent_hr = balChange_hr / hourlyBalance * 100
-    balChange_d = curBalance - startBalance
-    balChngPercent_d = balChange_d / startBalance * 100 
-    r_time = datetime.datetime.now() - start_time
-    # 결과 송신
-    if req == 1:
-        txt = "========== Hourly Report ==========\n"
-    elif req == 0:
-        txt = "========== Current Report ==========\n"
-    txt+= " - 현재 잔고  : "+str(round(curBalance))+"원\n"
-    txt+= " - 매수(시간) : "+str(num_buy)+"회, 매도(시간) : "+str(num_sell)+"회\n"
-    txt+= " - 매수(금일) : "+str(num_buy_total)+"회, 매도(금일) : "+str(num_sell_total)+"회\n"
-    txt+= " - 수익(시간) : "+str(round(balChange_hr))+"원 ("+str(round(balChngPercent_hr, 2))+"%)\n"
-    txt+= " - 수익(금일) : "+str(round(balChange_d))+"원 ("+str(round(balChngPercent_d, 2))+"%)\n"
-    txt+= " - Running  : "+str(r_time)+"\n"
-    if req == 1:
-        hourlyBalance = curBalance
-        num_buy = num_sell = 0
-    elif req == 0:
-        num_buy_total -= num_buy
-        num_sell_total -= num_sell
-    # RSI 값 송신
-    txt+= "========== RSI14 Value ==========\n"
-    for i in range(0,tkr_num):
-        if rsi14[i] == 0:
-            rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-        txt += tkr_buy[i]+" : "+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))
-        txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
-    send(txt)
-
 def chat(update, context):
     global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv
     new_text = update.message.text
