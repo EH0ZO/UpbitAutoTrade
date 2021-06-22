@@ -1,4 +1,4 @@
-from chat_bot import *
+from vars_funcs import *
 
 # Main Logic
 # 시작 메시지 전송
