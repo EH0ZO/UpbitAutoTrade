@@ -311,9 +311,9 @@ def reset_newday():
 def reset_rsi_std():
     global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
     global avg_cnt, avg_idx, avg_arr, rsi_avg
-    avg_cnt = avg_cnt/trade_intv
+    avg_cnt = 1440/trade_intv
     for i in range(0,tkr_num):
-        avg_arr[i] = [50]*avg_cnt
+        avg_arr[i] = [50]*1440
         avg_idx[i] = 0
         rsi_avg[i] = 50
         """
