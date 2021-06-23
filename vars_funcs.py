@@ -360,7 +360,8 @@ def send_hourly_report(req):
         if rsi14[i] == 0:
             rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
         txt += tkr_buy[i]+" : "+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))
-        txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
+        txt += " (avg:"+str(rsi_avg[i])+ ")\n"
+        # txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
     send(txt)
 
 def chat(update, context):
