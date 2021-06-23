@@ -26,10 +26,11 @@ f_rsi_h = [0]*tkr_num; rsi_h_chk = [0]*tkr_num
 f_rsi_30 = [0]*tkr_num; f_rsi_70 = [0]*tkr_num
 rsi_l_cnt = [10]*tkr_num; rsi_l_cnt_d = [10]*tkr_num
 rsi_h_cnt = [10]*tkr_num; rsi_h_cnt_d = [10]*tkr_num
-avg_cnt = 720
+avg_cnt = 1440
+h_l_diff = 0.4
 avg_idx = [0]*tkr_num
 rsi_avg = [50]*tkr_num
-avg_arr = [[50]*avg_cnt]*tkr_num
+avg_arr = [[50]*1440]*tkr_num
 # 기준값
 unit_trade_price = 15000
 rsi_l_std = 35
@@ -39,7 +40,7 @@ stop_loss = 0.01
 confirm_sell = 0; confirm_quit = 0
 # 시간
 f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 2
-
+avg_cnt = avg_cnt/trade_intv
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
@@ -236,8 +237,8 @@ def calc_rsi_avg(i):
         if(avg_idx[i] >= avg_cnt):
             avg_idx[i] = 0
         rsi_avg[i] = sum(avg_arr[i])/avg_cnt
-        rsi_h_avg[i] = rsi_avg[i]*1.4
-        rsi_l_avg[i] = rsi_avg[i]*0.6
+        rsi_h_avg[i] = rsi_avg[i]*(1+h_l_diff)
+        rsi_l_avg[i] = rsi_avg[i]*(1-h_l_diff)
     #calc_low()
     #calc_high()
     calc_avg()
@@ -309,13 +310,20 @@ def reset_newday():
 
 def reset_rsi_std():
     global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
+    global avg_cnt, avg_idx, avg_arr, rsi_avg
+    avg_cnt = avg_cnt/trade_intv
     for i in range(0,tkr_num):
+        avg_arr[i] = [50]*avg_cnt
+        avg_idx[i] = 0
+        rsi_avg[i] = 50
+        """
         rsi_l_cnt[i] = rsi_h_cnt[i] = 10
         rsi_l_sum[i] = 30 * rsi_l_cnt[i]
         rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
         rsi_h_sum[i] = 70 * rsi_h_cnt[i]
         rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
         rsi_l_cnt_d[i] = rsi_h_cnt_d[i] = 0
+        """
 
 
 
@@ -391,6 +399,7 @@ def chat(update, context):
                 num = float(new_text[3:])
                 if 0 < num < 60:
                     trade_intv = int(num)
+                    reset_rsi_std()
                     send("trade_intv changed : "+str(trade_intv))
                 else:
                     send("wrong input")
@@ -443,8 +452,17 @@ def chat(update, context):
                 else:
                     send("wrong input")
         elif new_text[0] == "8":
-            reset_rsi_std()
-            send("reset rsi std")
+            if len(new_text) < 4: 
+                send("wrong input")
+            elif not('0' <= new_text[3] <= '9'):
+                send("wrong input")
+            else:
+                num = float(new_text[3:])
+                if 0 < num < 1:
+                    h_l_diff = num
+                    send("h_l_diff changed : "+str(h_l_diff))
+                else:
+                    send("wrong input")
         elif new_text[0] == "9":
             txt = "unit_trade_price : "+str(unit_trade_price)+"\n"
             txt+= "trade_intv       : "+str(trade_intv)+"\n"
@@ -452,6 +470,7 @@ def chat(update, context):
             txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
             txt+= "rsi_l_std        : "+str(rsi_l_std)+"\n"
             txt+= "stop_loss        : "+str(stop_loss)+"\n"
+            txt+= "h_l_diff        : "+str(h_l_diff)+"\n"
             txt+= "pg version        : "+VERSION
             send(txt)
         elif new_text == "sell":
@@ -488,7 +507,7 @@ def chat(update, context):
             txt+= "5, N : rsi_h_std N으로 변경\n"
             txt+= "6, N : rsi_l_std N으로 변경\n"
             txt+= "7, N : stop_loss N으로 변경\n"
-            txt+= "8    : reset rsi std\n"
+            txt+= "8, N : h_l_diff N으로 변경\n"
             txt+= "9    : 현재 parameter 값 확인\n"
             txt+= "sell : 전량 매도\n"
             txt+= "quit : 프로그램 종료"
