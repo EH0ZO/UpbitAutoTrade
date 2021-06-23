@@ -236,7 +236,7 @@ def calc_rsi_avg(i):
         avg_idx[i] += 1
         if(avg_idx[i] >= avg_cnt):
             avg_idx[i] = 0
-        rsi_avg[i] = sum(avg_arr[i])/avg_cnt
+        rsi_avg[i] = sum(avg_arr[i][:avg_cnt])/avg_cnt
         rsi_h_avg[i] = rsi_avg[i]*(1+h_l_diff)
         rsi_l_avg[i] = rsi_avg[i]*(1-h_l_diff)
     #calc_low()
