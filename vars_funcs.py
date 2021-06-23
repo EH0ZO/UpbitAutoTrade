@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.06.23.65"     # 파일 병합
+VERSION = "21.06.23.66"     # h_l_diff 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -204,7 +204,7 @@ def check_rsi(i):
 def calc_rsi_avg(i):
     global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg
     global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg
-    global avg_cnt, avg_idx, avg_arr, rsi_avg
+    global avg_cnt, avg_idx, avg_arr, rsi_avg, h_l_diff
     def calc_low():
         if rsi14[i] < rsi_l_std:
             rsi_l_chk[i] = 1
@@ -373,7 +373,7 @@ def send_hourly_report(req):
     send(txt)
 
 def chat(update, context):
-    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv
+    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, h_l_diff
     new_text = update.message.text
     if new_text != None:
         if new_text[0] == "1":
@@ -465,13 +465,13 @@ def chat(update, context):
                     send("wrong input")
         elif new_text[0] == "9":
             txt = "unit_trade_price : "+str(unit_trade_price)+"\n"
-            txt+= "trade_intv       : "+str(trade_intv)+"\n"
-            txt+= "rsi_intv         : "+str(rsi_intv)+"\n"
-            txt+= "rsi_h_std        : "+str(rsi_h_std)+"\n"
-            txt+= "rsi_l_std        : "+str(rsi_l_std)+"\n"
-            txt+= "stop_loss        : "+str(stop_loss)+"\n"
-            txt+= "h_l_diff        : "+str(h_l_diff)+"\n"
-            txt+= "pg version        : "+VERSION
+            txt+= "trade_intv : "+str(trade_intv)+"\n"
+            txt+= "rsi_intv : "+str(rsi_intv)+"\n"
+            txt+= "rsi_h_std : "+str(rsi_h_std)+"\n"
+            txt+= "rsi_l_std : "+str(rsi_l_std)+"\n"
+            txt+= "stop_loss : "+str(stop_loss)+"\n"
+            txt+= "h_l_diff : "+str(h_l_diff)+"\n"
+            txt+= "pg version : "+VERSION
             send(txt)
         elif new_text == "sell":
             confirm_sell = 1
