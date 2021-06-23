@@ -236,7 +236,10 @@ def calc_rsi_avg(i):
         avg_idx[i] += 1
         if(avg_idx[i] >= avg_cnt):
             avg_idx[i] = 0
-        rsi_avg[i] = sum(avg_arr[i][:avg_cnt])/avg_cnt
+        temp_sum = 0
+        for k in range(0:avg_cnt):
+            temp_sum += avg_arr[i][k]
+        rsi_avg[i] = temp_sum/avg_cnt
         rsi_h_avg[i] = rsi_avg[i]*(1+h_l_diff)
         rsi_l_avg[i] = rsi_avg[i]*(1-h_l_diff)
     #calc_low()
@@ -295,6 +298,7 @@ def reset_newday():
     global num_buy_total, num_sell_total, startBalance, hourlyBalance
     global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
     num_buy_total = num_sell_total = 0
+    """
     for i in range(0,tkr_num):
         rsi_l_sum[i] = 30 + rsi_l_avg[i] * rsi_l_cnt_d[i]
         rsi_l_cnt[i] = rsi_l_cnt_d[i] + 1
@@ -303,6 +307,7 @@ def reset_newday():
         rsi_h_cnt[i] = rsi_h_cnt_d[i] + 1
         rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
         rsi_l_cnt_d[i] = rsi_h_cnt_d[i] = 0
+    """
     # 미관리 종목 전량 매도
     sell_not_in()
     # 잔고 Update
