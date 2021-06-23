@@ -26,6 +26,10 @@ f_rsi_h = [0]*tkr_num; rsi_h_chk = [0]*tkr_num
 f_rsi_30 = [0]*tkr_num; f_rsi_70 = [0]*tkr_num
 rsi_l_cnt = [10]*tkr_num; rsi_l_cnt_d = [10]*tkr_num
 rsi_h_cnt = [10]*tkr_num; rsi_h_cnt_d = [10]*tkr_num
+avg_cnt = 720
+avg_idx = [0]*tkr_num
+rsi_avg = [50]*tkr_num
+avg_arr = [[50]*avg_cnt]*tkr_num
 # 기준값
 unit_trade_price = 15000
 rsi_l_std = 35
@@ -199,6 +203,7 @@ def check_rsi(i):
 def calc_rsi_avg(i):
     global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg
     global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg
+    global avg_cnt, avg_idx, avg_arr, rsi_avg
     def calc_low():
         if rsi14[i] < rsi_l_std:
             rsi_l_chk[i] = 1
@@ -225,8 +230,17 @@ def calc_rsi_avg(i):
                 rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
             rsi_h_max[i] = 0
             rsi_h_chk[i] = 0
-    calc_low()
-    calc_high()
+    def calc_avg():
+        avg_arr[i][avg_idx[i]] = rsi14[i]
+        avg_idx[i] += 1
+        if(avg_idx[i] >= avg_cnt):
+            avg_idx[i] = 0
+        rsi_avg[i] = sum(avg_arr)/avg_cnt
+        rsi_h_avg[i] = rsi_avg[i]*1.4
+        rsi_l_avg[i] = rsi_avg[i]*0.6
+    #calc_low()
+    #calc_high()
+    calc_avg()
     time.sleep(0.01)
 		
 def trade(i):
