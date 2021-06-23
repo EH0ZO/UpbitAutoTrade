@@ -40,7 +40,7 @@ stop_loss = 0.01
 confirm_sell = 0; confirm_quit = 0
 # 시간
 f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 2
-avg_cnt = avg_cnt/trade_intv
+avg_cnt = int(1440/trade_intv)
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
@@ -237,7 +237,7 @@ def calc_rsi_avg(i):
         if(avg_idx[i] >= avg_cnt):
             avg_idx[i] = 0
         temp_sum = 0
-        for k in range(0,avg_cnt):
+        for k in range(0,int(avg_cnt)):
             temp_sum += avg_arr[i][k]
         rsi_avg[i] = temp_sum/avg_cnt
         rsi_h_avg[i] = rsi_avg[i]*(1+h_l_diff)
@@ -316,7 +316,7 @@ def reset_newday():
 def reset_rsi_std():
     global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
     global avg_cnt, avg_idx, avg_arr, rsi_avg
-    avg_cnt = 1440/trade_intv
+    avg_cnt = int(1440/trade_intv)
     for i in range(0,tkr_num):
         avg_arr[i] = [50]*1440
         avg_idx[i] = 0
