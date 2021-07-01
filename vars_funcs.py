@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.06.23.66"     # h_l_diff 추가
+VERSION = "21.07.01.67"     # h_l_diff 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -17,7 +17,7 @@ num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 tkr_num = 5
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"] #, "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]     
 # RSI
-rsi_intv = 10
+rsi_intv = 5
 rsi14 = [0]*tkr_num
 rsi_l_min = [100]*tkr_num; rsi_l_sum = [300]*tkr_num; rsi_l_avg = [30]*tkr_num
 rsi_h_max = [0]*tkr_num; rsi_h_sum = [700]*tkr_num; rsi_h_avg = [70]*tkr_num
@@ -32,14 +32,14 @@ avg_idx = [0]*tkr_num
 rsi_avg = [50]*tkr_num
 avg_arr = [[50]*1440]*tkr_num
 # 기준값
-unit_trade_price = 15000
+unit_trade_price = 75000
 rsi_l_std = 35
 rsi_h_std = 65
 stop_loss = 0.01
 # 챗봇 confirm
 confirm_sell = 0; confirm_quit = 0
 # 시간
-f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 2
+f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 1
 avg_cnt = int(1440/trade_intv)
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
