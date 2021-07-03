@@ -11,6 +11,8 @@ while True:
             chk = check_chatbot("set")
             if check_restart() == 1:
                 backup()
+                reset_newday()
+                reset_rsi_std()
                 break;
             now = datetime.datetime.now()
         # 매매 logic

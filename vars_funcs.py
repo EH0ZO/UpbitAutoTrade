@@ -343,8 +343,6 @@ def reset_rsi_std():
         rsi_l_cnt_d[i] = rsi_h_cnt_d[i] = 0
         """
 
-
-
 def send_start_message():
     txt = "==================================\n"
     txt+= "autotrade start (ver."+VERSION+"))\n"
