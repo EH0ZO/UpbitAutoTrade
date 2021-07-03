@@ -8,14 +8,14 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.01.67"     # h_l_diff 추가
+VERSION = "21.07.04.70"     # 파라미터 백업 추가, 기타 기능 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
 num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 # 종목
-tkr_num = 5
-tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE"] #, "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]     
+tkr_num = 10
+tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW_ETC"]
 # RSI
 rsi_intv = 5
 rsi14 = [0]*tkr_num
@@ -32,12 +32,15 @@ avg_idx = [0]*tkr_num
 rsi_avg = [50]*tkr_num
 avg_arr = [[50]*1440]*tkr_num
 # 기준값
-unit_trade_price = 75000
+unit_trade_price = 25000
 rsi_l_std = 35
 rsi_h_std = 65
-stop_loss = 0.01
+stop_loss = 0.005
+stop_trade = 0
+restart = 0
+chatbot_chk = 0
 # 챗봇 confirm
-confirm_sell = 0; confirm_quit = 0
+confirm_sell = 0; confirm_quit = 0; confirm_stop = 0; confirm_start = 0; confirm_restart = 0
 # 시간
 f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 1
 avg_cnt = int(1440/trade_intv)
@@ -48,10 +51,20 @@ upbit = Upbit(access, secret)
 token = "1814838763:AAGNuB_LWtq8zJMHuezB-vsSI8C4b9X9QLk"
 chat_id = 1883488213
 bot = telegram.Bot(token)
+backup_path = "../parameter_backup.txt"
 
 # Functions
+def check_chatbot(cmd):
+    global chatbot_chk
+    if cmd == "set":
+        chatbot_chk += 1
+    if cmd == "clear":
+        chatbot_chk = 0
+    return chatbot_chk
+
 def send(str):
-    bot.sendMessage(chat_id,str,timeout=3)
+    if chatbot_chk < 10:
+        bot.sendMessage(chat_id,str,timeout=3)
 
 def get_current_price(ticker):
     # 현재가 조회
@@ -377,13 +390,50 @@ def send_hourly_report(req):
         # txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
     send(txt)
 
+def restore():
+    global unit_trade_price, stop_loss, trade_intv, rsi_intv, h_l_diff
+    f = open(backup_path, 'r')
+    unit_trade_price = int(f.readline())
+    trade_intv = int(f.readline())
+    rsi_intv = int(f.readline())
+    stop_loss = float(f.readline())
+    h_l_diff = float(f.readline())
+    f.close()
+    txt = "Parameters are restored\n"
+    txt = "  1: unit_trade_price : "+str(unit_trade_price)+"\n"
+    txt+= "  2: trade_intv : "+str(trade_intv)+"\n"
+    txt+= "  3: rsi_intv : "+str(rsi_intv)+"\n"
+    txt+= "  4: stop_loss : "+str(stop_loss)+"\n"
+    txt+= "  5: h_l_diff : "+str(h_l_diff)+"\n"
+    send(txt)
+
+def backup():
+    global unit_trade_price, stop_loss, trade_intv, rsi_intv, h_l_diff
+    f = open(backup_path, 'w')
+    f.write(str(unit_trade_price)+"\n")
+    f.write(str(trade_intv)+"\n")
+    f.write(str(rsi_intv)+"\n")
+    f.write(str(stop_loss)+"\n")
+    f.write(str(h_l_diff)+"\n")
+    f.close()
+    send("Backed up parameters")
+
+def check_restart():
+    global restart
+    if restart == 1:
+        restart = 0
+        return 1
+    else:
+        return 0
+
 def chat(update, context):
-    global last_rx_time, unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, h_l_diff
+    global unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, h_l_diff
+    global confirm_stop, confirm_start, stop_trade, confirm_restart, restart
     new_text = update.message.text
     if new_text != None:
-        if new_text[0] == "1":
+        if new_text[0] == "0":
             send_hourly_report(0)
-        elif new_text[0] == "2":
+        elif new_text[0] == "1":
             if len(new_text) < 4:
                 send("wrong input")
             elif not('0' <= new_text[3] <= '9'):
@@ -391,11 +441,12 @@ def chat(update, context):
             else:
                 num = float(new_text[3:])
                 if num > 5000:
-                    unit_trade_price = num
+                    unit_trade_price = int(num)
                     send("unit_trade_price changed : "+str(unit_trade_price))
+                    backup()
                 else:
                     send("wrong input")
-        elif new_text[0] == "3":
+        elif new_text[0] == "2":
             if len(new_text) < 4: 
                 send("wrong input")
             elif not('0' <= new_text[3] <= '9'):
@@ -406,9 +457,10 @@ def chat(update, context):
                     trade_intv = int(num)
                     reset_rsi_std()
                     send("trade_intv changed : "+str(trade_intv))
+                    backup()
                 else:
                     send("wrong input")
-        elif new_text[0] == "4":
+        elif new_text[0] == "3":
             if len(new_text) < 4:
                 send("wrong input")
             elif not('0' <= new_text[3] <= '9'):
@@ -418,33 +470,10 @@ def chat(update, context):
                 if 0 < num <= 240:
                     rsi_intv = int(num)
                     send("rsi_intv changed : "+str(rsi_intv))
+                    backup()
                 else:
                     send("wrong input")
-        elif new_text[0] == "5":
-            if len(new_text) < 4: 
-                send("wrong input")
-            elif not('0' <= new_text[3] <= '9'):
-                send("wrong input")
-            else:
-                num = float(new_text[3:])
-                if 50 < num < 100:
-                    rsi_h_std = num
-                    send("rsi_h_std changed : "+str(rsi_h_std))
-                else:
-                    send("wrong input")
-        elif new_text[0] == "6":
-            if len(new_text) < 4: 
-                send("wrong input")
-            elif not('0' <= new_text[3] <= '9'):
-                send("wrong input")
-            else:
-                num = float(new_text[3:])
-                if 0 < num < 50:
-                    rsi_l_std = num
-                    send("rsi_l_std changed : "+str(rsi_l_std))
-                else:
-                    send("wrong input")
-        elif new_text[0] == "7":
+        elif new_text[0] == "4":
             if len(new_text) < 4: 
                 send("wrong input")
             elif not('0' <= new_text[3] <= '9'):
@@ -454,9 +483,10 @@ def chat(update, context):
                 if 0 < num < 1:
                     stop_loss = num
                     send("stop_loss changed : "+str(stop_loss))
+                    backup()
                 else:
                     send("wrong input")
-        elif new_text[0] == "8":
+        elif new_text[0] == "5":
             if len(new_text) < 4: 
                 send("wrong input")
             elif not('0' <= new_text[3] <= '9'):
@@ -466,16 +496,16 @@ def chat(update, context):
                 if 0 < num < 1:
                     h_l_diff = num
                     send("h_l_diff changed : "+str(h_l_diff))
+                    backup()
                 else:
                     send("wrong input")
         elif new_text[0] == "9":
-            txt = "unit_trade_price : "+str(unit_trade_price)+"\n"
-            txt+= "trade_intv : "+str(trade_intv)+"\n"
-            txt+= "rsi_intv : "+str(rsi_intv)+"\n"
-            txt+= "rsi_h_std : "+str(rsi_h_std)+"\n"
-            txt+= "rsi_l_std : "+str(rsi_l_std)+"\n"
-            txt+= "stop_loss : "+str(stop_loss)+"\n"
-            txt+= "h_l_diff : "+str(h_l_diff)+"\n"
+            txt = "1: unit_trade_price : "+str(unit_trade_price)+"\n"
+            txt+= "2: trade_intv : "+str(trade_intv)+"\n"
+            txt+= "3: rsi_intv : "+str(rsi_intv)+"\n"
+            txt+= "4: stop_loss : "+str(stop_loss)+"\n"
+            txt+= "5: h_l_diff : "+str(h_l_diff)+"\n"
+            txt+= "stop_trade : "+str(stop_trade)
             txt+= "pg version : "+VERSION
             send(txt)
         elif new_text == "sell":
@@ -486,6 +516,21 @@ def chat(update, context):
         elif new_text == "quit":
             confirm_quit = 1
             txt = "프로그램을 종료합니다.\n"
+            txt+= "진행하시겠습니까? (yes/no)"
+            send(txt)
+        elif new_text == "stop":
+            confirm_stop = 1
+            txt = "매매를 중단합니다.\n"
+            txt+= "진행하시겠습니까? (yes/no)"
+            send(txt)
+        elif new_text == "start":
+            confirm_start = 1
+            txt = "매매를 시작합니다.\n"
+            txt+= "진행하시겠습니까? (yes/no)"
+            send(txt)
+        elif new_text == "restart":
+            confirm_restart = 1
+            txt = "프로그램을 재시작합니다.\n"
             txt+= "진행하시겠습니까? (yes/no)"
             send(txt)
         elif confirm_sell == 1:
@@ -503,19 +548,42 @@ def chat(update, context):
             else:
                 confirm_quit = 0
                 send("취소합니다.")
+        elif confirm_stop == 1:
+            if new_text == "yes":
+                send("매매를 중단합니다.")
+                stop_trade = 1
+            else:
+                confirm_stop = 0
+                send("취소합니다.")
+        elif confirm_start == 1:
+            if new_text == "yes":
+                send("매매를 중단합니다.")
+                stop_trade = 0
+            else:
+                confirm_start = 0
+                send("취소합니다.")
+        elif confirm_restart == 1:
+            if new_text == "yes":
+                send("프로그램을 재시작합니다.")
+                restart = 1
+            else:
+                confirm_restart = 0
+                send("취소합니다.")
         else:
             txt = "========== Menu ==========\n"
-            txt+= "1    : 현재 상태 출력\n"
-            txt+= "2, N : unit_trade_price N으로 변경\n"
-            txt+= "3, N : trade_intv N으로 변경\n"
-            txt+= "4, N : rsi_intv N으로 변경\n"
-            txt+= "5, N : rsi_h_std N으로 변경\n"
-            txt+= "6, N : rsi_l_std N으로 변경\n"
-            txt+= "7, N : stop_loss N으로 변경\n"
-            txt+= "8, N : h_l_diff N으로 변경\n"
+            txt+= "1, N : unit_trade_price N으로 변경\n"
+            txt+= "2, N : trade_intv N으로 변경\n"
+            txt+= "3, N : rsi_intv N으로 변경\n"
+            txt+= "4, N : stop_loss N으로 변경\n"
+            txt+= "5, N : h_l_diff N으로 변경\n"
             txt+= "9    : 현재 parameter 값 확인\n"
+            txt+= "0    : 현재 상태 출력\n"
             txt+= "sell : 전량 매도\n"
-            txt+= "quit : 프로그램 종료"
+            txt+= "quit : 프로그램 종료\n"
+            txt+= "stop : 매매 중지\n"
+            txt+= "start : 매매 시작\n"
+            txt+= "restart : 프로그램 재시작\n"
+            txt+= "그 외 : Menu 출력"
             send(txt)
 
 startBalance = hourlyBalance = get_totalKRW()
