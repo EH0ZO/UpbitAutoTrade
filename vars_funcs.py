@@ -400,7 +400,7 @@ def restore():
     h_l_diff = float(f.readline())
     f.close()
     txt = "Parameters are restored\n"
-    txt = "  1: unit_trade_price : "+str(unit_trade_price)+"\n"
+    txt+= "  1: unit_trade_price : "+str(unit_trade_price)+"\n"
     txt+= "  2: trade_intv : "+str(trade_intv)+"\n"
     txt+= "  3: rsi_intv : "+str(rsi_intv)+"\n"
     txt+= "  4: stop_loss : "+str(stop_loss)+"\n"
