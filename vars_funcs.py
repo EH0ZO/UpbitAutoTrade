@@ -503,7 +503,7 @@ def chat(update, context):
             txt+= "3: rsi_intv : "+str(rsi_intv)+"\n"
             txt+= "4: stop_loss : "+str(stop_loss)+"\n"
             txt+= "5: h_l_diff : "+str(h_l_diff)+"\n"
-            txt+= "stop_trade : "+str(stop_trade)
+            txt+= "stop_trade : "+str(stop_trade)+"\n"
             txt+= "pg version : "+VERSION
             send(txt)
         elif new_text == "sell":
