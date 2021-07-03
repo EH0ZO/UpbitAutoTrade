@@ -15,7 +15,7 @@ startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balanc
 num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 # 종목
 tkr_num = 10
-tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW_ETC"]
+tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
 # RSI
 rsi_intv = 5
 rsi14 = [0]*tkr_num
@@ -173,7 +173,7 @@ def sell_all():
 
 def get_rsi14(symbol, candle):
     url = "https://api.upbit.com/v1/candles/minutes/"+str(candle)
-    querystring = {"market":symbol,"count":"500"}
+    querystring = {"market":symbol,"count":"200"}
     response = requests.request("GET", url, params=querystring)
     data = response.json()
     df = pd.DataFrame(data)
