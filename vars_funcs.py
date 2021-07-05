@@ -197,6 +197,7 @@ def get_rsi14(symbol, candle):
 def check_rsi(i):
     global rsi14, f_rsi_l, f_rsi_h
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
+    calc_rsi_avg(i)
     def check_low():
         # rsi 하방 check
         if rsi14[i] < rsi_l_avg[i]:
@@ -256,6 +257,10 @@ def calc_rsi_avg(i):
         rsi_avg[i] = temp_sum/avg_cnt
         rsi_h_avg[i] = rsi_avg[i]*(1+diff_h)
         rsi_l_avg[i] = rsi_avg[i]*(1-diff_l)
+        if rsi[i] > rsi_h_avg[i]:
+            rsi_h_avg[i] = rsi[i]
+        if rsi[i] < rsi_l_avg[i]:
+            rsi_l_avg[i] = rsi[i]
     #calc_low()
     #calc_high()
     calc_avg()
