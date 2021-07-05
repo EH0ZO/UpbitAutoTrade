@@ -42,6 +42,7 @@ restart = 0
 chatbot_chk = 0
 # 챗봇 confirm
 confirm_sell = 0; confirm_quit = 0; confirm_stop = 0; confirm_start = 0; confirm_restart = 0
+trade_chk = 0
 # 시간
 f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 5
 avg_cnt = int(1440/trade_intv)
@@ -279,7 +280,7 @@ def calc_rsi_avg(i):
     time.sleep(0.01)
 		
 def trade(i):
-    global num_buy, num_sell, f_rsi_l, f_rsi_h
+    global num_buy, num_sell, f_rsi_l, f_rsi_h, trade_chk
     avg_buy = get_avg_buy_price(tkr_buy[i])
     current = get_current_price(tkr_buy[i])
     # 매수 : rsi low 미만 -> 초과 시
@@ -323,6 +324,8 @@ def trade(i):
         txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
         txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
         send(txt)
+    if trade_chk == 1:
+        send("trade running")
     time.sleep(0.01)
 
 def reset_newday():
@@ -448,7 +451,7 @@ def check_restart():
 
 def chat(update, context):
     global unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, diff_h, diff_l
-    global confirm_stop, confirm_start, stop_trade, confirm_restart, restart
+    global confirm_stop, confirm_start, stop_trade, confirm_restart, restart, trade_chk
     new_text = update.message.text
     if new_text != None:
         if new_text[0] == "0":
@@ -540,8 +543,16 @@ def chat(update, context):
             txt+= "5: diff_h : "+str(diff_h)+"\n"
             txt+= "6: diff_l : "+str(diff_l)+"\n"
             txt+= "stop_trade : "+str(stop_trade)+"\n"
+            txt+= "check : "+str(trade_chk)+"\n"
             txt+= "pg version : "+VERSION
             send(txt)
+        elif new_text == "check":
+            if trade_check == 0:
+                trade_chk = 1
+                send("check start")
+            elif trade_check == 1:
+                trade_chk = 0
+                send("check stop")
         elif new_text == "sell":
             confirm_sell = 1
             txt = "보유종목을 전량 매도합니다.\n"
