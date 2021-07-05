@@ -547,10 +547,10 @@ def chat(update, context):
             txt+= "pg version : "+VERSION
             send(txt)
         elif new_text == "check":
-            if trade_check == 0:
+            if trade_chk == 0:
                 trade_chk = 1
                 send("check start")
-            elif trade_check == 1:
+            elif trade_chk == 1:
                 trade_chk = 0
                 send("check stop")
         elif new_text == "sell":
