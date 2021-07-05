@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.05.71"     # rsi_peak 추가
+VERSION = "21.07.05.72"     # rsi_peak 추가, 메시지 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -401,7 +401,8 @@ def send_hourly_report(req):
     for i in range(0,tkr_num):
         if rsi14[i] == 0:
             rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-        txt += tkr_buy[i]+" : "+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))
+            calc_rsi_avg(i)
+        txt += tkr_buy[i]+" : "+str(round(rsi_h_peak[i],1))+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))+str(round(rsi_l_peak[i],1))
         txt += " (avg:"+str(round(rsi_avg[i],2))+ ")\n"
         # txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
     send(txt)
