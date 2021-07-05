@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.04.70"     # 파라미터 백업 추가, 기타 기능 추가
+VERSION = "21.07.05.71"     # rsi_peak 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -17,10 +17,10 @@ num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 tkr_num = 10
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
 # RSI
-rsi_intv = 5
+rsi_intv = 10
 rsi14 = [0]*tkr_num
-rsi_l_min = [100]*tkr_num; rsi_l_sum = [300]*tkr_num; rsi_l_avg = [30]*tkr_num
-rsi_h_max = [0]*tkr_num; rsi_h_sum = [700]*tkr_num; rsi_h_avg = [70]*tkr_num
+rsi_l_min = [100]*tkr_num; rsi_l_sum = [300]*tkr_num; rsi_l_avg = [30]*tkr_num; rsi_l_peak = [30]*tkr_num;
+rsi_h_max = [0]*tkr_num; rsi_h_sum = [700]*tkr_num; rsi_h_avg = [70]*tkr_num; rsi_h_peak = [70]*tkr_num;
 f_rsi_l = [0]*tkr_num; rsi_l_chk = [0]*tkr_num
 f_rsi_h = [0]*tkr_num; rsi_h_chk = [0]*tkr_num
 f_rsi_30 = [0]*tkr_num; f_rsi_70 = [0]*tkr_num
@@ -43,7 +43,7 @@ chatbot_chk = 0
 # 챗봇 confirm
 confirm_sell = 0; confirm_quit = 0; confirm_stop = 0; confirm_start = 0; confirm_restart = 0
 # 시간
-f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 1
+f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 5
 avg_cnt = int(1440/trade_intv)
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
@@ -172,6 +172,14 @@ def sell_all():
                 num_sell += 1
             time.sleep(0.1)
 
+def is_trade_cond(now):
+    global min_backup
+    if min_backup != now.minute and now.minute % trade_intv == 0:
+        min_backup = now.minute
+        return True
+    else:
+        return False
+
 def get_rsi14(symbol, candle):
     url = "https://api.upbit.com/v1/candles/minutes/"+str(candle)
     querystring = {"market":symbol,"count":"200"}
@@ -202,14 +210,14 @@ def check_rsi(i):
         # rsi 하방 check
         if rsi14[i] < rsi_l_avg[i]:
             f_rsi_l[i] = 1
-        elif rsi14[i] > rsi_l_avg[i]:
+        elif rsi14[i] > rsi_l_peak[i]:
             if f_rsi_l[i] == 1:
                 f_rsi_l[i] = 2
     def check_high():
         # rsi 상방 check
         if rsi14[i] > rsi_h_avg[i]:
             f_rsi_h[i] = 1
-        elif rsi14[i] < rsi_h_avg[i]:
+        elif rsi14[i] < rsi_h_peak[i]:
             if f_rsi_h[i] == 1:
                 f_rsi_h[i] = 2
     check_low()
@@ -217,8 +225,8 @@ def check_rsi(i):
     time.sleep(0.01)
 
 def calc_rsi_avg(i):
-    global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg
-    global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg
+    global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg, rsi_l_peak
+    global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg, rsi_h_peak
     global avg_cnt, avg_idx, avg_arr, rsi_avg, diff_h, diff_l
     def calc_low():
         if rsi14[i] < rsi_l_std:
@@ -257,10 +265,14 @@ def calc_rsi_avg(i):
         rsi_avg[i] = temp_sum/avg_cnt
         rsi_h_avg[i] = rsi_avg[i]*(1+diff_h)
         rsi_l_avg[i] = rsi_avg[i]*(1-diff_l)
-        if rsi[i] > rsi_h_avg[i]:
-            rsi_h_avg[i] = rsi[i]
-        if rsi[i] < rsi_l_avg[i]:
-            rsi_l_avg[i] = rsi[i]
+        if rsi14[i] > rsi_h_peak[i]:
+            rsi_h_peak[i] = rsi14[i]
+        else:
+            rsi_h_peak[i] = rsi_h_avg[i]
+        if rsi14[i] < rsi_l_peak[i]:
+            rsi_l_peak[i] = rsi14[i]
+        else:
+            rsi_l_peak[i] = rsi_l_avg[i]
     #calc_low()
     #calc_high()
     calc_avg()
