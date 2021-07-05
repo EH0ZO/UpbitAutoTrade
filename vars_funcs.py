@@ -27,7 +27,8 @@ f_rsi_30 = [0]*tkr_num; f_rsi_70 = [0]*tkr_num
 rsi_l_cnt = [10]*tkr_num; rsi_l_cnt_d = [10]*tkr_num
 rsi_h_cnt = [10]*tkr_num; rsi_h_cnt_d = [10]*tkr_num
 avg_cnt = 1440
-h_l_diff = 0.4
+diff_h = 0.4
+diff_l = 0.4
 avg_idx = [0]*tkr_num
 rsi_avg = [50]*tkr_num
 avg_arr = [[50]*1440]*tkr_num
@@ -217,7 +218,7 @@ def check_rsi(i):
 def calc_rsi_avg(i):
     global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg
     global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg
-    global avg_cnt, avg_idx, avg_arr, rsi_avg, h_l_diff
+    global avg_cnt, avg_idx, avg_arr, rsi_avg, diff_h, diff_l
     def calc_low():
         if rsi14[i] < rsi_l_std:
             rsi_l_chk[i] = 1
@@ -253,8 +254,8 @@ def calc_rsi_avg(i):
         for k in range(0,int(avg_cnt)):
             temp_sum += avg_arr[i][k]
         rsi_avg[i] = temp_sum/avg_cnt
-        rsi_h_avg[i] = rsi_avg[i]*(1+h_l_diff)
-        rsi_l_avg[i] = rsi_avg[i]*(1-h_l_diff)
+        rsi_h_avg[i] = rsi_avg[i]*(1+diff_h)
+        rsi_l_avg[i] = rsi_avg[i]*(1-diff_l)
     #calc_low()
     #calc_high()
     calc_avg()
@@ -389,30 +390,33 @@ def send_hourly_report(req):
     send(txt)
 
 def restore():
-    global unit_trade_price, stop_loss, trade_intv, rsi_intv, h_l_diff
+    global unit_trade_price, stop_loss, trade_intv, rsi_intv, diff_h, diff_l
     f = open(backup_path, 'r')
     unit_trade_price = int(f.readline())
     trade_intv = int(f.readline())
     rsi_intv = int(f.readline())
     stop_loss = float(f.readline())
-    h_l_diff = float(f.readline())
+    diff_h = float(f.readline())
+    diff_l = float(f.readline())
     f.close()
     txt = "Parameters are restored\n"
     txt+= "  1: unit_trade_price : "+str(unit_trade_price)+"\n"
     txt+= "  2: trade_intv : "+str(trade_intv)+"\n"
     txt+= "  3: rsi_intv : "+str(rsi_intv)+"\n"
     txt+= "  4: stop_loss : "+str(stop_loss)+"\n"
-    txt+= "  5: h_l_diff : "+str(h_l_diff)+"\n"
+    txt+= "  5: diff_h : "+str(diff_h)+"\n"
+    txt+= "  6: diff_l : "+str(diff_l)+"\n"
     send(txt)
 
 def backup():
-    global unit_trade_price, stop_loss, trade_intv, rsi_intv, h_l_diff
+    global unit_trade_price, stop_loss, trade_intv, rsi_intv, diff_h, diff_l
     f = open(backup_path, 'w')
     f.write(str(unit_trade_price)+"\n")
     f.write(str(trade_intv)+"\n")
     f.write(str(rsi_intv)+"\n")
     f.write(str(stop_loss)+"\n")
-    f.write(str(h_l_diff)+"\n")
+    f.write(str(diff_h)+"\n")
+    f.write(str(diff_l)+"\n")
     f.close()
     send("Backed up parameters")
 
@@ -425,7 +429,7 @@ def check_restart():
         return 0
 
 def chat(update, context):
-    global unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, h_l_diff
+    global unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, diff_h, diff_l
     global confirm_stop, confirm_start, stop_trade, confirm_restart, restart
     new_text = update.message.text
     if new_text != None:
@@ -492,8 +496,21 @@ def chat(update, context):
             else:
                 num = float(new_text[3:])
                 if 0 < num < 1:
-                    h_l_diff = num
-                    send("h_l_diff changed : "+str(h_l_diff))
+                    diff_h = num
+                    send("diff_h changed : "+str(diff_h))
+                    backup()
+                else:
+                    send("wrong input")
+        elif new_text[0] == "6":
+            if len(new_text) < 4: 
+                send("wrong input")
+            elif not('0' <= new_text[3] <= '9'):
+                send("wrong input")
+            else:
+                num = float(new_text[3:])
+                if 0 < num < 1:
+                    diff_l = num
+                    send("diff_l changed : "+str(diff_l))
                     backup()
                 else:
                     send("wrong input")
@@ -502,7 +519,8 @@ def chat(update, context):
             txt+= "2: trade_intv : "+str(trade_intv)+"\n"
             txt+= "3: rsi_intv : "+str(rsi_intv)+"\n"
             txt+= "4: stop_loss : "+str(stop_loss)+"\n"
-            txt+= "5: h_l_diff : "+str(h_l_diff)+"\n"
+            txt+= "5: diff_h : "+str(diff_h)+"\n"
+            txt+= "6: diff_l : "+str(diff_l)+"\n"
             txt+= "stop_trade : "+str(stop_trade)+"\n"
             txt+= "pg version : "+VERSION
             send(txt)
@@ -573,7 +591,8 @@ def chat(update, context):
             txt+= "2, N : trade_intv N으로 변경\n"
             txt+= "3, N : rsi_intv N으로 변경\n"
             txt+= "4, N : stop_loss N으로 변경\n"
-            txt+= "5, N : h_l_diff N으로 변경\n"
+            txt+= "5, N : diff_h N으로 변경\n"
+            txt+= "6, N : diff_l N으로 변경\n"
             txt+= "9    : 현재 parameter 값 확인\n"
             txt+= "0    : 현재 상태 출력\n"
             txt+= "sell : 전량 매도\n"
