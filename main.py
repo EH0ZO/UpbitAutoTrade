@@ -16,11 +16,12 @@ while True:
                 break;
             now = datetime.datetime.now()
         # 매매 logic
-            if (min_backup != now.minute) and (now.minute % trade_intv == 0):
-                for i in range(0, tkr_num):
-                    check_rsi(i)
-                    calc_rsi_avg(i)
-                    trade(i)
+            if min_backup != now.minute:
+                if now.minute % trade_intv == 0:
+                    for i in range(0, tkr_num):
+                        check_rsi(i)
+                        calc_rsi_avg(i)
+                        trade(i)
             elif chk < 10:
                 updater.start_polling(timeout=3, drop_pending_updates=True)
                 updater.idle
