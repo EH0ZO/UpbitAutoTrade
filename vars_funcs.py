@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.05.72"     # rsi_peak 추가, 메시지 추가
+VERSION = "21.07.06.73"     # 매수/매도 메시지에 rsi_peak 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -268,11 +268,11 @@ def calc_rsi_avg(i):
         rsi_l_avg[i] = rsi_avg[i]*(1-diff_l)
         if rsi14[i] > rsi_h_peak[i]:
             rsi_h_peak[i] = rsi14[i]
-        else:
+        elif rsi14[i] <= rsi_h_avg[i]:
             rsi_h_peak[i] = rsi_h_avg[i]
         if rsi14[i] < rsi_l_peak[i]:
             rsi_l_peak[i] = rsi14[i]
-        else:
+        elif rsi14[i] >= rsi_l_avg[i]:
             rsi_l_peak[i] = rsi_l_avg[i]
     #calc_low()
     #calc_high()
@@ -296,7 +296,7 @@ def trade(i):
                 buy(tkr_buy[i], unit_trade_price)
             num_buy += 1
             txt = tkr_buy[i]+" 매수(price : "+str(round(current))+")\n"
-            txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
+            txt+= "rsi : "+str(round(rsi_h_peak[i]))+"/"+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))+"/"+str(round(rsi_l_peak[i]))
             send(txt)
         f_rsi_l[i] = 0
     # 매도 : rsi 70 초과 -> 미만 시
@@ -313,18 +313,18 @@ def trade(i):
             num_sell += 1
             txt = tkr_buy[i]+" 매도\n"
             txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
-            txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
+            txt+= "rsi : "+str(round(rsi_h_peak[i]))+"/"+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))+"/"+str(round(rsi_l_peak[i]))
             send(txt)
         f_rsi_h[i] = 0
     # 손절 : -2% 미만 시 전량 매도
-    if (current-avg_buy)/avg_buy < -stop_loss:
+    if (current-avg_buy)/avg_buy < -stop_loss and rsi14[i] > rsi_l_avg[i]:
         sell(tkr_buy[i], 0)
         num_sell += 1
         txt = tkr_buy[i]+" 손절\n"
         txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
-        txt+= "rsi : "+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))
+        txt+= "rsi : "+str(round(rsi_h_peak[i]))+"/"+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))+"/"+str(round(rsi_l_peak[i]))
         send(txt)
-    if trade_chk == 1:
+    if trade_chk == 1 and i == tkr_num-1:
         send("trade running")
     time.sleep(0.01)
 
