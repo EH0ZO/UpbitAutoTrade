@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.07.75"     # 
+VERSION = "21.07.07.76"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -296,7 +296,7 @@ def trade(i):
         tkr_balance = get_balance(tkr_buy[i], "KRW")
         total_krw = get_totalKRW()
         #if tkr_balance < (total_krw/tkr_num) and krw > 5000:
-        if tkr_balance < (total_krw/20y) and krw > 5000:
+        if tkr_balance < (total_krw/20) and krw > 5000:
             current = get_current_price(tkr_buy[i])
             if krw - unit_trade_price < 5000:
                 buy(tkr_buy[i], krw)
