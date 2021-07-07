@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.07.74"     # 매수/매도 메시지에 rsi_peak 추가
+VERSION = "21.07.07.75"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -522,7 +522,7 @@ def chat(update, context):
                 send("wrong input")
             else:
                 num = float(new_text[3:])
-                if 0 < num < 1:
+                if 0 < num < 1 or 50 < num < 90:
                     diff_h = num
                     send("diff_h changed : "+str(diff_h))
                     backup()
@@ -535,7 +535,7 @@ def chat(update, context):
                 send("wrong input")
             else:
                 num = float(new_text[3:])
-                if 0 < num < 1:
+                if 0 < num < 1 or 10 < num < 50:
                     diff_l = num
                     send("diff_l changed : "+str(diff_l))
                     backup()
