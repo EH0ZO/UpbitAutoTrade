@@ -14,8 +14,8 @@ startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balanc
 # 매매 횟수
 num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 # 종목
-tkr_num = 10
-tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
+tkr_buy = get_tickers(fiat = "KRW") #["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
+tkr_num = len(tkr_buy) #10
 # RSI
 rsi_intv = 10
 rsi14 = [0]*tkr_num
@@ -256,14 +256,15 @@ def calc_rsi_avg(i):
             rsi_h_max[i] = 0
             rsi_h_chk[i] = 0
     def calc_avg():
-        avg_arr[i][avg_idx[i]] = rsi14[i]
-        avg_idx[i] += 1
-        if(avg_idx[i] >= avg_cnt):
-            avg_idx[i] = 0
-        temp_sum = 0
-        for k in range(0,int(avg_cnt)):
-            temp_sum += avg_arr[i][k]
-        rsi_avg[i] = temp_sum/avg_cnt
+        if diff_h > 1 or diff_l > 1:
+            avg_arr[i][avg_idx[i]] = rsi14[i]
+            avg_idx[i] += 1
+            if(avg_idx[i] >= avg_cnt):
+                avg_idx[i] = 0
+            temp_sum = 0
+            for k in range(0,int(avg_cnt)):
+                temp_sum += avg_arr[i][k]
+            rsi_avg[i] = temp_sum/avg_cnt
         if diff_h > 1:
             rsi_h_avg[i] = diff_h
         else:
@@ -294,7 +295,8 @@ def trade(i):
         krw = get_krw()
         tkr_balance = get_balance(tkr_buy[i], "KRW")
         total_krw = get_totalKRW()
-        if tkr_balance < (total_krw/tkr_num) and krw > 5000:
+        #if tkr_balance < (total_krw/tkr_num) and krw > 5000:
+        if tkr_balance < (total_krw/20y) and krw > 5000:
             current = get_current_price(tkr_buy[i])
             if krw - unit_trade_price < 5000:
                 buy(tkr_buy[i], krw)
