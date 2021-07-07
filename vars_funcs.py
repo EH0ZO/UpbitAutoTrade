@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.06.73"     # 매수/매도 메시지에 rsi_peak 추가
+VERSION = "21.07.07.74"     # 매수/매도 메시지에 rsi_peak 추가
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -264,8 +264,14 @@ def calc_rsi_avg(i):
         for k in range(0,int(avg_cnt)):
             temp_sum += avg_arr[i][k]
         rsi_avg[i] = temp_sum/avg_cnt
-        rsi_h_avg[i] = rsi_avg[i]*(1+diff_h)
-        rsi_l_avg[i] = rsi_avg[i]*(1-diff_l)
+        if diff_h > 1:
+            rsi_h_avg[i] = diff_h
+        else:
+            rsi_h_avg[i] = rsi_avg[i]*(1+diff_h)
+        if diff_l > 1:
+            rsi_l_avg[i] = diff_l
+        else:
+            rsi_l_avg[i] = rsi_avg[i]*(1-diff_l)
         if rsi14[i] > rsi_h_peak[i]:
             rsi_h_peak[i] = rsi14[i]
         elif rsi14[i] <= rsi_h_avg[i]:
