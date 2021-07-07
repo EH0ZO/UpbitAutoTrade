@@ -407,6 +407,7 @@ def send_hourly_report(req):
     elif req == 0:
         num_buy_total -= num_buy
         num_sell_total -= num_sell
+"""
     # RSI 값 송신
     txt+= "========== RSI14 Value ==========\n"
     for i in range(0,tkr_num):
@@ -417,6 +418,7 @@ def send_hourly_report(req):
         txt += " (avg:"+str(round(rsi_avg[i],2))+ ")\n"
         # txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
     send(txt)
+"""
 
 def restore():
     global unit_trade_price, stop_loss, trade_intv, rsi_intv, diff_h, diff_l
