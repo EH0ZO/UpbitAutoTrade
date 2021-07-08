@@ -453,7 +453,7 @@ def restore():
     txt+= "  5: diff_h : "+str(diff_h)+"\n"
     txt+= "  6: diff_l : "+str(diff_l)+"\n"
     txt+= "  tkr_num : "+str(tkr_num)+"\n"
-    txt+= "  tkr_buy : "+str(tkr_buy)+"\n"
+    txt+= "  tkr_buy : "+str(tkr_buy[0:tkr_num])+"\n"
     send(txt)
 
 def backup():
@@ -605,7 +605,7 @@ def chat(update, context):
             txt+= "5: diff_h : "+str(diff_h)+"\n"
             txt+= "6: diff_l : "+str(diff_l)+"\n"
             txt+= "tkr_num : "+str(tkr_num)+"\n"
-            txt+= "tkr_buy : "+str(tkr_buy)+"\n"
+            txt+= "tkr_buy : "+str(tkr_buy[0,tkr_num])+"\n"
             txt+= "stop_trade : "+str(stop_trade)+"\n"
             txt+= "check : "+str(trade_chk)+"\n"
             txt+= "pg version : "+VERSION
