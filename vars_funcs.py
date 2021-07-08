@@ -434,9 +434,9 @@ def restore():
     stop_loss = float(f.readline())
     diff_h = float(f.readline())
     diff_l = float(f.readline())
-    tmp = int(f.readline())
-    if tmp > 0:
-        tkr_buy = tmp
+    tmp = f.readline()
+    if tmp != '':
+        tkr_num = int(tmp)
     for i in range(0,tkr_num):
         tmp = f.readline()
         if len(tmp) > 3:
