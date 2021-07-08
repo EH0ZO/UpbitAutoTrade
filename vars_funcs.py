@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.07.76"     # 
+VERSION = "21.07.08.77"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -436,7 +436,7 @@ def restore():
     diff_l = float(f.readline())
     tkr_num = int(f.readline())
     for i in range(0,tkr_num):
-        
+        tkr_buy[i] = f.readline()
     f.close()
     txt = "Parameters are restored\n"
     txt+= "  1: unit_trade_price : "+str(unit_trade_price)+"\n"
