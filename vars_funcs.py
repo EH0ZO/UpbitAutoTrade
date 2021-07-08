@@ -18,7 +18,9 @@ max_num = 110
 tkr_num = 10
 tkr_all = get_tickers(fiat = "KRW")
 tkr_buy = ["-"]*max_num
-tkr_buy[0:tkr_num] = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
+tkr_default = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
+for i in range(0, tkr_num):
+    tkr_buy[i] = tkr_default[i]
 # RSI
 rsi_intv = 10
 rsi14 = [0]*max_num
