@@ -434,9 +434,13 @@ def restore():
     stop_loss = float(f.readline())
     diff_h = float(f.readline())
     diff_l = float(f.readline())
-    tkr_num = int(f.readline())
+    tmp = int(f.readline())
+    if tmp > 0:
+        tkr_buy = tmp
     for i in range(0,tkr_num):
-        tkr_buy[i] = f.readline()
+        tmp = f.readline()
+        if len(tmp) > 3:
+            tkr_buy[i] = tmp
     f.close()
     txt = "Parameters are restored\n"
     txt+= "  1: unit_trade_price : "+str(unit_trade_price)+"\n"
@@ -581,7 +585,7 @@ def chat(update, context):
                 str = new_text[3:]
                 if str in tkr_buy:
                     for i in range(0, tkr_num):
-                        if str = tkr_buy[i]:
+                        if str == tkr_buy[i]:
                             tkr_buy[i] = tkr_buy[tkr_num-1]
                             break
                     tkr_num -= 1
