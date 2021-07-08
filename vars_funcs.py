@@ -14,8 +14,8 @@ startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balanc
 # 매매 횟수
 num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 # 종목
-tkr_buy = get_tickers(fiat = "KRW") #["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
-tkr_num = len(tkr_buy) #10
+tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
+tkr_num = 10
 # RSI
 rsi_intv = 10
 rsi14 = [0]*tkr_num
@@ -407,7 +407,7 @@ def send_hourly_report(req):
     elif req == 0:
         num_buy_total -= num_buy
         num_sell_total -= num_sell
-"""
+
     # RSI 값 송신
     txt+= "========== RSI14 Value ==========\n"
     for i in range(0,tkr_num):
@@ -418,7 +418,7 @@ def send_hourly_report(req):
         txt += " (avg:"+str(round(rsi_avg[i],2))+ ")\n"
         # txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
     send(txt)
-"""
+
 
 def restore():
     global unit_trade_price, stop_loss, trade_intv, rsi_intv, diff_h, diff_l
