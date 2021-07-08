@@ -175,6 +175,8 @@ def sell_all():
 
 def is_trade_cond(now):
     global min_backup
+    if stop_trade == 1:
+        return False
     if min_backup != now.minute and now.minute % trade_intv == 0:
         min_backup = now.minute
         return True
