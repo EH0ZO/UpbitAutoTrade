@@ -14,24 +14,26 @@ startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balanc
 # 매매 횟수
 num_buy = 0; num_sell = 0; num_buy_total = 0; num_sell_total = 0
 # 종목
+tkr_all = get_tickers(fiat = "KRW")
 tkr_buy = ["KRW-BTC", "KRW-ETH", "KRW-ADA", "KRW-XRP", "KRW-DOGE", "KRW-DOT", "KRW-BCH", "KRW-LTC", "KRW-LINK", "KRW-ETC"]
 tkr_num = 10
+max_num = 110
 # RSI
 rsi_intv = 10
-rsi14 = [0]*tkr_num
-rsi_l_min = [100]*tkr_num; rsi_l_sum = [300]*tkr_num; rsi_l_avg = [30]*tkr_num; rsi_l_peak = [30]*tkr_num;
-rsi_h_max = [0]*tkr_num; rsi_h_sum = [700]*tkr_num; rsi_h_avg = [70]*tkr_num; rsi_h_peak = [70]*tkr_num;
-f_rsi_l = [0]*tkr_num; rsi_l_chk = [0]*tkr_num
-f_rsi_h = [0]*tkr_num; rsi_h_chk = [0]*tkr_num
-f_rsi_30 = [0]*tkr_num; f_rsi_70 = [0]*tkr_num
-rsi_l_cnt = [10]*tkr_num; rsi_l_cnt_d = [10]*tkr_num
-rsi_h_cnt = [10]*tkr_num; rsi_h_cnt_d = [10]*tkr_num
+rsi14 = [0]*max_num
+rsi_l_min = [100]*max_num; rsi_l_sum = [300]*max_num; rsi_l_avg = [30]*max_num; rsi_l_peak = [30]*max_num;
+rsi_h_max = [0]*max_num; rsi_h_sum = [700]*max_num; rsi_h_avg = [70]*max_num; rsi_h_peak = [70]*max_num;
+f_rsi_l = [0]*max_num; rsi_l_chk = [0]*max_num
+f_rsi_h = [0]*max_num; rsi_h_chk = [0]*max_num
+f_rsi_30 = [0]*max_num; f_rsi_70 = [0]*max_num
+rsi_l_cnt = [10]*max_num; rsi_l_cnt_d = [10]*max_num
+rsi_h_cnt = [10]*max_num; rsi_h_cnt_d = [10]*max_num
 avg_cnt = 1440
 diff_h = 0.4
 diff_l = 0.4
-avg_idx = [0]*tkr_num
-rsi_avg = [50]*tkr_num
-avg_arr = [[50]*1440]*tkr_num
+avg_idx = [0]*max_num
+rsi_avg = [50]*max_num
+avg_arr = [[50]*1440]*max_num
 # 기준값
 unit_trade_price = 25000
 rsi_l_std = 35
@@ -424,6 +426,7 @@ def send_hourly_report(req):
 
 def restore():
     global unit_trade_price, stop_loss, trade_intv, rsi_intv, diff_h, diff_l
+    global tkr_num, tkr_buy
     f = open(backup_path, 'r')
     unit_trade_price = int(f.readline())
     trade_intv = int(f.readline())
@@ -431,6 +434,9 @@ def restore():
     stop_loss = float(f.readline())
     diff_h = float(f.readline())
     diff_l = float(f.readline())
+    tkr_num = int(f.readline())
+    for i in range(0,tkr_num):
+        
     f.close()
     txt = "Parameters are restored\n"
     txt+= "  1: unit_trade_price : "+str(unit_trade_price)+"\n"
@@ -439,6 +445,8 @@ def restore():
     txt+= "  4: stop_loss : "+str(stop_loss)+"\n"
     txt+= "  5: diff_h : "+str(diff_h)+"\n"
     txt+= "  6: diff_l : "+str(diff_l)+"\n"
+    txt+= "  tkr_num : "+str(tkr_num)+"\n"
+    txt+= "  tkr_buy : "+str(tkr_buy)+"\n"
     send(txt)
 
 def backup():
@@ -450,6 +458,9 @@ def backup():
     f.write(str(stop_loss)+"\n")
     f.write(str(diff_h)+"\n")
     f.write(str(diff_l)+"\n")
+    f.write(str(tkr_num)+"\n")
+    for i in range(0, tkr_num):
+        f.write(tkr_buy[i]+"\n")
     f.close()
     send("Backed up parameters")
 
@@ -463,7 +474,7 @@ def check_restart():
 
 def chat(update, context):
     global unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, diff_h, diff_l
-    global confirm_stop, confirm_start, stop_trade, confirm_restart, restart, trade_chk
+    global confirm_stop, confirm_start, stop_trade, confirm_restart, restart, trade_chk, tkr_num, tkr_buy
     new_text = update.message.text
     if new_text != None:
         if new_text[0] == "0":
@@ -547,6 +558,37 @@ def chat(update, context):
                     backup()
                 else:
                     send("wrong input")
+        elif new_text[0] == "7":
+            if len(new_text) < 4: 
+                send("wrong input")
+            elif not('A' <= new_text[3] <= 'Z'):
+                send("wrong input")
+            else:
+                str = new_text[3:]
+                if str in tkr_all:
+                    tkr_num += 1
+                    tkr_buy[tkr_num-1] = str
+                    send("tkr added : "+tkr_buy[tkr_num-1])
+                    backup()
+                else:
+                    send("wrong input")
+        elif new_text[0] == "8":
+            if len(new_text) < 4: 
+                send("wrong input")
+            elif not('A' <= new_text[3] <= 'Z'):
+                send("wrong input")
+            else:
+                str = new_text[3:]
+                if str in tkr_buy:
+                    for i in range(0, tkr_num):
+                        if str = tkr_buy[i]:
+                            tkr_buy[i] = tkr_buy[tkr_num-1]
+                            break
+                    tkr_num -= 1
+                    send("tkr deleted : "+str)
+                    backup()
+                else:
+                    send("wrong input")
         elif new_text[0] == "9":
             txt = "1: unit_trade_price : "+str(unit_trade_price)+"\n"
             txt+= "2: trade_intv : "+str(trade_intv)+"\n"
@@ -554,6 +596,8 @@ def chat(update, context):
             txt+= "4: stop_loss : "+str(stop_loss)+"\n"
             txt+= "5: diff_h : "+str(diff_h)+"\n"
             txt+= "6: diff_l : "+str(diff_l)+"\n"
+            txt+= "tkr_num : "+str(tkr_num)+"\n"
+            txt+= "tkr_buy : "+str(tkr_buy)+"\n"
             txt+= "stop_trade : "+str(stop_trade)+"\n"
             txt+= "check : "+str(trade_chk)+"\n"
             txt+= "pg version : "+VERSION
@@ -634,6 +678,8 @@ def chat(update, context):
             txt+= "4, N : stop_loss N으로 변경\n"
             txt+= "5, N : diff_h N으로 변경\n"
             txt+= "6, N : diff_l N으로 변경\n"
+            txt+= "7, tkr : tkr 종목 추가\n"
+            txt+= "8, tkr : tkr 종목 제거\n"
             txt+= "9    : 현재 parameter 값 확인\n"
             txt+= "0    : 현재 상태 출력\n"
             txt+= "sell : 전량 매도\n"
