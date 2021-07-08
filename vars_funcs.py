@@ -332,7 +332,7 @@ def trade(i):
             send(txt)
         f_rsi_h[i] = 0
     # 손절 : -2% 미만 시 전량 매도
-    if (current-avg_buy)/avg_buy < -stop_loss and rsi14[i] > rsi_l_avg[i]:
+    if (current-avg_buy)/avg_buy < -stop_loss: # and rsi14[i] > rsi_l_avg[i]:
         sell(tkr_buy[i], 0)
         num_sell += 1
         txt = tkr_buy[i]+" 손절\n"
