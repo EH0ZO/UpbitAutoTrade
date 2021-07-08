@@ -455,6 +455,7 @@ def restore():
 
 def backup():
     global unit_trade_price, stop_loss, trade_intv, rsi_intv, diff_h, diff_l
+    global tkr_num, tkr_buy
     f = open(backup_path, 'w')
     f.write(str(unit_trade_price)+"\n")
     f.write(str(trade_intv)+"\n")
@@ -568,10 +569,10 @@ def chat(update, context):
             elif not('A' <= new_text[3] <= 'Z'):
                 send("wrong input")
             else:
-                str = new_text[3:]
-                if str in tkr_all:
+                tkr = new_text[3:]
+                if tkr in tkr_all:
                     tkr_num += 1
-                    tkr_buy[tkr_num-1] = str
+                    tkr_buy[tkr_num-1] = tkr
                     send("tkr added : "+tkr_buy[tkr_num-1])
                     backup()
                 else:
@@ -582,14 +583,14 @@ def chat(update, context):
             elif not('A' <= new_text[3] <= 'Z'):
                 send("wrong input")
             else:
-                str = new_text[3:]
-                if str in tkr_buy:
+                tkr = new_text[3:]
+                if tkr in tkr_buy:
                     for i in range(0, tkr_num):
-                        if str == tkr_buy[i]:
+                        if tkr == tkr_buy[i]:
                             tkr_buy[i] = tkr_buy[tkr_num-1]
                             break
                     tkr_num -= 1
-                    send("tkr deleted : "+str)
+                    send("tkr deleted : "+tkr)
                     backup()
                 else:
                     send("wrong input")
