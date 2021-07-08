@@ -443,7 +443,7 @@ def restore():
     for i in range(0,tkr_num):
         tmp = f.readline()
         if len(tmp) > 3:
-            tkr_buy[i] = str(tmp)
+            tkr_buy[i] = tmp[0:-1]
     f.close()
     txt = "Parameters are restored\n"
     txt+= "  1: unit_trade_price : "+str(unit_trade_price)+"\n"
