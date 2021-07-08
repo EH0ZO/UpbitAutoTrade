@@ -205,28 +205,6 @@ def get_rsi14(symbol, candle):
     time.sleep(0.5)
     return rsi
 
-def check_rsi(i):
-    global rsi14, f_rsi_l, f_rsi_h
-    rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-    calc_rsi_avg(i)
-    def check_low():
-        # rsi 하방 check
-        if rsi14[i] < rsi_l_avg[i]:
-            f_rsi_l[i] = 1
-        elif rsi14[i] > rsi_l_peak[i]:
-            if f_rsi_l[i] == 1:
-                f_rsi_l[i] = 2
-    def check_high():
-        # rsi 상방 check
-        if rsi14[i] > rsi_h_avg[i]:
-            f_rsi_h[i] = 1
-        elif rsi14[i] < rsi_h_peak[i]:
-            if f_rsi_h[i] == 1:
-                f_rsi_h[i] = 2
-    check_low()
-    check_high()
-    time.sleep(0.01)
-
 def calc_rsi_avg(i):
     global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg, rsi_l_peak
     global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg, rsi_h_peak
@@ -287,6 +265,28 @@ def calc_rsi_avg(i):
     #calc_high()
     calc_avg()
     time.sleep(0.01)
+
+def check_rsi(i):
+    global rsi14, f_rsi_l, f_rsi_h
+    rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
+    calc_rsi_avg(i)
+    def check_low():
+        # rsi 하방 check
+        if rsi14[i] < rsi_l_avg[i]:
+            f_rsi_l[i] = 1
+        elif rsi14[i] > rsi_l_peak[i]:
+            if f_rsi_l[i] == 1:
+                f_rsi_l[i] = 2
+    def check_high():
+        # rsi 상방 check
+        if rsi14[i] > rsi_h_avg[i]:
+            f_rsi_h[i] = 1
+        elif rsi14[i] < rsi_h_peak[i]:
+            if f_rsi_h[i] == 1:
+                f_rsi_h[i] = 2
+    check_low()
+    check_high()
+    time.sleep(0.01)
 		
 def trade(i):
     global num_buy, num_sell, f_rsi_l, f_rsi_h, trade_chk
@@ -297,8 +297,8 @@ def trade(i):
         krw = get_krw()
         tkr_balance = get_balance(tkr_buy[i], "KRW")
         total_krw = get_totalKRW()
-        #if tkr_balance < (total_krw/tkr_num) and krw > 5000:
-        if tkr_balance < (total_krw/20) and krw > 5000:
+        #if tkr_balance < (total_krw/20) and krw > 5000:
+        if tkr_balance < (total_krw/tkr_num) and krw > 5000:
             current = get_current_price(tkr_buy[i])
             if krw - unit_trade_price < 5000:
                 buy(tkr_buy[i], krw)
