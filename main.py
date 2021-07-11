@@ -1,5 +1,4 @@
 from vars_funcs import *
-global tkr_num
 # Main Logic
 # 시작 메시지 전송
 while True:
@@ -18,10 +17,7 @@ while True:
             now = datetime.datetime.now()
         # 매매 logic
             if is_trade_cond(now) == True:
-                for i in range(0, tkr_num):
-                    check_rsi(i)
-                    #calc_rsi_avg(i)
-                    trade(i)
+                do_trade()
             elif chk < 10:
                 updater.start_polling(timeout=3, drop_pending_updates=True)
                 updater.idle
