@@ -282,6 +282,8 @@ def check_rsi(i):
         elif rsi14[i] > rsi_l_peak[i]:
             if f_rsi_l[i] == 1:
                 f_rsi_l[i] = 2
+        elif rsi14[i] >= rsi_l_avg[i]:
+            f_rsi_l[i] = 0
     def check_high():
         # rsi 상방 check
         if rsi14[i] > rsi_h_avg[i]:
@@ -289,6 +291,8 @@ def check_rsi(i):
         elif rsi14[i] < rsi_h_peak[i]:
             if f_rsi_h[i] == 1:
                 f_rsi_h[i] = 2
+        elif rsi14[i] <= rsi_h_avg[i]:
+            f_rsi_h[i] = 0
     check_low()
     check_high()
     time.sleep(0.01)
