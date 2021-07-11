@@ -345,6 +345,11 @@ def trade(i):
         send("trade running")
     time.sleep(0.01)
 
+def do_trade():
+    for i in range(0, tkr_num):
+        check_rsi(i)
+        trade(i)
+
 def reset_newday():
     global num_buy_total, num_sell_total, startBalance, hourlyBalance
     global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
