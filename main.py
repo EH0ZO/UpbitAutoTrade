@@ -1,4 +1,5 @@
 from vars_funcs import *
+global tkr_num
 # Main Logic
 # 시작 메시지 전송
 while True:
