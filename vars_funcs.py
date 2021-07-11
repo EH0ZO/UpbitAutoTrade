@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.08.77"     # 
+VERSION = "21.07.11.78"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -277,20 +277,18 @@ def check_rsi(i):
     calc_rsi_avg(i)
     def check_low():
         # rsi 하방 check
-        if rsi14[i] < rsi_l_avg[i]:
+        if f_rsi_l[i] == 0 and rsi14[i] < rsi_l_avg[i]:
             f_rsi_l[i] = 1
-        elif rsi14[i] > rsi_l_peak[i]:
-            if f_rsi_l[i] == 1:
-                f_rsi_l[i] = 2
+        elif f_rsi_l[i] == 1 and rsi14[i] > rsi_l_peak[i]:
+            f_rsi_l[i] = 2
         elif rsi14[i] >= rsi_l_avg[i]:
             f_rsi_l[i] = 0
     def check_high():
         # rsi 상방 check
-        if rsi14[i] > rsi_h_avg[i]:
+        if f_rsi_h[i] == 0 and rsi14[i] > rsi_h_avg[i]:
             f_rsi_h[i] = 1
-        elif rsi14[i] < rsi_h_peak[i]:
-            if f_rsi_h[i] == 1:
-                f_rsi_h[i] = 2
+        elif f_rsi_h[i] == 1 and rsi14[i] < rsi_h_peak[i]:
+            f_rsi_h[i] = 2
         elif rsi14[i] <= rsi_h_avg[i]:
             f_rsi_h[i] = 0
     check_low()
