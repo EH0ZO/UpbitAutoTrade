@@ -37,7 +37,7 @@ diff_l = 0.4
 avg_idx = [0]*max_num
 rsi_avg = [50]*max_num
 avg_arr = [[50]*1440]*max_num
-skip_trade = [0]*tkr_num
+skip_trade = [0]*max_num
 # 기준값
 unit_trade_price = 25000
 rsi_l_std = 35
