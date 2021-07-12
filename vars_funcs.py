@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.11.78"     # 
+VERSION = "21.07.13.79"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -37,6 +37,7 @@ diff_l = 0.4
 avg_idx = [0]*max_num
 rsi_avg = [50]*max_num
 avg_arr = [[50]*1440]*max_num
+skip_trade = [0]*tkr_num
 # 기준값
 unit_trade_price = 25000
 rsi_l_std = 35
@@ -272,7 +273,7 @@ def calc_rsi_avg(i):
     time.sleep(0.01)
 
 def check_rsi(i):
-    global rsi14, f_rsi_l, f_rsi_h
+    global rsi14, f_rsi_l, f_rsi_h, skip_trade
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
     calc_rsi_avg(i)
     def check_low():
@@ -283,6 +284,7 @@ def check_rsi(i):
             f_rsi_l[i] = 2
         elif rsi14[i] >= rsi_l_avg[i]:
             f_rsi_l[i] = 0
+            skip_trade[i] = 0
     def check_high():
         # rsi 상방 check
         if f_rsi_h[i] == 0 and rsi14[i] > rsi_h_avg[i]:
@@ -291,16 +293,17 @@ def check_rsi(i):
             f_rsi_h[i] = 2
         elif rsi14[i] <= rsi_h_avg[i]:
             f_rsi_h[i] = 0
+            skip_trade[i] = 0
     check_low()
     check_high()
     time.sleep(0.01)
 		
 def trade(i):
-    global num_buy, num_sell, f_rsi_l, f_rsi_h, trade_chk
+    global num_buy, num_sell, f_rsi_l, f_rsi_h, trade_chk, skip_trade
     avg_buy = get_avg_buy_price(tkr_buy[i])
     current = get_current_price(tkr_buy[i])
     # 매수 : rsi low 미만 -> 초과 시
-    if f_rsi_l[i] == 2:
+    if f_rsi_l[i] == 2 and skip_trade[i] == 0:
         krw = get_krw()
         tkr_balance = get_balance(tkr_buy[i], "KRW")
         total_krw = get_totalKRW()
@@ -316,8 +319,9 @@ def trade(i):
             txt+= "rsi : "+str(round(rsi_h_peak[i]))+"/"+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))+"/"+str(round(rsi_l_peak[i]))
             send(txt)
         f_rsi_l[i] = 0
+        skip_trade[i] = 1
     # 매도 : rsi 70 초과 -> 미만 시
-    if f_rsi_h[i] == 2:
+    if f_rsi_h[i] == 2 and skip_trade[i] == 0:
         krw = get_krw()
         tkr_balance = get_balance(tkr_buy[i], "KRW")
         total_krw = get_totalKRW()
@@ -333,6 +337,7 @@ def trade(i):
             txt+= "rsi : "+str(round(rsi_h_peak[i]))+"/"+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))+"/"+str(round(rsi_l_peak[i]))
             send(txt)
         f_rsi_h[i] = 0
+        skip_trade[i] = 1
     # 손절 : -2% 미만 시 전량 매도
     if (current-avg_buy)/avg_buy < -stop_loss: # and rsi14[i] > rsi_l_avg[i]:
         sell(tkr_buy[i], 0)
