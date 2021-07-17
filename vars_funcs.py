@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.13.79"     # 
+VERSION = "21.07.17.80"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -24,24 +24,15 @@ for i in range(0, tkr_num):
 # RSI
 rsi_intv = 10
 rsi14 = [0]*max_num
-rsi_l_min = [100]*max_num; rsi_l_sum = [300]*max_num; rsi_l_avg = [30]*max_num; rsi_l_peak = [30]*max_num;
-rsi_h_max = [0]*max_num; rsi_h_sum = [700]*max_num; rsi_h_avg = [70]*max_num; rsi_h_peak = [70]*max_num;
-f_rsi_l = [0]*max_num; rsi_l_chk = [0]*max_num
-f_rsi_h = [0]*max_num; rsi_h_chk = [0]*max_num
-f_rsi_30 = [0]*max_num; f_rsi_70 = [0]*max_num
-rsi_l_cnt = [10]*max_num; rsi_l_cnt_d = [10]*max_num
-rsi_h_cnt = [10]*max_num; rsi_h_cnt_d = [10]*max_num
-avg_cnt = 1440
-diff_h = 0.4
-diff_l = 0.4
-avg_idx = [0]*max_num
-rsi_avg = [50]*max_num
-avg_arr = [[50]*1440]*max_num
+rsi_l_limit = [30]*max_num; 
+rsi_h_limit = [70]*max_num;
+f_rsi_under = [0]*max_num;
+f_rsi_over = [0]*max_num;
+rsi_high = 60
+rsi_low = 40
 skip_trade = [0]*max_num
 # 기준값
 unit_trade_price = 25000
-rsi_l_std = 35
-rsi_h_std = 65
 stop_loss = 0.005
 stop_trade = 0
 restart = 0
@@ -51,7 +42,6 @@ confirm_sell = 0; confirm_quit = 0; confirm_stop = 0; confirm_start = 0; confirm
 trade_chk = 0
 # 시간
 f_start = 0; time_backup = -1; min_backup = -1; start_time = 0; trade_intv = 5
-avg_cnt = int(1440/trade_intv)
 # Keys
 access = "UfxFeckqIxoheTgBcgN3KNa6vtP98WEWlyjDmHx6" 
 secret = "NknKBgNg1cLnh8I4KYH2byIzvbDmx7171lrbxfLL"
@@ -211,99 +201,52 @@ def get_rsi14(symbol, candle):
     time.sleep(0.5)
     return rsi
 
-def calc_rsi_avg(i):
-    global rsi_l_chk, rsi_l_min, rsi_l_sum, rsi_l_cnt, rsi_l_avg, rsi_l_peak
-    global rsi_h_chk, rsi_h_max, rsi_h_sum, rsi_h_cnt, rsi_h_avg, rsi_h_peak
-    global avg_cnt, avg_idx, avg_arr, rsi_avg, diff_h, diff_l
-    def calc_low():
-        if rsi14[i] < rsi_l_std:
-            rsi_l_chk[i] = 1
-            if rsi14[i] < rsi_l_min[i]:
-                rsi_l_min[i] = rsi14[i]
-        elif rsi14[i] >= rsi_l_std:
-            if rsi_l_chk[i] == 1 and rsi_l_min[i] < 50:
-                rsi_l_sum[i] += rsi_l_min[i]
-                rsi_l_cnt[i] += 1
-                rsi_l_cnt_d[i] += 1
-                rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
-            rsi_l_min[i] = 100
-            rsi_l_chk[i] = 0
-    def calc_high():
-        if rsi14[i] > rsi_h_std:
-            rsi_h_chk[i] = 1
-            if rsi14[i] > rsi_h_max[i]:
-                rsi_h_max[i] = rsi14[i]
-        elif rsi14[i] <= rsi_h_std:
-            if rsi_h_chk[i] == 1 and rsi_h_max[i] > 50:
-                rsi_h_sum[i] += rsi_h_max[i]
-                rsi_h_cnt[i] += 1
-                rsi_h_cnt_d[i] += 1
-                rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
-            rsi_h_max[i] = 0
-            rsi_h_chk[i] = 0
-    def calc_avg():
-        if diff_h > 1 or diff_l > 1:
-            avg_arr[i][avg_idx[i]] = rsi14[i]
-            avg_idx[i] += 1
-            if(avg_idx[i] >= avg_cnt):
-                avg_idx[i] = 0
-            temp_sum = 0
-            for k in range(0,int(avg_cnt)):
-                temp_sum += avg_arr[i][k]
-            rsi_avg[i] = temp_sum/avg_cnt
-        if diff_h > 1:
-            rsi_h_avg[i] = diff_h
-        else:
-            rsi_h_avg[i] = rsi_avg[i]*(1+diff_h)
-        if diff_l > 1:
-            rsi_l_avg[i] = diff_l
-        else:
-            rsi_l_avg[i] = rsi_avg[i]*(1-diff_l)
-        if rsi14[i] > rsi_h_peak[i]:
-            rsi_h_peak[i] = rsi14[i]
-        elif rsi14[i] <= rsi_h_avg[i]:
-            rsi_h_peak[i] = rsi_h_avg[i]
-        if rsi14[i] < rsi_l_peak[i]:
-            rsi_l_peak[i] = rsi14[i]
-        elif rsi14[i] >= rsi_l_avg[i]:
-            rsi_l_peak[i] = rsi_l_avg[i]
-    #calc_low()
-    #calc_high()
-    calc_avg()
+def set_rsi_h_l_limit(i):
+    global rsi14, rsi_l_limit, rsi_h_limit, rsi_high, rsi_low
+
+    if rsi14[i] < rsi_low:
+        rsi_l_limit[i] = ((int)((rsi14[i]/5)+1)) * 5
+    else:
+        rsi_l_limit[i] = rsi_low
+
+    if rsi14[i] > rsi_high:
+        rsi_h_limit[i] = ((int)(rsi14[i]/5)) * 5
+    else:
+        rsi_l_limit[i] = rsi_low
     time.sleep(0.01)
 
 def check_rsi(i):
-    global rsi14, f_rsi_l, f_rsi_h, skip_trade
+    global rsi14, f_rsi_under, f_rsi_over, skip_trade
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-    calc_rsi_avg(i)
-    def check_low():
-        # rsi 하방 check
-        if f_rsi_l[i] == 0 and rsi14[i] < rsi_l_avg[i]:
-            f_rsi_l[i] = 1
-        elif f_rsi_l[i] == 1 and rsi14[i] > rsi_l_peak[i]:
-            f_rsi_l[i] = 2
-        elif rsi14[i] >= rsi_l_avg[i]:
-            f_rsi_l[i] = 0
-            skip_trade[i] = 0
-    def check_high():
-        # rsi 상방 check
-        if f_rsi_h[i] == 0 and rsi14[i] > rsi_h_avg[i]:
-            f_rsi_h[i] = 1
-        elif f_rsi_h[i] == 1 and rsi14[i] < rsi_h_peak[i]:
-            f_rsi_h[i] = 2
-        elif rsi14[i] <= rsi_h_avg[i]:
-            f_rsi_h[i] = 0
-            skip_trade[i] = 0
-    check_low()
-    check_high()
+    set_rsi_h_l_limit(i)
+
+    # rsi 하방 check
+    if f_rsi_under[i] == 0 and rsi14[i] < rsi_low:
+        f_rsi_under[i] = 1
+    elif f_rsi_under[i] == 1 and rsi14[i] > rsi_l_limit[i]:
+        f_rsi_under[i] = 2
+    elif rsi14[i] >= rsi_low:
+        f_rsi_under[i] = 0
+        skip_trade[i] = 0
+        rsi_l_limit[i] = rsi_low
+
+    # rsi 상방 check
+    if f_rsi_over[i] == 0 and rsi14[i] > rsi_high:
+        f_rsi_over[i] = 1
+    elif f_rsi_over[i] == 1 and rsi14[i] < rsi_h_limit[i]:
+        f_rsi_over[i] = 2
+    elif rsi14[i] <= rsi_high:
+        f_rsi_over[i] = 0
+        skip_trade[i] = 0
+        rsi_h_limit[i] = rsi_high
     time.sleep(0.01)
 		
 def trade(i):
-    global num_buy, num_sell, f_rsi_l, f_rsi_h, trade_chk, skip_trade
+    global num_buy, num_sell, f_rsi_under, f_rsi_over, trade_chk, skip_trade
     avg_buy = get_avg_buy_price(tkr_buy[i])
     current = get_current_price(tkr_buy[i])
     # 매수 : rsi low 미만 -> 초과 시
-    if f_rsi_l[i] == 2 and skip_trade[i] == 0:
+    if f_rsi_under[i] == 2 and skip_trade[i] == 0:
         krw = get_krw()
         tkr_balance = get_balance(tkr_buy[i], "KRW")
         total_krw = get_totalKRW()
@@ -316,12 +259,12 @@ def trade(i):
                 buy(tkr_buy[i], unit_trade_price)
             num_buy += 1
             txt = tkr_buy[i]+" 매수(price : "+str(round(current))+")\n"
-            txt+= "rsi : "+str(round(rsi_h_peak[i]))+"/"+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))+"/"+str(round(rsi_l_peak[i]))
+            txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
             send(txt)
-        f_rsi_l[i] = 0
+        f_rsi_under[i] = 0
         skip_trade[i] = 1
     # 매도 : rsi 70 초과 -> 미만 시
-    if f_rsi_h[i] == 2 and skip_trade[i] == 0:
+    if f_rsi_over[i] == 2 and skip_trade[i] == 0:
         krw = get_krw()
         tkr_balance = get_balance(tkr_buy[i], "KRW")
         total_krw = get_totalKRW()
@@ -334,17 +277,17 @@ def trade(i):
             num_sell += 1
             txt = tkr_buy[i]+" 매도\n"
             txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
-            txt+= "rsi : "+str(round(rsi_h_peak[i]))+"/"+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))+"/"+str(round(rsi_l_peak[i]))
+            txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
             send(txt)
-        f_rsi_h[i] = 0
+        f_rsi_over[i] = 0
         skip_trade[i] = 1
     # 손절 : -2% 미만 시 전량 매도
-    if (current-avg_buy)/avg_buy < -stop_loss: # and rsi14[i] > rsi_l_avg[i]:
+    if (current-avg_buy)/avg_buy < -stop_loss:
         sell(tkr_buy[i], 0)
         num_sell += 1
         txt = tkr_buy[i]+" 손절\n"
         txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
-        txt+= "rsi : "+str(round(rsi_h_peak[i]))+"/"+str(round(rsi_h_avg[i]))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_l_avg[i]))+"/"+str(round(rsi_l_peak[i]))
+        txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
         send(txt)
     if trade_chk == 1 and i == tkr_num-1:
         send("trade running")
@@ -357,39 +300,12 @@ def do_trade():
 
 def reset_newday():
     global num_buy_total, num_sell_total, startBalance, hourlyBalance
-    global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
+    global rsi_l_limit, rsi_h_limit
     num_buy_total = num_sell_total = 0
-    """
-    for i in range(0,tkr_num):
-        rsi_l_sum[i] = 30 + rsi_l_avg[i] * rsi_l_cnt_d[i]
-        rsi_l_cnt[i] = rsi_l_cnt_d[i] + 1
-        rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
-        rsi_h_sum[i] = 70 + rsi_h_avg[i] * rsi_h_cnt_d[i]
-        rsi_h_cnt[i] = rsi_h_cnt_d[i] + 1
-        rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
-        rsi_l_cnt_d[i] = rsi_h_cnt_d[i] = 0
-    """
     # 미관리 종목 전량 매도
     sell_not_in()
     # 잔고 Update
     startBalance = hourlyBalance = get_totalKRW()
-
-def reset_rsi_std():
-    global rsi_l_sum, rsi_l_cnt, rsi_l_cnt_d, rsi_l_avg, rsi_h_sum, rsi_h_cnt, rsi_h_cnt_d, rsi_h_avg
-    global avg_cnt, avg_idx, avg_arr, rsi_avg
-    avg_cnt = int(1440/trade_intv)
-    for i in range(0,tkr_num):
-        avg_arr[i] = [50]*1440
-        avg_idx[i] = 0
-        rsi_avg[i] = 50
-        """
-        rsi_l_cnt[i] = rsi_h_cnt[i] = 10
-        rsi_l_sum[i] = 30 * rsi_l_cnt[i]
-        rsi_l_avg[i] = rsi_l_sum[i] / rsi_l_cnt[i]
-        rsi_h_sum[i] = 70 * rsi_h_cnt[i]
-        rsi_h_avg[i] = rsi_h_sum[i] / rsi_h_cnt[i]
-        rsi_l_cnt_d[i] = rsi_h_cnt_d[i] = 0
-        """
 
 def send_start_message():
     txt = "==================================\n"
@@ -432,23 +348,21 @@ def send_hourly_report(req):
     for i in range(0,tkr_num):
         if rsi14[i] == 0:
             rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-            calc_rsi_avg(i)
-        txt += tkr_buy[i]+" : "+str(round(rsi_h_peak[i],1))+"/"+str(round(rsi_h_avg[i],1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_l_avg[i],1))+"/"+str(round(rsi_l_peak[i],1))
-        txt += " (avg:"+str(round(rsi_avg[i],2))+ ")\n"
-        # txt += " (f_h:"+str(f_rsi_h[i])+"/f_l:"+str(f_rsi_l[i])+")\n"
+            set_rsi_h_l_limit(i)
+        txt += tkr_buy[i]+" : "+str(round(rsi_h_limit[i],1))+"/"+str(round(rsi_high,1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_low,1))+"/"+str(round(rsi_l_limit[i],1))
     send(txt)
 
 
 def restore():
-    global unit_trade_price, stop_loss, trade_intv, rsi_intv, diff_h, diff_l
+    global unit_trade_price, stop_loss, trade_intv, rsi_intv, rsi_high, rsi_low
     global tkr_num, tkr_buy
     f = open(backup_path, 'r')
     unit_trade_price = int(f.readline())
     trade_intv = int(f.readline())
     rsi_intv = int(f.readline())
     stop_loss = float(f.readline())
-    diff_h = float(f.readline())
-    diff_l = float(f.readline())
+    rsi_high = float(f.readline())
+    rsi_low = float(f.readline())
     tmp = f.readline()
     if tmp != '':
         tkr_num = int(tmp)
@@ -462,22 +376,22 @@ def restore():
     txt+= "  2: trade_intv : "+str(trade_intv)+"\n"
     txt+= "  3: rsi_intv : "+str(rsi_intv)+"\n"
     txt+= "  4: stop_loss : "+str(stop_loss)+"\n"
-    txt+= "  5: diff_h : "+str(diff_h)+"\n"
-    txt+= "  6: diff_l : "+str(diff_l)+"\n"
+    txt+= "  5: rsi_high : "+str(rsi_high)+"\n"
+    txt+= "  6: rsi_low : "+str(rsi_low)+"\n"
     txt+= "  tkr_num : "+str(tkr_num)+"\n"
     txt+= "  tkr_buy : "+str(tkr_buy[0:tkr_num])+"\n"
     send(txt)
 
 def backup():
-    global unit_trade_price, stop_loss, trade_intv, rsi_intv, diff_h, diff_l
+    global unit_trade_price, stop_loss, trade_intv, rsi_intv, rsi_high, rsi_low
     global tkr_num, tkr_buy
     f = open(backup_path, 'w')
     f.write(str(unit_trade_price)+"\n")
     f.write(str(trade_intv)+"\n")
     f.write(str(rsi_intv)+"\n")
     f.write(str(stop_loss)+"\n")
-    f.write(str(diff_h)+"\n")
-    f.write(str(diff_l)+"\n")
+    f.write(str(rsi_high)+"\n")
+    f.write(str(rsi_low)+"\n")
     f.write(str(tkr_num)+"\n")
     for i in range(0, tkr_num):
         f.write(tkr_buy[i]+"\n")
@@ -493,7 +407,7 @@ def check_restart():
         return 0
 
 def chat(update, context):
-    global unit_trade_price, rsi_l_std, rsi_h_std, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, diff_h, diff_l
+    global unit_trade_price, stop_loss, confirm_sell, confirm_quit, trade_intv, rsi_intv, rsi_high, rsi_low
     global confirm_stop, confirm_start, stop_trade, confirm_restart, restart, trade_chk, tkr_num, tkr_buy
     new_text = update.message.text
     if new_text != None:
@@ -519,9 +433,8 @@ def chat(update, context):
                 send("wrong input")
             else:
                 num = float(new_text[3:])
-                if 0 < num < 60:
+                if 0 < num < 240:
                     trade_intv = int(num)
-                    reset_rsi_std()
                     send("trade_intv changed : "+str(trade_intv))
                     backup()
                 else:
@@ -560,8 +473,8 @@ def chat(update, context):
             else:
                 num = float(new_text[3:])
                 if 0 < num < 1 or 50 < num < 90:
-                    diff_h = num
-                    send("diff_h changed : "+str(diff_h))
+                    rsi_high = num
+                    send("rsi_high changed : "+str(rsi_high))
                     backup()
                 else:
                     send("wrong input")
@@ -573,8 +486,8 @@ def chat(update, context):
             else:
                 num = float(new_text[3:])
                 if 0 < num < 1 or 10 < num < 50:
-                    diff_l = num
-                    send("diff_l changed : "+str(diff_l))
+                    rsi_low = num
+                    send("rsi_low changed : "+str(rsi_low))
                     backup()
                 else:
                     send("wrong input")
@@ -606,6 +519,7 @@ def chat(update, context):
                             break
                     tkr_num -= 1
                     send("tkr deleted : "+tkr)
+                    sell_not_in()
                     backup()
                 else:
                     send("wrong input")
@@ -614,8 +528,8 @@ def chat(update, context):
             txt+= "2: trade_intv : "+str(trade_intv)+"\n"
             txt+= "3: rsi_intv : "+str(rsi_intv)+"\n"
             txt+= "4: stop_loss : "+str(stop_loss)+"\n"
-            txt+= "5: diff_h : "+str(diff_h)+"\n"
-            txt+= "6: diff_l : "+str(diff_l)+"\n"
+            txt+= "5: rsi_high : "+str(rsi_high)+"\n"
+            txt+= "6: rsi_low : "+str(rsi_low)+"\n"
             txt+= "tkr_num : "+str(tkr_num)+"\n"
             txt+= "tkr_buy : "+str(tkr_buy[0:tkr_num])+"\n"
             txt+= "stop_trade : "+str(stop_trade)+"\n"
@@ -696,8 +610,8 @@ def chat(update, context):
             txt+= "2, N : trade_intv N으로 변경\n"
             txt+= "3, N : rsi_intv N으로 변경\n"
             txt+= "4, N : stop_loss N으로 변경\n"
-            txt+= "5, N : diff_h N으로 변경\n"
-            txt+= "6, N : diff_l N으로 변경\n"
+            txt+= "5, N : rsi_high N으로 변경\n"
+            txt+= "6, N : rsi_low N으로 변경\n"
             txt+= "7, tkr : tkr 종목 추가\n"
             txt+= "8, tkr : tkr 종목 제거\n"
             txt+= "9    : 현재 parameter 값 확인\n"
