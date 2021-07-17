@@ -349,7 +349,7 @@ def send_hourly_report(req):
         if rsi14[i] == 0:
             rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
             set_rsi_h_l_limit(i)
-        txt += tkr_buy[i]+" : "+str(round(rsi_h_limit[i],1))+"/"+str(round(rsi_high,1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_low,1))+"/"+str(round(rsi_l_limit[i],1))
+        txt += tkr_buy[i]+" : "+str(round(rsi_h_limit[i],1))+"/"+str(round(rsi_high,1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_low,1))+"/"+str(round(rsi_l_limit[i],1))+"\n"
     send(txt)
 
 
