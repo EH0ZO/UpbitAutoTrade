@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.17.80"     # 
+VERSION = "21.07.17.81"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -205,12 +205,14 @@ def set_rsi_h_l_limit(i):
     global rsi14, rsi_l_limit, rsi_h_limit, rsi_high, rsi_low
 
     if rsi14[i] < rsi_low:
-        rsi_l_limit[i] = ((int)((rsi14[i]/5)+1)) * 5
+        if rsi14[i] < rsi_l_limit[i]:
+            rsi_l_limit[i] = ((int)((rsi14[i]/5)+1)) * 5
     else:
         rsi_l_limit[i] = rsi_low
 
     if rsi14[i] > rsi_high:
-        rsi_h_limit[i] = ((int)(rsi14[i]/5)) * 5
+        if rsi14[i] < rsi_h_limit[i]:
+            rsi_h_limit[i] = ((int)(rsi14[i]/5)) * 5
     else:
         rsi_h_limit[i] = rsi_high
     time.sleep(0.01)
