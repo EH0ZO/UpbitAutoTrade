@@ -211,7 +211,7 @@ def set_rsi_h_l_limit(i):
         rsi_l_limit[i] = rsi_low
 
     if rsi14[i] > rsi_high:
-        if rsi14[i] < rsi_h_limit[i]:
+        if rsi14[i] > rsi_h_limit[i]:
             rsi_h_limit[i] = ((int)(rsi14[i]/5)) * 5
     else:
         rsi_h_limit[i] = rsi_high
