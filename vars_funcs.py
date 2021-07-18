@@ -225,7 +225,7 @@ def check_rsi(i):
     # rsi 하방 check
     if f_rsi_under[i] == 0 and rsi14[i] < rsi_low:
         f_rsi_under[i] = 1
-    elif f_rsi_under[i] == 1 and rsi14[i] > rsi_l_limit[i]:
+    elif f_rsi_under[i] == 1 and rsi_l_limit[i] < rsi14[i] < rsi_low:
         f_rsi_under[i] = 2
     elif rsi14[i] >= rsi_low:
         f_rsi_under[i] = 0
@@ -235,7 +235,7 @@ def check_rsi(i):
     # rsi 상방 check
     if f_rsi_over[i] == 0 and rsi14[i] > rsi_high:
         f_rsi_over[i] = 1
-    elif f_rsi_over[i] == 1 and rsi14[i] < rsi_h_limit[i]:
+    elif f_rsi_over[i] == 1 and rsi_high < rsi14[i] < rsi_h_limit[i]:
         f_rsi_over[i] = 2
     elif rsi14[i] <= rsi_high:
         f_rsi_over[i] = 0
