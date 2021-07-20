@@ -227,27 +227,27 @@ def set_rsi_h_l_limit(i):
     time.sleep(0.01)
 
 def check_rsi(i):
-    global rsi14, f_rsi_under, f_rsi_over, skip_trade
+    global rsi14, f_rsi_under, f_rsi_over, skip_trade, rsi_signal
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
     get_rsi_signal(i)
     set_rsi_h_l_limit(i)
 
     # rsi 하방 check
-    if f_rsi_under[i] == 0 and rsi14[i] < rsi_low:
+    if f_rsi_under[i] == 0 and rsi_signal[i] < rsi_low: #rsi14[i] < rsi_low:
         f_rsi_under[i] = 1
-    elif f_rsi_under[i] == 1 and rsi_l_limit[i] < rsi14[i] < rsi_low:
+    elif f_rsi_under[i] == 1 and rsi_signal[i] > rsi_low: #rsi_l_limit[i] < rsi14[i] < rsi_low:
         f_rsi_under[i] = 2
-    elif rsi14[i] >= rsi_low:
+    elif rsi_signal[i] > rsi_low: #rsi14[i] >= rsi_low:
         f_rsi_under[i] = 0
         skip_trade[i] = 0
         rsi_l_limit[i] = rsi_low
 
     # rsi 상방 check
-    if f_rsi_over[i] == 0 and rsi14[i] > rsi_high:
+    if f_rsi_over[i] == 0 and rsi_signal[i] > rsi_high: #rsi14[i] > rsi_high:
         f_rsi_over[i] = 1
-    elif f_rsi_over[i] == 1 and rsi_high < rsi14[i] < rsi_h_limit[i]:
+    elif f_rsi_over[i] == 1 and rsi_signal[i] < rsi_high: #rsi_high < rsi14[i] < rsi_h_limit[i]:
         f_rsi_over[i] = 2
-    elif rsi14[i] <= rsi_high:
+    elif rsi_signal[i] < rsi_high: #rsi14[i] <= rsi_high:
         f_rsi_over[i] = 0
         skip_trade[i] = 0
         rsi_h_limit[i] = rsi_high
@@ -271,7 +271,8 @@ def trade(i):
                 buy(tkr_buy[i], unit_trade_price)
             num_buy += 1
             txt = tkr_buy[i]+" 매수(price : "+str(round(current))+")\n"
-            txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
+            txt+= "RSI: "+str(round(rsi14[i]))+" / Signal: "+str(round(rsi_signal[i], 2))
+            #txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
             send(txt)
         f_rsi_under[i] = 0
         skip_trade[i] = 1
@@ -289,7 +290,8 @@ def trade(i):
             num_sell += 1
             txt = tkr_buy[i]+" 매도\n"
             txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
-            txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
+            txt+= "RSI: "+str(round(rsi14[i]))+" / Signal: "+str(round(rsi_signal[i], 2))
+            #txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
             send(txt)
         f_rsi_over[i] = 0
         skip_trade[i] = 1
@@ -299,7 +301,8 @@ def trade(i):
         num_sell += 1
         txt = tkr_buy[i]+" 손절\n"
         txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
-        txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
+        txt+= "RSI: "+str(round(rsi14[i]))+" / Signal: "+str(round(rsi_signal[i], 2))
+        #txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
         send(txt)
     if trade_chk == 1 and i == tkr_num-1:
         send("trade running")
@@ -361,7 +364,8 @@ def send_hourly_report(req):
         if rsi14[i] == 0:
             rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
             set_rsi_h_l_limit(i)
-        txt += tkr_buy[i]+" : "+str(round(rsi_h_limit[i],1))+"/"+str(round(rsi_high,1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_low,1))+"/"+str(round(rsi_l_limit[i],1))+"\n"
+        txt+= tkr_buy[i]+": "+"RSI: "+str(round(rsi14[i]))+" / Signal: "+str(round(rsi_signal[i], 2))
+        #txt += tkr_buy[i]+" : "+str(round(rsi_h_limit[i],1))+"/"+str(round(rsi_high,1))+"/"+str(round(rsi14[i],1))+"/"+str(round(rsi_low,1))+"/"+str(round(rsi_l_limit[i],1))+"\n"
     send(txt)
 
 
