@@ -30,6 +30,7 @@ f_rsi_under = [0]*max_num;
 f_rsi_over = [0]*max_num;
 rsi_high = 60
 rsi_low = 40
+rsi_signal = [0]*max_num
 skip_trade = [0]*max_num
 # 기준값
 unit_trade_price = 25000
@@ -201,6 +202,14 @@ def get_rsi14(symbol, candle):
     time.sleep(0.5)
     return rsi
 
+def get_rsi_signal(i):
+    global rsi14, rsi_signal, rsi_intv, trade_intv
+    if rsi_signal[i] == 0:
+        rsi_signal[i] = rsi14[i]
+    else:
+        e = 2 / (1+(9*(rsi_intv/trade_intv)))
+        rsi_signal[i] = ((rsi14[i]*e) + (rsi_signal[i]*(1-e)))
+
 def set_rsi_h_l_limit(i):
     global rsi14, rsi_l_limit, rsi_h_limit, rsi_high, rsi_low
 
@@ -220,6 +229,7 @@ def set_rsi_h_l_limit(i):
 def check_rsi(i):
     global rsi14, f_rsi_under, f_rsi_over, skip_trade
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
+    get_rsi_signal(i)
     set_rsi_h_l_limit(i)
 
     # rsi 하방 check
