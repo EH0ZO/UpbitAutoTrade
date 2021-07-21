@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.17.81"     # 
+VERSION = "21.07.21.82"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -233,9 +233,9 @@ def check_rsi(i):
     set_rsi_h_l_limit(i)
 
     # rsi 하방 check
-    if f_rsi_under[i] == 0 and rsi_signal[i] < rsi_low: #rsi14[i] < rsi_low:
+    if f_rsi_under[i] == 0 and rsi14[i] < rsi_signal[i] and rsi14[i] < rsi_low: # rsi_signal[i] < rsi_low: #rsi14[i] < rsi_low:
         f_rsi_under[i] = 1
-    elif f_rsi_under[i] == 1 and rsi_signal[i] > rsi_low: #rsi_l_limit[i] < rsi14[i] < rsi_low:
+    elif f_rsi_under[i] == 1 and rsi14[i] > rsi_signal[i]: # rsi_signal[i] > rsi_low: #rsi_l_limit[i] < rsi14[i] < rsi_low:
         f_rsi_under[i] = 2
     elif rsi_signal[i] > rsi_low: #rsi14[i] >= rsi_low:
         f_rsi_under[i] = 0
@@ -243,9 +243,9 @@ def check_rsi(i):
         rsi_l_limit[i] = rsi_low
 
     # rsi 상방 check
-    if f_rsi_over[i] == 0 and rsi_signal[i] > rsi_high: #rsi14[i] > rsi_high:
+    if f_rsi_over[i] == 0 and rsi14[i] > rsi_signal[i] and rsi14[i] > rsi_high: # rsi_signal[i] > rsi_high: #rsi14[i] > rsi_high:
         f_rsi_over[i] = 1
-    elif f_rsi_over[i] == 1 and rsi_signal[i] < rsi_high: #rsi_high < rsi14[i] < rsi_h_limit[i]:
+    elif f_rsi_over[i] == 1 and rsi14[i] < rsi_signal[i]: # rsi_signal[i] < rsi_high: #rsi_high < rsi14[i] < rsi_h_limit[i]:
         f_rsi_over[i] = 2
     elif rsi_signal[i] < rsi_high: #rsi14[i] <= rsi_high:
         f_rsi_over[i] = 0
