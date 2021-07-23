@@ -235,6 +235,10 @@ def check_rsi(i):
     # rsi 하방 check
     if f_rsi_under[i] == 0 and rsi14[i] < rsi_signal[i] and rsi14[i] < rsi_low: # rsi_signal[i] < rsi_low: #rsi14[i] < rsi_low:
         f_rsi_under[i] = 1
+        if trade_chk == 1:
+            txt = tkr_buy[i]+" signal 미만 포착\n"
+            txt+= "RSI: "+str(round(rsi14[i], 2))+" / Signal: "+str(round(rsi_signal[i], 2))+"\n"
+            send(txt)
     elif f_rsi_under[i] == 1 and rsi14[i] > rsi_signal[i]: # rsi_signal[i] > rsi_low: #rsi_l_limit[i] < rsi14[i] < rsi_low:
         f_rsi_under[i] = 2
     elif rsi_signal[i] > rsi_low: #rsi14[i] >= rsi_low:
@@ -245,6 +249,10 @@ def check_rsi(i):
     # rsi 상방 check
     if f_rsi_over[i] == 0 and rsi14[i] > rsi_signal[i] and rsi14[i] > rsi_high: # rsi_signal[i] > rsi_high: #rsi14[i] > rsi_high:
         f_rsi_over[i] = 1
+        if trade_chk == 1:
+            txt = tkr_buy[i]+" signal 초과 포착\n"
+            txt+= "RSI: "+str(round(rsi14[i], 2))+" / Signal: "+str(round(rsi_signal[i], 2))+"\n"
+            send(txt)
     elif f_rsi_over[i] == 1 and rsi14[i] < rsi_signal[i]: # rsi_signal[i] < rsi_high: #rsi_high < rsi14[i] < rsi_h_limit[i]:
         f_rsi_over[i] = 2
     elif rsi_signal[i] < rsi_high: #rsi14[i] <= rsi_high:
@@ -305,7 +313,7 @@ def trade(i):
         #txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
         send(txt)
     if trade_chk == 1 and i == tkr_num-1:
-        send("trade running")
+        #send("trade running")
     time.sleep(0.01)
 
 def do_trade():
