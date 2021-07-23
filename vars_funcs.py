@@ -312,7 +312,7 @@ def trade(i):
         txt+= "RSI: "+str(round(rsi14[i], 2))+" / Signal: "+str(round(rsi_signal[i], 2))+"\n"
         #txt+= "rsi : "+str(round(rsi_h_limit[i]))+"/"+str(round(rsi_high))+"/"+str(round(rsi14[i]))+"/"+str(round(rsi_low))+"/"+str(round(rsi_l_limit[i]))
         send(txt)
-    if trade_chk == 1 and i == tkr_num-1:
+    #if trade_chk == 1 and i == tkr_num-1:
         #send("trade running")
     time.sleep(0.01)
 
