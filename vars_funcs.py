@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.23.83"     # 
+VERSION = "21.07.27.84"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -32,6 +32,7 @@ rsi_high = 60
 rsi_low = 40
 rsi_signal = [0]*max_num
 skip_trade = [0]*max_num
+f_lost = [0]*max_num
 # 기준값
 unit_trade_price = 25000
 stop_loss = 0.005
@@ -227,7 +228,7 @@ def set_rsi_h_l_limit(i):
     time.sleep(0.01)
 
 def check_rsi(i):
-    global rsi14, f_rsi_under, f_rsi_over, skip_trade, rsi_signal
+    global rsi14, f_rsi_under, f_rsi_over, skip_trade, rsi_signal, f_lost
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
     get_rsi_signal(i)
     set_rsi_h_l_limit(i)
@@ -249,6 +250,7 @@ def check_rsi(i):
     # rsi 상방 check
     if f_rsi_over[i] == 0 and rsi14[i] > rsi_high: # rsi14[i] > rsi_signal[i] and rsi14[i] > rsi_high: # rsi_signal[i] > rsi_high: #rsi14[i] > rsi_high:
         f_rsi_over[i] = 1
+        f_lost[i] = 0
         if trade_chk == 1:
             txt = tkr_buy[i]+" high 초과 포착\n"
             txt+= "RSI: "+str(round(rsi14[i], 2))# +" / Signal: "+str(round(rsi_signal[i], 2))+"\n"
@@ -262,11 +264,11 @@ def check_rsi(i):
     time.sleep(0.01)
 		
 def trade(i):
-    global num_buy, num_sell, f_rsi_under, f_rsi_over, trade_chk, skip_trade
+    global num_buy, num_sell, f_rsi_under, f_rsi_over, trade_chk, skip_trade, f_lost
     avg_buy = get_avg_buy_price(tkr_buy[i])
     current = get_current_price(tkr_buy[i])
     # 매수 : rsi low 미만 -> 초과 시
-    if f_rsi_under[i] == 2 and skip_trade[i] == 0:
+    if f_rsi_under[i] == 2 and skip_trade[i] == 0 and f_lost[i] == 0:
         krw = get_krw()
         tkr_balance = get_balance(tkr_buy[i], "KRW")
         total_krw = get_totalKRW()
@@ -307,6 +309,7 @@ def trade(i):
     if (current-avg_buy)/avg_buy < -stop_loss:
         sell(tkr_buy[i], 0)
         num_sell += 1
+        f_lost[i] = 1
         txt = tkr_buy[i]+" 손절\n"
         txt+= "현재가 : "+str(current)+"/평단가 : "+str(avg_buy)+"("+str(round(((current-avg_buy)/avg_buy)*100, 2))+"%)\n"
         # txt+= "RSI: "+str(round(rsi14[i], 2))+" / Signal: "+str(round(rsi_signal[i], 2))+"\n"
