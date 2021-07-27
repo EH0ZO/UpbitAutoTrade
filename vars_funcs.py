@@ -250,7 +250,10 @@ def check_rsi(i):
     # rsi 상방 check
     if f_rsi_over[i] == 0 and rsi14[i] > rsi_high: # rsi14[i] > rsi_signal[i] and rsi14[i] > rsi_high: # rsi_signal[i] > rsi_high: #rsi14[i] > rsi_high:
         f_rsi_over[i] = 1
-        f_lost[i] = 0
+        if f_lost[i] == 1:
+            f_lost[i] = 0
+            txt = tkr_buy[i]+" 매수 락 해제\n"
+            txt+= "RSI: "+str(round(rsi14[i], 2))
         if trade_chk == 1:
             txt = tkr_buy[i]+" high 초과 포착\n"
             txt+= "RSI: "+str(round(rsi14[i], 2))# +" / Signal: "+str(round(rsi_signal[i], 2))+"\n"
