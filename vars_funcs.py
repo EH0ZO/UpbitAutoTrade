@@ -254,6 +254,7 @@ def check_rsi(i):
             f_lost[i] = 0
             txt = tkr_buy[i]+" 매수 락 해제\n"
             txt+= "RSI: "+str(round(rsi14[i], 2))
+            send(txt)
         if trade_chk == 1:
             txt = tkr_buy[i]+" high 초과 포착\n"
             txt+= "RSI: "+str(round(rsi14[i], 2))# +" / Signal: "+str(round(rsi_signal[i], 2))+"\n"
