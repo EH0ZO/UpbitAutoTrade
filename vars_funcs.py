@@ -230,7 +230,7 @@ def set_rsi_h_l_limit(i):
 def check_rsi(i):
     global rsi14, f_rsi_under, f_rsi_over, skip_trade, rsi_signal, f_lost
     rsi14[i] = get_rsi14(tkr_buy[i], rsi_intv)
-    get_rsi_signal(i)
+    #get_rsi_signal(i)
     set_rsi_h_l_limit(i)
 
     # rsi 하방 check
