@@ -216,13 +216,13 @@ def set_rsi_h_l_limit(i):
 
     if rsi14[i] < rsi_low:
         if rsi14[i] < rsi_l_limit[i]:
-            rsi_l_limit[i] = ((int)((rsi14[i]/5)+1)) * 5
+            rsi_l_limit[i] = ((int)((rsi14[i]/2.5)+1)) * 2.5
     else:
         rsi_l_limit[i] = rsi_low
 
     if rsi14[i] > rsi_high:
         if rsi14[i] > rsi_h_limit[i]:
-            rsi_h_limit[i] = ((int)(rsi14[i]/5)) * 5
+            rsi_h_limit[i] = ((int)(rsi14[i]/2.5)) * 2.5
     else:
         rsi_h_limit[i] = rsi_high
     time.sleep(0.01)
