@@ -8,7 +8,7 @@ import sys
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Global variables
-VERSION = "21.07.27.84"     # 
+VERSION = "21.08.02.85"     # 
 # 잔고
 startBalance = 0; hourlyBalance = 0; totalBalance = 0; balanceBackup = 0; balance = 0
 # 매매 횟수
@@ -268,7 +268,7 @@ def check_rsi(i):
     time.sleep(0.01)
 		
 def trade(i):
-    global num_buy, num_sell, f_rsi_under, f_rsi_over, trade_chk, skip_trade, f_lost
+    global num_buy, num_sell, f_rsi_under, f_rsi_over, trade_chk, skip_trade, f_lost, rsi14, rsi_low
     avg_buy = get_avg_buy_price(tkr_buy[i])
     current = get_current_price(tkr_buy[i])
     # 매수 : rsi low 미만 -> 초과 시
@@ -310,7 +310,7 @@ def trade(i):
         f_rsi_over[i] = 0
         skip_trade[i] = 1
     # 손절 : -2% 미만 시 전량 매도
-    if (current-avg_buy)/avg_buy < -stop_loss:
+    if (current-avg_buy)/avg_buy < -stop_loss and rsi14[i] > rsi_low:
         sell(tkr_buy[i], 0)
         num_sell += 1
         f_lost[i] = 1
